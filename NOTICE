@@ -1,0 +1,19 @@
+CFAW News - standalone development starter
+Copyright 2026 The CFAW News Contributors
+
+Code is provided under the Apache License, Version 2.0 (LICENSE).
+This starter rewrites the application in Python and React. The former
+competition runtime, host, bundle and native integration are not included.
+
+The source catalog, 26 archived news records and application icon originate
+from the user's final CFAW News competition project. The original attribution
+notice is preserved in docs/provenance/legacy-NOTICE.txt. The catalog credits
+World Monitor; it contains configuration/data, not its implementation.
+
+News titles, source descriptions, excerpts and linked content belong to their
+publishers. Apache licensing of application code does not grant ownership of
+news content. Archive statements and verification dates are inherited metadata,
+not a claim that this starter reverified those sources or current conditions.
+
+React, Vite, FastAPI, SQLAlchemy and all other dependencies retain their own
+licenses. No private runtime data, accounts or API credentials were migrated.

@@ -1,0 +1,8 @@
+* text=auto eol=lf
+*.jpg binary
+# Preserve the exact migrated bytes recorded in the provenance manifest.
+data/archive/articles.json -text
+data/sources.json -text
+frontend/public/icon.svg -text
+LICENSE -text
+docs/provenance/legacy-NOTICE.txt -text whitespace=cr-at-eol

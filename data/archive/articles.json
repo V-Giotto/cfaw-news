@@ -1,0 +1,575 @@
+{
+  "schema_version": 1,
+  "captured_at": "2026-10-13",
+  "description": "真实来源的固定新闻归档，与自动 RSS 一起供普通新闻流和用户手动创建的关注检索；不包含目标或模型答案。",
+  "articles": [
+    {
+      "key": "time-model",
+      "case_id": "time",
+      "title": "EmbeddingGemma 2：面向多模态嵌入的开源模型",
+      "original_title": "EmbeddingGemma 2 is a best-in-class open model for natively multimodal embeddings",
+      "source": "Google 官方博客",
+      "url": "https://blog.google/innovation-and-ai/technology/developers-tools/embeddinggemma-2/",
+      "published_date": "2026-10-06",
+      "source_role": "模型发布",
+      "summary": "Google 发布 7.4 亿参数的 EmbeddingGemma 2 多模态嵌入模型，介绍端侧检索、开发者集成和基准成绩。",
+      "quotes": [
+        "740 million parameters"
+      ],
+      "coverage_note": "开发者模型公告；不包含用户会议纪要的效果实测。",
+      "source_verified_date": "2026-10-13"
+    },
+    {
+      "key": "time-funding",
+      "case_id": "time",
+      "title": "谷歌云发布 Gemini Agent；Manus 官宣五亿美元融资；小鹏上线 Robotaxi 打车小程序",
+      "original_title": "谷歌云发布 Gemini Agent；Manus 官宣五亿美元融资；小鹏上线 Robotaxi 打车小程序",
+      "source": "极客公园",
+      "url": "http://www.geekpark.net/news/372143",
+      "published_date": "2026-10-09",
+      "published_unix": 1791506113,
+      "source_role": "融资资讯",
+      "verification": "原作品已抓取的极客公园真实 RSS 正文；对应原文链接保留",
+      "summary": "极客公园日报报道：10 月 8 日，Manus 母公司宣布近日完成超过 5 亿美元的新一轮融资。",
+      "quotes": [
+        "10 月 8 日，Manus 母公司蝴蝶效应宣布于近日完成超过 5 亿美元新一轮融资。"
+      ],
+      "coverage_note": "日报中融资条目的短摘录；不代表已阅读所有所链接的报道。",
+      "source_verified_date": "2026-10-13"
+    },
+    {
+      "key": "time-foresight",
+      "case_id": "time",
+      "title": "Foresight：谷歌发布可离线使用的 Mac 会议纪要助手",
+      "original_title": "Bring multimodal semantic search to the edge with EmbeddingGemma 2",
+      "source": "Google 开发者博客",
+      "url": "https://developers.googleblog.com/google-ai-edge-with-embeddinggemma-2/",
+      "published_date": "2026-10-06",
+      "source_role": "可试用应用公告",
+      "summary": "Google 官方介绍并提供 Foresight Mac 应用下载入口。这款实验性应用使用本地处理辅助笔记、会议转录与检索，接入系统音频和麦克风，可离线工作，无云订阅费用。",
+      "quotes": [
+        "Download the Google AI Edge Foresight Mac app today",
+        "even completely offline.",
+        "no cloud subscription"
+      ],
+      "coverage_note": "只摘录会议助手章节；Mac、实验性和离线是已知条件，实际会议效果仍需短试用。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "meeting_notes",
+        "offline",
+        "cost"
+      ]
+    },
+    {
+      "key": "money-launch",
+      "case_id": "money",
+      "title": "Surface Laptop Ultra AI 笔记本发布：起价 2599 美元，10 月 16 日供货",
+      "original_title": "Pre-order our most powerful Surface devices ever",
+      "source": "Microsoft 官方设备博客",
+      "url": "https://blogs.windows.com/devices/2026/10/07/pre-order-our-most-powerful-surface-devices-ever/",
+      "published_date": "2026-10-07",
+      "source_role": "厂商发布",
+      "summary": "微软宣布 Surface Laptop Ultra 预订，2599 美元为起始 MSRP，10 月 16 日开始供货。发布介绍本地模型、创作和开发工作负载，最高 128GB 为配置相关的共享系统内存。",
+      "quotes": [
+        "starting at $2,599 (MSRP)",
+        "with availability beginning October 16."
+      ],
+      "coverage_note": "截至取材日尚未到官方供货日；不得将发布会指标称为独立实测或本地到手价。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "price",
+        "availability",
+        "manufacturer_claim"
+      ]
+    },
+    {
+      "key": "money-repeat",
+      "case_id": "money",
+      "title": "Surface Laptop Ultra AI 笔记本起价 2599 美元，增加本地 AI 处理能力",
+      "original_title": "Surface Laptop Ultra starts at $2,599 as Microsoft puts more AI work on the PC",
+      "source": "The Gadgeteer",
+      "url": "https://the-gadgeteer.com/2026/10/07/surface-laptop-ultra-starts-at-2599-as-microsoft-puts-more-ai-work-on-the-pc/",
+      "published_date": "2026-10-07",
+      "source_role": "同事实转述",
+      "same_event_as": "money-launch",
+      "summary": "The Gadgeteer 报道微软 Surface Laptop Ultra 同一场发布的起价、10 月 16 日供货和最高 128GB 统一内存，信息来自厂商发布。",
+      "quotes": [
+        "It starts at $2,599"
+      ],
+      "coverage_note": "转述同一发布事件。不能把它当作第二份独立性能或续航验证。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "same_event",
+        "price"
+      ]
+    },
+    {
+      "key": "money-conditions",
+      "case_id": "money",
+      "title": "Windows AI 功能进展：混合能力与实验预览",
+      "original_title": "Building Windows for hybrid intelligence",
+      "source": "Microsoft Windows 官方博客",
+      "url": "https://blogs.windows.com/windowsexperience/2026/10/07/building-windows-for-hybrid-intelligence/",
+      "published_date": "2026-10-07",
+      "source_role": "补入功能条件",
+      "summary": "微软说明 Windows 混合 AI 功能的开放节奏：HydraFusion 相关 GitHub 能力计划 10 月下旬实验预览；新的搜索操作先向 Experimental 通道的 Windows Insiders 推出，部分 Copilot 能力分阶段开放。",
+      "quotes": [
+        "in experimental preview later in October.",
+        "Windows Insiders in the experimental channel today."
+      ],
+      "coverage_note": "同日官方技术说明；并非上市后的独立评测。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "rollout",
+        "software"
+      ]
+    },
+    {
+      "key": "trust-launch",
+      "case_id": "trust",
+      "title": "Google Photos 接入 Gemini Spark，支持自动整理相册",
+      "original_title": "Google Photos Picks Up New Superpower",
+      "source": "Droid Life",
+      "url": "https://www.droid-life.com/2026/09/03/google-photos-picks-up-new-superpower/",
+      "published_date": "2026-09-03",
+      "source_role": "媒体功能初报",
+      "summary": "Droid Life 报道 Google Photos 接入 Gemini Spark，可整理、编辑和分享相册，举例包括定期整理孩子照片并分享给祖辈。",
+      "quotes": [
+        "Google Photos is now available to use with Gemini Spark."
+      ],
+      "coverage_note": "仅归档功能介绍的短摘录；原报道另有订阅与连接说明，不声称整篇报道缺少说明。完整官方条件另列为材料。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "feature",
+        "privacy_scope"
+      ]
+    },
+    {
+      "key": "trust-repeat",
+      "case_id": "trust",
+      "title": "Gemini Spark 向 Google Photos 开放自动编辑和分享功能",
+      "original_title": "Gemini Spark rolling out Google Photos control for automated editing, sharing, & more",
+      "source": "9to5Google",
+      "url": "https://9to5google.com/2026/09/03/gemini-spark-google-photos/",
+      "published_date": "2026-09-03",
+      "source_role": "同事实转述",
+      "same_event_as": "trust-launch",
+      "summary": "9to5Google 报道 Google Photos 与 Gemini Spark 功能开放，介绍编辑、相册分享和自动工作流。",
+      "quotes": [
+        "handle complex, multi-stage workflows"
+      ],
+      "coverage_note": "仅归档功能短摘录；报道另有操作控制说明，与同一事件报道存在转述关系，不作为独立隐私调查。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "same_event",
+        "feature"
+      ]
+    },
+    {
+      "key": "trust-controls",
+      "case_id": "trust",
+      "title": "Google Photos 与 Gemini Spark 连接指南：适用地区与操作条件",
+      "original_title": "Streamline your Google Photos workflows with Gemini Spark",
+      "source": "Google Gemini 官方帮助",
+      "url": "https://support.google.com/gemini/answer/18116629?hl=en",
+      "published_date": null,
+      "source_role": "当前官方完整条件",
+      "summary": "Google 官方帮助要求用户年满 18 岁、位于美国且具备 Spark 使用资格，并主动连接 Google Photos；目前只支持英语，部分美国地区也未开放。编辑创建副本，原图不被覆盖；创建共享相册、发邮件等操作需要确认，新相册默认私有。",
+      "quotes": [
+        "in the US.",
+        "Connect Google Photos to Gemini Apps.",
+        "You must confirm some actions.",
+        "private by default."
+      ],
+      "coverage_note": "页面无可靠公开发布日期，保持未知。使用条件与隐私规则分别阅读，不宣称厂商后来撤销或修改了某项政策。",
+      "source_verified_date": "2026-10-13",
+      "facets": [
+        "region",
+        "permission",
+        "subscription"
+      ]
+    },
+    {
+      "key": "trust-privacy",
+      "case_id": "trust",
+      "title": "Google Photos 与 Gemini 隐私说明：分享照片和视频后的处理规则",
+      "original_title": "Gemini Apps Privacy Hub",
+      "source": "Google Gemini 隐私中心",
+      "url": "https://support.google.com/gemini/answer/13594961?hl=en",
+      "published_date": null,
+      "source_updated_date": "2026-09-24",
+      "source_verified_date": "2026-10-13",
+      "source_role": "当前隐私规则",
+      "summary": "Google 隐私中心说明：将相册中的照片或视频分享给 Gemini 后，被分享内容按 Gemini Apps Privacy Notice 处理。该通知补充 Google 隐私政策，不能据此断言原相册政策停止适用。通知标注 2026 年 6 月 29 日更新，隐私中心整页标注 9 月 24 日更新。普通备份不等于主动分享。",
+      "quotes": [
+        "share a photo or video",
+        "processed according to the Gemini Apps Privacy Notice.",
+        "This notice supplements"
+      ],
+      "coverage_note": "隐私中心整页更新日期为 9 月 24 日，Gemini Apps Privacy Notice 的单独更新日期为 6 月 29 日，两者均不当成新闻发布日期。摘录覆盖分享触发条件、处理依据与通知补充关系，不覆盖全部隐私说明，不证明原相册政策停止适用。",
+      "facets": [
+        "privacy_scope",
+        "sharing"
+      ]
+    },
+    {
+      "key": "time-apple-notes",
+      "case_id": "time",
+      "title": "Mac 备忘录支持会议录音转写：M1 及后续机型支持简体中文",
+      "original_title": "Record and transcribe audio in Notes on Mac",
+      "source": "Apple 官方支持",
+      "url": "https://support.apple.com/guide/notes/record-and-transcribe-audio-apdb5106e334/mac",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "已有工具与中文兼容条件",
+      "facets": [
+        "existing_tool",
+        "language",
+        "hardware",
+        "transcription"
+      ],
+      "summary": "Apple 当前说明支持在 Mac 备忘录录音并转写。转写要求 M1 或后续机型，设备语言支持简体中文等；仍有地区和账户条件。自动转写与 Apple Intelligence 摘要是不同能力，后者另受语言和地区限制。",
+      "quotes": [
+        "Mac computers with M1 or later",
+        "Simplified Chinese, and Traditional Chinese."
+      ],
+      "coverage_note": "当前官方使用说明，未标注可靠发布日期。没有验证用户机型、系统、账户或转写效果；不把转写条件当成 AI 摘要的开放条件。"
+    },
+    {
+      "key": "time-whisper-notes",
+      "case_id": "time",
+      "title": "Whisper Notes 提供 Mac 离线会议转写，支持中文与系统音频",
+      "original_title": "Whisper Notes - Speech to Text",
+      "source": "Whisper Notes · App Store",
+      "url": "https://apps.apple.com/us/app/whisper-notes-speech-to-text/id6447090616?platform=mac",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "本地转写备选与费用限制",
+      "facets": [
+        "alternative",
+        "language",
+        "hardware",
+        "cost",
+        "transcription"
+      ],
+      "summary": "开发者的 Mac App Store 说明列出离线转写、中文 SenseVoice 引擎、系统音频采集和说话人标记；要求 Apple Silicon，不支持 Intel Mac。美区页面显示一次购买 7.99 美元，无订阅；工具专注转写，不自动提供 AI 摘要。",
+      "quotes": [
+        "Requires Apple Silicon—Intel Macs are not supported.",
+        "No subscription."
+      ],
+      "coverage_note": "开发者产品说明，不是独立准确率或隐私审计。美区页面价格不是中国区到手价；一次购买不等于免费试用，且转写不等于完整纪要。"
+    },
+    {
+      "key": "time-notion-workflow",
+      "case_id": "time",
+      "title": "Notion AI 会议纪要可触发后续工作流，减少会后重复整理",
+      "original_title": "AI Meeting Notes can now trigger Custom Agents",
+      "source": "Notion 官方发布",
+      "url": "https://www.notion.com/releases/2026-07-31",
+      "published_date": "2026-07-31",
+      "source_verified_date": "2026-10-13",
+      "source_role": "会后整理功能公告",
+      "facets": [
+        "workflow",
+        "meeting_notes"
+      ],
+      "summary": "Notion 宣布会议纪要完成后可触发 Custom Agents，更新项目状态、生成回顾或工单。需先配置触发器；功能公告不能证明普通用户已具备相应套餐，也不能证明实际节省多少时间。",
+      "quotes": [
+        "right after an AI Meeting Note is finished.",
+        "Meeting note summarized"
+      ],
+      "coverage_note": "只归档会后触发器公告，不代表已配置用户工作区；不执行其中的 Slack、邮件或工单操作。"
+    },
+    {
+      "key": "time-notion-conditions",
+      "case_id": "time",
+      "title": "Notion AI 会议纪要使用条件：付费套餐、录音权限与同意",
+      "original_title": "Take AI meeting notes in Notion",
+      "source": "Notion 官方帮助",
+      "url": "https://www.notion.com/help/ai-meeting-notes",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "订阅与录音边界",
+      "facets": [
+        "cost",
+        "permission",
+        "meeting_notes"
+      ],
+      "summary": "Notion 说明 AI Meeting Notes 需要 Business 或 Enterprise 套餐。桌面端可采集麦克风和系统音频，浏览器或手机的采集能力不同；开始录制前需获得参会者同意。功能可转写、提炼重点与行动项，但不能假定用户已有套餐和权限。",
+      "quotes": [
+        "Business or Enterprise Plan",
+        "everyone in the meeting has given their consent"
+      ],
+      "coverage_note": "只摘录套餐和同意条件，不能把所有平台的录音能力视为相同，也不把工具自述当成准确率实测。"
+    },
+    {
+      "key": "time-meet-in-person",
+      "case_id": "time",
+      "title": "Google Meet 将 AI 会议纪要扩展到线下会议，仍有套餐条件",
+      "original_title": "Take Notes for me for in-person meetings is now available",
+      "source": "Google Workspace 官方更新",
+      "url": "https://workspaceupdates.googleblog.com/2026/08/take-notes-with-me-for-in-person-meetings-is-now-available.html",
+      "published_date": "2026-08-13",
+      "source_verified_date": "2026-10-13",
+      "source_role": "会议纪要备选与开放范围",
+      "facets": [
+        "alternative",
+        "meeting_notes",
+        "cost",
+        "rollout"
+      ],
+      "summary": "Google 宣布可从 Meet 网页或手机开启线下会议记笔记，生成摘要、行动项和转写到 Google Docs。公告列出 Workspace Business Standard、Plus 等符合资格的套餐；不同客户端分批开放。普通个人账号、语言支持及用户现有权限仍需核对。",
+      "quotes": [
+        "structured notes summary, action items, and complete transcript",
+        "Business Standard, and Plus"
+      ],
+      "coverage_note": "8 月 13 日是公告发布日期，Android 的 8 月 11 日为另一个开放时间。未验证用户账号或语言，不宣称所有 Meet 用户均可使用。"
+    },
+    {
+      "key": "time-office-copilot",
+      "case_id": "time",
+      "title": "Copilot 集成 Word、Excel 和 PowerPoint，Office 新体验分批开放",
+      "original_title": "New Microsoft Copilot Brings Home, Code, and Autopilot Together",
+      "source": "Microsoft 官方新闻",
+      "url": "https://news.microsoft.com/source/emea/2026/09/new-microsoft-copilot-brings-home-code-and-autopilot-together/",
+      "published_date": "2026-09-25",
+      "source_verified_date": "2026-10-13",
+      "source_role": "PPT 办公功能与预览限制",
+      "facets": [
+        "presentation",
+        "rollout",
+        "account"
+      ],
+      "summary": "微软介绍 Home、Code 和 Autopilot 新体验，并将 Word、Excel、PowerPoint 集成到 Copilot。Home、Code 先向 Frontier 项目逐步开放，Autopilot 仍为私人预览。发布公告不能证明普通个人账号或用户的 Mac 已可使用全部新能力。",
+      "quotes": [
+        "Word, Excel, and PowerPoint directly into Copilot",
+        "rolled out gradually"
+      ],
+      "coverage_note": "只整理办公入口和预览节奏；不同功能、账号和客户端的开放状态不能混为一谈，未提供独立办公效率实测。"
+    },
+    {
+      "key": "time-notebooklm-slides",
+      "case_id": "time",
+      "title": "NotebookLM 可从笔记生成幻灯片，PPT 成稿仍需核对内容和格式",
+      "original_title": "8 ways to make the most out of Slide Decks in NotebookLM",
+      "source": "Google 官方博客",
+      "url": "https://blog.google/innovation-and-ai/models-and-research/google-labs/8-ways-to-make-the-most-out-of-slide-decks-in-notebooklm/",
+      "published_date": "2025-12-16",
+      "source_verified_date": "2026-10-13",
+      "source_role": "已有幻灯片工具与实际用法",
+      "facets": [
+        "presentation",
+        "alternative",
+        "workflow"
+      ],
+      "summary": "Google 的 NotebookLM 官方用法介绍从粗略笔记或已有 Slides 草稿生成幻灯片组。适合比较资料整理到演示文稿的路径，但生成内容、可编辑程度、导出格式和用户账号限制仍需核对；不把这篇既有指南当成当天的新发布。",
+      "quotes": [
+        "create a note in NotebookLM",
+        "build a full slide deck instantly."
+      ],
+      "coverage_note": "这是 2025 年 12 月的已有功能背景。短摘录未覆盖当前套餐或导出格式，不声称已节省时间或已生成可直接交付的 PPT。"
+    },
+    {
+      "key": "money-china-catalog",
+      "case_id": "money",
+      "title": "Surface Laptop Ultra AI 笔记本已出现在微软中国商城配置页",
+      "original_title": "购买 Surface Laptop Ultra - 价格、规格、Windows",
+      "source": "微软中国官方商城",
+      "url": "https://www.microsoftstore.com.cn/configure/surface-laptop-ultra",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "国内渠道目录与价格缺口",
+      "facets": [
+        "domestic_channel",
+        "availability",
+        "price"
+      ],
+      "summary": "微软中国官方商城已有 Surface Laptop Ultra 配置页，展示 NVIDIA RTX Spark N1X、24GB 统一内存等选项。因此不能继续笼统断言没有国内官方渠道信息。本次页面读取未取得可靠人民币报价，具体供货、配置和到手价需在官方订单页确认。",
+      "quotes": [
+        "Surface Laptop Ultra",
+        "24GB 统一内存"
+      ],
+      "coverage_note": "当前商城页面未标注可靠发布日期。页面存在不等于已收到实机，动态报价未被完整读取，不补造国内价格。"
+    },
+    {
+      "key": "money-china-battery",
+      "case_id": "money",
+      "title": "Surface Ultra 商用 AI 笔记本中国页面列出供货日与最长 15 小时续航",
+      "original_title": "购买搭载 NVIDIA RTX Spark 与 Blackwell RTX GPU 的 Surface Laptop Ultra 商用版 AI PC – 微软官方商城",
+      "source": "微软中国官方商城",
+      "url": "https://www.microsoftstore.com.cn/surface/surface-laptop-ultra-for-business",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "国内供货日期与厂商续航口径",
+      "facets": [
+        "domestic_channel",
+        "availability",
+        "battery",
+        "manufacturer_claim"
+      ],
+      "summary": "中国官方商用版页面标明 2026 年 10 月 16 日起陆续发货，宣称电池续航最长 15 小时。截至取材日供货日尚未到；最长续航是厂商口径，不能等同于持续视频会议续航或独立实测。商用与消费配置、价格也须分别确认。",
+      "quotes": [
+        "2026年10月16日起陆续发货",
+        "电池续航更长达 15 小时"
+      ],
+      "coverage_note": "这是商用版本信息，不能套用到所有消费配置。本次摘录未覆盖完整测试方法，也不证明现在即可收货。"
+    },
+    {
+      "key": "money-arm-compatibility",
+      "case_id": "money",
+      "title": "Windows Arm 笔记本兼容性说明：应用模拟不等于所有驱动都可用",
+      "original_title": "Windows Arm-based PCs FAQ",
+      "source": "Microsoft 官方支持",
+      "url": "https://support.microsoft.com/en-au/windows/experience/platform-variants/windows-arm-based-pcs-faq",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "办公软件与外设兼容条件",
+      "facets": [
+        "compatibility",
+        "drivers",
+        "practical_use"
+      ],
+      "summary": "微软区分 Windows 11 Arm 的应用模拟与驱动兼容。打印机等外设，以及依赖驱动的软件，需要内置或厂商提供的 Arm64 驱动；驱动不工作时，相关软件或硬件也可能不能完整工作。用户常用会议软件、VPN、打印机仍需逐项核对。",
+      "quotes": [
+        "If a driver doesn't work",
+        "the app or hardware that relies on it doesn't work either"
+      ],
+      "coverage_note": "是当前平台条件，不是对用户现有软件逐项实测，更不是断言所有 Arm 电脑都不兼容。"
+    },
+    {
+      "key": "money-copilot-difference",
+      "case_id": "money",
+      "title": "AI 笔记本选购需区分 Copilot 软件与 Copilot+ PC 硬件能力",
+      "original_title": "Learn more about Copilot+ PCs and Windows 11 PCs from Surface",
+      "source": "Microsoft 官方支持",
+      "url": "https://support.microsoft.com/en-us/surface/drivers-firmware/learn-more-about-copilot-pcs-and-windows-11-pcs-from-surface",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "软件能力与硬件门槛",
+      "facets": [
+        "hardware",
+        "software",
+        "practical_use"
+      ],
+      "summary": "微软将 Copilot 数字助手与 Copilot+ PC 硬件类别分别说明。超过 40 TOPS 的 NPU 门槛属于 Copilot+ PC 硬件类别，不能套给 Copilot 数字助手或所有 AI 功能。算力标签不能证明文档与视频会议收益；每个具体功能是否需要硬件、订阅或特定系统仍应分别核对。",
+      "quotes": [
+        "Microsoft Copilot is an AI-powered digital assistant",
+        "40 trillion operations per second"
+      ],
+      "coverage_note": "只摘录概念和硬件门槛，不把 Copilot 数字助手等同于全部 Office 订阅功能，也不推断每个旧设备能用全部新功能。"
+    },
+    {
+      "key": "money-older-independent-review",
+      "case_id": "money",
+      "title": "Surface Laptop 13 AI 笔记本旧款实测：续航较长，屏幕与性能有取舍",
+      "original_title": "Superfluous and too expensive? - Microsoft Surface Laptop 13 with the Snapdragon X Plus review",
+      "source": "Notebookcheck",
+      "url": "https://www.notebookcheck.net/Superfluous-and-too-expensive-Microsoft-Surface-Laptop-13-with-the-Snapdragon-X-Plus-review.1031698.0.html",
+      "published_date": "2025-06-06",
+      "source_verified_date": "2026-10-13",
+      "source_role": "独立实测（明确旧型号）",
+      "facets": [
+        "independent_test",
+        "battery",
+        "display",
+        "model_scope"
+      ],
+      "summary": "Notebookcheck 对 2025 年 Surface Laptop 13 的实测认为日常性能够用、较安静、续航较长，同时指出屏幕为 60Hz、图形性能和价值有取舍。可展示真实使用指标与宣传算力的区别；这不是 2026 年 Laptop Ultra 的测试，旧价格也不是今天国内报价。",
+      "quotes": [
+        "long battery runtimes.",
+        "60 Hz."
+      ],
+      "coverage_note": "明确保留 2025 年日期和 Snapdragon X Plus 旧型号，不能外推新 Ultra 的续航、兼容或价格。"
+    },
+    {
+      "key": "trust-september-photos",
+      "case_id": "trust",
+      "title": "Google Photos 更新编辑工具：普通滤镜与 Gemini 功能开放范围不同",
+      "original_title": "5 Google Photos updates to make the most of summer memories.",
+      "source": "Google 官方博客",
+      "url": "https://blog.google/products-and-platforms/products/photos/google-photos-updates/",
+      "published_date": "2026-09-24",
+      "source_verified_date": "2026-10-13",
+      "source_role": "近期功能公告与地区、订阅条件",
+      "facets": [
+        "feature",
+        "region",
+        "subscription",
+        "privacy_scope"
+      ],
+      "summary": "Google 公告区分不同 Photos 更新：部分 Android 编辑工具全球开放，Photos in Gemini Spark 面向符合资格的美国 Google AI Pro、Ultra 订阅者。不能把普通滤镜更新当成所有家庭照片自动进入 Gemini，也不能将一个功能的开放范围套到其他功能。",
+      "quotes": [
+        "Google AI Pro and Ultra subscribers in the U.S.",
+        "on Android globally."
+      ],
+      "coverage_note": "同一公告中各功能的地区与平台条件不同；短摘录不能证明已连接用户账号，也不是隐私政策变更公告。"
+    },
+    {
+      "key": "trust-storage-quota",
+      "case_id": "trust",
+      "title": "Google Photos 存储说明：满额后的备份与长期保留规则",
+      "original_title": "About your Google Photos activity & storage",
+      "source": "Google Photos 官方帮助",
+      "url": "https://support.google.com/photos/answer/10100180?hl=en",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "存储额度与需要核对的个人状态",
+      "facets": [
+        "storage",
+        "backup",
+        "retention",
+        "account_condition"
+      ],
+      "summary": "Google 说明存储空间耗尽时不能再保存新照片或视频；超额持续两年时，内容可能被删除，另有长期不活跃规则和通知机制。这是现行条件，不是用户今天即将丢失照片的证据。剩余额度、是否持续超额及会员状态需由用户查看账号。",
+      "quotes": [
+        "you won't be able to save new photos and videos.",
+        "out of storage for 2 years"
+      ],
+      "coverage_note": "当前帮助未标注可靠发布日期；没有读取家庭照片或存储账号，不断言用户已经满额，也不把可能删除写成即时删除。"
+    },
+    {
+      "key": "trust-family-storage",
+      "case_id": "trust",
+      "title": "Google Photos 家庭共用 Google One 存储，不等于自动共享照片",
+      "original_title": "Start or stop sharing with your family",
+      "source": "Google One 官方帮助",
+      "url": "https://support.google.com/googleone/answer/9004015?hl=en",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "家庭共享额度与文件可见性",
+      "facets": [
+        "family",
+        "storage",
+        "privacy_scope"
+      ],
+      "summary": "Google One 家庭共享说明区分共享存储额度和文件访问权。家庭成员先使用个人存储，再使用共享额度；他人不会因加入家庭组就自动获得文件访问权，直接分享文件是另一种操作。共用空间不等于相册或链接分享权限。",
+      "quotes": [
+        "won’t have access to your files unless you share them directly."
+      ],
+      "coverage_note": "只涉及家庭存储和文件访问规则，不证明特定共享相册、链接或合作伙伴共享设置当前安全。"
+    },
+    {
+      "key": "trust-regional-price",
+      "case_id": "trust",
+      "title": "Google Photos 存储订阅相关：Google One 仅在列明地区调整价格",
+      "original_title": "Google One price update: July 2026",
+      "source": "Google One 官方帮助",
+      "url": "https://support.google.com/googleone/answer/17251824?hl=en",
+      "published_date": null,
+      "source_verified_date": "2026-10-13",
+      "source_role": "费用调整与账单地区边界",
+      "facets": [
+        "cost",
+        "region",
+        "subscription",
+        "billing"
+      ],
+      "summary": "Google One 官方通知从 2026 年 7 月 27 日开始在阿尔及利亚、埃及、尼日利亚、巴基斯坦、土耳其调整部分存储套餐价格，老用户的生效日依支付渠道不同。未列出的地区不能据此认定涨价；用户还需核对实际账单地区、套餐和续订通知。",
+      "quotes": [
+        "Effective July 27, 2026",
+        "select countries and regions."
+      ],
+      "coverage_note": "7 月 27 日是调整生效日，不捏造成网页发布日期。没有用户账单资料，也不推断国内用户或所有 Google One 订阅都会涨价。"
+    }
+  ]
+}

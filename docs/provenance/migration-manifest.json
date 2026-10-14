@@ -1,0 +1,41 @@
+{
+  "migrated_on": "2026-10-14",
+  "source_root": "D:\\Hackathon_agenticapp\\workspace\\cfaw-news-agent-final",
+  "target_root": "D:\\agent_project\\cfaw-news",
+  "copied_assets": [
+    {
+      "source": "src/data/ingestion/demo_news.json",
+      "destination": "data/archive/articles.json",
+      "sha256": "8e8f3f5ade820fc00f365abef7717c9d66dfa31a9323c30b7c13b6e0f31e18ef",
+      "bytes": 30555
+    },
+    {
+      "source": "src/data/ingestion/sources.json",
+      "destination": "data/sources.json",
+      "sha256": "aea897d457fef1ef79c9108a00091160d2553817ef9e7e03b9f532617b63bce9",
+      "bytes": 7971
+    },
+    {
+      "source": "bundle/assets/icon.svg",
+      "destination": "frontend/public/icon.svg",
+      "sha256": "db6f21250913814f722b023f87d609a05771d9f264aecbb0194736ba0f4a8f0f",
+      "bytes": 690
+    },
+    {
+      "source": "LICENSE",
+      "destination": "LICENSE",
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "bytes": 11358
+    },
+    {
+      "source": "NOTICE",
+      "destination": "docs/provenance/legacy-NOTICE.txt",
+      "sha256": "3e34191191e8281b7640382d71543f01f26f6c510144da66b9cd4855da1ee019",
+      "bytes": 2611
+    }
+  ],
+  "private_records_migrated": false,
+  "credentials_migrated": false,
+  "legacy_runtime_required": false,
+  "live_sources_reverified": false
+}

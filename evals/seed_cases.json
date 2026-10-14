@@ -1,0 +1,9 @@
+{
+  "dataset_revision": "seed-sanity-v1",
+  "scope": "开发者手选的部分相关条目；不是独立测试集或穷尽相关性标注。",
+  "cases": [
+    {"id": "mac-meeting", "name": "Mac 会议转写", "purpose": "每周两小时，核实中文会议纪要与幻灯片工具", "keywords": ["Mac", "会议", "转写"], "relevant_ids": ["archive:time-apple-notes", "archive:time-whisper-notes", "archive:time-foresight", "archive:time-notion-workflow"]},
+    {"id": "laptop", "name": "AI 笔记本", "purpose": "关注 Surface 国内价格和应用兼容性", "keywords": ["Surface", "笔记本", "国行", "价格"], "relevant_ids": ["archive:money-launch", "archive:money-china-catalog", "archive:money-arm-compatibility"]},
+    {"id": "photos", "name": "Google Photos 隐私与存储", "purpose": "家人照片的地区、套餐及存储条件", "keywords": ["Google Photos", "存储", "照片"], "relevant_ids": ["archive:trust-controls", "archive:trust-storage-quota", "archive:trust-family-storage", "archive:trust-privacy"]}
+  ]
+}

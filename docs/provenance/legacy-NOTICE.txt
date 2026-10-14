@@ -1,0 +1,51 @@
+CFAW News
+Copyright 2026 The CFAW News Contributors
+
+This project is licensed under the Apache License, Version 2.0 (see LICENSE).
+Dependencies and third-party data retain their respective licenses.
+
+Upstream attribution
+--------------------
+Derived from OctoSense apps/news at d1596d739e187c689ada4b59093ca8086c23bbbe.
+OctoSense: Copyright 2026 The OctoSense Authors.
+The application extends the news UI with user-confirmed interests and
+schedules, retrieval, evidence-based Agent analysis, local records,
+article reading, weather and Windows host integration.
+
+Makepad-derived portions remain Copyright (c) 2023 Makepad B.V. under the
+MIT License (see LICENSES/Makepad-MIT.txt). The original OctoSense notice
+also credits the Omarchy wallpaper to David Heinemeier Hansson under MIT
+(https://github.com/omacom/omarchy). The window-manager and wallpaper assets
+mentioned in that notice are not included in this application.
+
+The weather layout references Makepad apps/weather at
+6cf03859630761f5cb99ce7fcdfd8c30475d9ab8. Its Rust WeatherView and assets are
+not bundled here; the application implements the layout and condition
+artwork in OctoScript through host capabilities.
+
+News and public source catalog
+------------------------------
+News feed choices reference World Monitor (https://github.com/koala73/worldmonitor),
+including src/config/feeds.ts and server/worldmonitor/news/v1/_feeds.ts.
+No World Monitor implementation code is incorporated.
+
+News titles, source summaries, article excerpts, full readable source
+content and images remain attributable to their original publishers.
+The application retains source links and distinguishes source content
+from Agent-generated summaries. The code license grants no rights to
+third-party news content. Material in demonstration screenshots retains
+the original source attribution visible in the application.
+
+Weather and other signal sources
+--------------------------------
+Forecasts use Open-Meteo (https://open-meteo.com/), with data under CC BY 4.0;
+the free API service has separate non-commercial usage conditions.
+The application retains forecast source and retrieval metadata.
+
+Calendar data references NateScarlet/holiday-cn
+(https://github.com/NateScarlet/holiday-cn), Copyright (c) 2019 NateScarlet,
+under the MIT License (see LICENSES/NateScarlet-holiday-cn-MIT.txt).
+Exchange-rate data references fawazahmed0/exchange-api
+(https://github.com/fawazahmed0/exchange-api); it is not central bank data.
+Calendar and exchange-rate modules are retained as source dependencies;
+no development fixtures or user runtime records are included in the ZIP.
