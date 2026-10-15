@@ -16,8 +16,12 @@ class Settings(BaseSettings):
     llm_api_key: SecretStr = SecretStr("")
     llm_model: str = ""
     llm_timeout_seconds: float = Field(default=90, ge=1, le=300)
+    llm_max_tokens: int = Field(default=2200, ge=256, le=65536)
+    llm_thinking: Literal["provider_default", "enabled", "disabled"] = "provider_default"
     max_concurrent_checks: int = Field(default=2, ge=1, le=8)
     demo_seed: bool = True
+    news_auto_refresh: bool = True
+    news_media_fetch: bool = True
     root: Path = ROOT
 
     @model_validator(mode="after")

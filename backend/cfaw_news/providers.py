@@ -117,6 +117,16 @@ class CompatibleProvider:
         ]
         if sum(len(m["content"].encode()) for m in messages) > 64000:
             raise ValueError("本轮输入超过 64KB 上限，请缩小范围")
+        request_body = {
+            "model": self.settings.llm_model,
+            "messages": messages,
+            "temperature": 0,
+            "max_tokens": self.settings.llm_max_tokens,
+            "response_format": {"type": "json_object"},
+        }
+        # Omit provider-specific options unless explicitly configured.
+        if self.settings.llm_thinking != "provider_default":
+            request_body["thinking"] = {"type": self.settings.llm_thinking}
         usage = []
         async with httpx.AsyncClient(
             timeout=self.settings.llm_timeout_seconds, trust_env=False
@@ -129,13 +139,7 @@ class CompatibleProvider:
                             "Authorization": "Bearer "
                             + self.settings.llm_api_key.get_secret_value()
                         },
-                        json={
-                            "model": self.settings.llm_model,
-                            "messages": messages,
-                            "temperature": 0,
-                            "max_tokens": 2200,
-                            "response_format": {"type": "json_object"},
-                        },
+                        json=request_body,
                     )
                     response.raise_for_status()
                 except httpx.HTTPStatusError as exc:

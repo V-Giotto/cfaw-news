@@ -44,6 +44,12 @@ class Article(Base):
     data: Mapped[dict] = mapped_column(JSON)
 
 
+class ArticleMedia(Base):
+    __tablename__ = "article_media"
+    article_id: Mapped[str] = mapped_column(ForeignKey("articles.id"), primary_key=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class Run(Base):
     __tablename__ = "runs"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=identifier)
@@ -99,6 +105,12 @@ class Meta(Base):
     __tablename__ = "meta"
     key: Mapped[str] = mapped_column(String, primary_key=True)
     value: Mapped[str] = mapped_column(String)
+
+
+class SourceState(Base):
+    __tablename__ = "source_states"
+    source_id: Mapped[str] = mapped_column(String, primary_key=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
 class Database:

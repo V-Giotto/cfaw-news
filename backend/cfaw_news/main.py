@@ -2,7 +2,7 @@ import asyncio
 import json
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, HTTPException, Request
+from fastapi import FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -12,6 +12,7 @@ from . import __version__
 from .config import Settings
 from .database import (
     Article,
+    ArticleMedia,
     Database,
     Decision,
     Goal,
@@ -23,7 +24,8 @@ from .database import (
     run_dict,
     utcnow,
 )
-from .ingestion import catalog, refresh
+from .ingestion import NewsIngestor
+from .media import MediaCache
 from .schemas import ApprovalInput, CheckInput, DecisionInput, GoalInput, GoalUpdate, RefreshInput
 from .seed import seed
 from .service import TERMINAL, RunEngine, approve, build_run, require, schedule_dict
@@ -33,6 +35,8 @@ def create_app(settings: Settings | None = None, provider=None):
     settings = settings or Settings()
     database = Database(settings.database_url)
     engine = RunEngine(database, settings, provider)
+    news = NewsIngestor(database, settings.root)
+    media = MediaCache(database, settings.root / ".local/media", enabled=settings.news_media_fetch)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -44,9 +48,16 @@ def create_app(settings: Settings | None = None, provider=None):
                 run.error = "上次服务进程中断，本轮未完成；请重新检查"
                 run.finished_at = utcnow()
                 add_event(session, run.id, "failed", run.error)
-        yield
-        await engine.close()
-        database.engine.dispose()
+        if settings.news_auto_refresh:
+            news.start()
+        media.start()
+        try:
+            yield
+        finally:
+            await media.close()
+            await news.close()
+            await engine.close()
+            database.engine.dispose()
 
     app = FastAPI(
         title="CFAW News",
@@ -56,6 +67,8 @@ def create_app(settings: Settings | None = None, provider=None):
     )
     app.state.database = database
     app.state.run_engine = engine
+    app.state.news_ingestor = news
+    app.state.media_cache = media
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -84,6 +97,7 @@ def create_app(settings: Settings | None = None, provider=None):
             "counts": counts,
             "scope": "local-single-user",
             "archive_date": "2026-10-13",
+            "news_auto_refresh": settings.news_auto_refresh,
         }
 
     @app.get("/api/goals")
@@ -253,30 +267,57 @@ def create_app(settings: Settings | None = None, provider=None):
         return {"schedule": value, "created": created}
 
     @app.get("/api/articles")
-    async def articles(q: str = "", origin: str = "all"):
+    async def articles(
+        q: str = "",
+        origin: str = "all",
+        source_id: str = "",
+        category: str = "",
+        limit: int = Query(default=200, ge=1, le=500),
+        offset: int = Query(default=0, ge=0),
+    ):
         with database.session() as session:
             rows = [row.data for row in session.scalars(select(Article))]
-        return sorted(
+        result = sorted(
             [
                 row
                 for row in rows
                 if (origin == "all" or row["origin"] == origin)
+                and (not source_id or row.get("source_id") == source_id)
+                and (not category or row.get("category") == category)
                 and q.lower() in (row["title"] + row["summary"] + row["source"]).lower()
             ],
-            key=lambda row: row.get("published_at") or "",
+            key=lambda row: (
+                row.get("published_at") or row.get("submitted_at") or row.get("updated_at") or "",
+                row["id"],
+            ),
             reverse=True,
+        )[offset : offset + limit]
+        return media.decorate(result)
+
+    @app.get("/api/articles/{article_id}/image")
+    async def article_image(article_id: str):
+        with database.session() as session:
+            entry = session.get(ArticleMedia, article_id)
+            data = dict(entry.data) if entry else {}
+        path = media.image_file(data)
+        if not path:
+            raise HTTPException(404, "该条目暂无可用配图")
+        return FileResponse(
+            path,
+            media_type=data["content_type"],
+            headers={"Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff"},
         )
 
     @app.get("/api/sources")
     async def sources():
-        return catalog(settings.root)["sources"]
+        return news.list_sources()
 
     @app.post("/api/sources/refresh")
     async def refresh_sources(body: RefreshInput):
-        valid = {source["id"] for source in catalog(settings.root)["sources"]}
+        valid = set(news.sources)
         if any(source_id not in valid for source_id in body.source_ids):
             raise HTTPException(422, "只允许刷新目录内的来源")
-        return {"results": await refresh(database, settings.root, body.source_ids)}
+        return {"results": await news.refresh(body.source_ids)}
 
     @app.get("/api/schedules")
     async def schedules():

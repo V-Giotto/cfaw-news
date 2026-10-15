@@ -26,6 +26,8 @@ def settings(tmp_path):
         root=ROOT,
         demo_seed=True,
         llm_mode="baseline",
+        news_auto_refresh=False,
+        news_media_fetch=False,
     )
 
 
@@ -283,12 +285,70 @@ def test_compatible_adapter_repairs_invalid_references_once(client, settings, mo
             "llm_mode": "compatible",
             "llm_base_url": "https://model.example/v1",
             "llm_model": "test-model",
+            "llm_thinking": "disabled",
+            "llm_max_tokens": 4096,
         }
     )
     result, metrics = asyncio.run(CompatibleProvider(configured).judge(snapshot))
     assert result.citations
     assert metrics["repair_count"] == 1 and len(calls) == 2
     assert len(metrics["token_usage"]) == 2
+    for request in calls:
+        body = json.loads(request.content)
+        assert body["thinking"] == {"type": "disabled"}
+        assert body["max_tokens"] == 4096
+    assert len(json.loads(calls[1].content)["messages"]) == 3
+
+
+@pytest.mark.parametrize("thinking", ["provider_default", "enabled", "disabled"])
+def test_compatible_adapter_thinking_modes(client, settings, monkeypatch, thinking):
+    snapshot = check(client)["snapshot"]
+    good = asyncio.run(BaselineProvider().judge(snapshot))[0].model_dump()
+    calls = []
+
+    def handler(request):
+        calls.append(request)
+        return httpx.Response(
+            200,
+            json={
+                "choices": [
+                    {
+                        "message": {
+                            "content": json.dumps(good),
+                            "reasoning_content": "Mock reasoning is not a final JSON answer.",
+                        }
+                    }
+                ],
+            },
+        )
+
+    original_client = httpx.AsyncClient
+    monkeypatch.setattr(
+        httpx,
+        "AsyncClient",
+        lambda **kw: original_client(**kw, transport=httpx.MockTransport(handler)),
+    )
+    configured = settings.model_copy(
+        update={
+            "llm_mode": "compatible",
+            "llm_base_url": "https://api.deepseek.com/",
+            "llm_model": "deepseek-flash",
+            "llm_thinking": thinking,
+            "llm_max_tokens": 4096,
+        }
+    )
+    result, metrics = asyncio.run(CompatibleProvider(configured).judge(snapshot))
+    assert result.model_dump() == good
+    assert metrics["repair_count"] == 0 and len(calls) == 1
+    assert str(calls[0].url) == "https://api.deepseek.com/chat/completions"
+    body = json.loads(calls[0].content)
+    assert body["model"] == "deepseek-flash"
+    assert body["max_tokens"] == 4096
+    assert body["response_format"] == {"type": "json_object"}
+    if thinking == "provider_default":
+        assert "thinking" not in body
+    else:
+        assert body["thinking"] == {"type": thinking}
 
 
 def test_invalid_and_unknown_resource_requests_are_explicit(client):

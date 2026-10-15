@@ -1,5 +1,6 @@
 .venv/
 .local/
+/dev-diaries/
 .env
 __pycache__/
 *.py[cod]
