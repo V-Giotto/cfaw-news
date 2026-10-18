@@ -1,13 +1,15 @@
 {
-  "description": "首批实时来源配置；不改写迁移的原始来源目录。",
+  "description": "实时文章与社区来源；优先提供可阅读正文，不改写迁移的原始来源目录。",
   "sources": [
     {"id": "chinanews", "label": "中新网 · 即时新闻", "category": "general", "language": "zh", "kind": "rss", "url": "https://www.chinanews.com.cn/rss/scroll-news.xml", "summary_field": "description", "body_field": "none", "max_items": 30, "interval_seconds": 600},
     {"id": "ithome", "label": "IT之家", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.ithome.com/rss", "summary_field": "description", "body_field": "description", "max_items": 30, "interval_seconds": 600},
     {"id": "36kr", "label": "36氪", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.36kr.com/feed", "summary_field": "description", "body_field": "description", "max_items": 20, "interval_seconds": 600},
     {"id": "solidot", "label": "Solidot", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.solidot.org/index.rss", "summary_field": "description", "body_field": "description", "max_items": 20, "interval_seconds": 900},
-    {"id": "ifanr", "label": "爱范儿", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.ifanr.com/feed", "summary_field": "description", "body_field": "content:encoded", "max_items": 20, "interval_seconds": 900},
+    {"id": "ifanr", "label": "爱范儿", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.ifanr.com/feed", "summary_field": "description", "body_field": "content:encoded", "body_is_full": true, "max_items": 20, "interval_seconds": 900},
     {"id": "geekpark", "label": "极客公园", "category": "tech", "language": "zh", "kind": "rss", "url": "https://www.geekpark.net/rss", "summary_field": "description", "body_field": "description", "max_items": 20, "interval_seconds": 900},
-    {"id": "mit", "label": "MIT Research", "category": "science", "language": "en", "kind": "rss", "url": "https://news.mit.edu/rss/research", "summary_field": "description", "body_field": "content:encoded", "max_items": 20, "interval_seconds": 1800},
-    {"id": "hn", "label": "Hacker News", "category": "developer", "language": "en", "kind": "hn_official", "url": "https://hacker-news.firebaseio.com/v0/newstories.json", "max_items": 20, "interval_seconds": 600}
+    {"id": "mit", "label": "MIT Research", "category": "science", "language": "en", "kind": "rss", "url": "https://news.mit.edu/rss/research", "summary_field": "description", "body_field": "content:encoded", "body_is_full": true, "max_items": 20, "interval_seconds": 1800},
+    {"id": "github-blog", "label": "GitHub Blog", "category": "developer", "language": "en", "kind": "rss", "url": "https://github.blog/feed/", "summary_field": "description", "body_field": "content:encoded", "body_is_full": true, "max_items": 20, "interval_seconds": 900},
+    {"id": "ruanyifeng", "label": "阮一峰的网络日志", "category": "developer", "language": "zh", "kind": "atom", "url": "https://www.ruanyifeng.com/blog/atom.xml", "summary_field": "description", "body_field": "content", "body_is_full": true, "article_https": true, "max_items": 10, "interval_seconds": 1800},
+    {"id": "hn", "label": "Hacker News", "category": "developer", "language": "en", "kind": "hn_official", "url": "https://hacker-news.firebaseio.com/v0/newstories.json", "display_role": "discovery", "max_items": 20, "interval_seconds": 600}
   ]
 }

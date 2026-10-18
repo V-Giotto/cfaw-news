@@ -1,9 +1,10 @@
 import json
 from urllib.parse import urlsplit
 
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
-from .database import Article, Goal, Meta, fingerprint
+from .database import Article, ArticleMedia, ArticleReading, Goal, Meta, fingerprint
+from .following import retire_demo_goals
 
 DEMO_GOALS = [
     {
@@ -38,9 +39,23 @@ def safe_url(url: str) -> str:
     return url if parts.scheme in {"http", "https"} and parts.hostname else ""
 
 
-def seed(database, root, *, demo=True):
-    archive = json.loads((root / "data/archive/articles.json").read_text(encoding="utf-8"))
+def seed(database, root, *, demo=False, include_archive=False):
+    """Goal and archive fixtures are opt-in for isolated tests/evals."""
+    archive = (
+        json.loads((root / "data/archive/articles.json").read_text(encoding="utf-8"))
+        if include_archive else {"articles": []}
+    )
     with database.session.begin() as session:
+        if not demo:
+            retire_demo_goals(session)
+        if not include_archive:
+            # Retire the legacy seed corpus, while leaving immutable run snapshots intact.
+            legacy_ids = select(Article.id).where(
+                Article.origin == "archive", Article.id.startswith("archive:")
+            )
+            session.execute(delete(ArticleMedia).where(ArticleMedia.article_id.in_(legacy_ids)))
+            session.execute(delete(ArticleReading).where(ArticleReading.article_id.in_(legacy_ids)))
+            session.execute(delete(Article).where(Article.id.in_(legacy_ids)))
         for raw in archive["articles"]:
             article_id = f"archive:{raw['key']}"
             if session.get(Article, article_id):

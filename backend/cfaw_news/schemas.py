@@ -83,4 +83,4 @@ class ApprovalInput(StrictModel):
 
 
 class RefreshInput(StrictModel):
-    source_ids: list[str] = Field(min_length=1, max_length=8)
+    source_ids: list[str] = Field(min_length=1, max_length=32)

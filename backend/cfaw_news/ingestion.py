@@ -11,7 +11,8 @@ import feedparser
 import httpx
 from sqlalchemy import select
 
-from .database import Article, SourceState, fingerprint, utcnow
+from .database import Article, ArticleReading, SourceState, fingerprint, utcnow
+from .reading import READING_REVISION, reading_document
 from .seed import safe_url
 
 logger = logging.getLogger(__name__)
@@ -253,6 +254,8 @@ def parse_source(source: dict, body: bytes) -> list[dict]:
     rows = []
     for entry in parsed.entries[: min(source.get("max_items", 20), 60)]:
         url = canonical_url(entry.get("link", ""))
+        if source.get("article_https") and url.startswith("http://"):
+            url = "https://" + url.removeprefix("http://")
         title = plain_text(entry.get("title", ""), 240)
         if not url or not title:
             continue
@@ -284,6 +287,10 @@ def parse_source(source: dict, body: bytes) -> list[dict]:
         )
         # Images decorate the reader; changing one must not invalidate textual evidence.
         rows[-1]["image_url"] = feed_image(entry, url)
+        if source.get("body_is_full") and feed_field(entry, body_field).strip():
+            document = reading_document(feed_field(entry, body_field), url)
+            document["evidence_hash"] = rows[-1]["content_hash"]
+            rows[-1]["_reading"] = document
     if not rows:
         raise ValueError("来源条目没有有效标题或链接")
     return rows
@@ -363,7 +370,9 @@ class NewsIngestor:
             return rows, {}
         # Existing caches need one full fetch to populate the new display metadata.
         validators = (
-            previous.get("validators", {}) if previous.get("image_metadata_version") == 1 else {}
+            previous.get("validators", {})
+            if previous.get("image_metadata_version") == 1
+            and previous.get("reading_metadata_version") == READING_REVISION else {}
         )
         headers = {}
         if validators.get("etag"):
@@ -394,6 +403,7 @@ class NewsIngestor:
                 now = utcnow()
                 with self.database.session.begin() as session:
                     for row in rows or []:
+                        document = row.pop("_reading", None)
                         existing = session.get(Article, row["id"])
                         if existing:
                             first_seen = existing.data.get(
@@ -425,6 +435,15 @@ class NewsIngestor:
                                     data=row,
                                 )
                             )
+                        if document:
+                            session.flush()
+                            cached = session.get(ArticleReading, row["id"])
+                            if cached:
+                                if cached.data.get("images") == document.get("images"):
+                                    document["assets"] = cached.data.get("assets", {})
+                                cached.data = document
+                            else:
+                                session.add(ArticleReading(article_id=row["id"], data=document))
                 count = len(rows) if rows is not None else previous.get("count", 0)
                 state = {
                     "status": "ok",
@@ -441,6 +460,7 @@ class NewsIngestor:
                     "not_modified": rows is None,
                     "validators": validators,
                     "image_metadata_version": 1,
+                    "reading_metadata_version": READING_REVISION,
                     "error": None,
                     "error_code": None,
                 }
@@ -511,7 +531,10 @@ class NewsIngestor:
                         "error_code": "interrupted",
                     },
                 )
-            elif source.get("primary") and state.get("image_metadata_version") != 1:
+            elif source.get("primary") and (
+                state.get("image_metadata_version") != 1
+                or state.get("reading_metadata_version") != READING_REVISION
+            ):
                 # Upgrades must populate display metadata immediately, even when
                 # an older process scheduled its next fetch far into the future.
                 self.save_state(source_id, {**state, "next_refresh_at": utcnow()})

@@ -17,7 +17,7 @@ from .database import (
     goal_dict,
     utcnow,
 )
-from .providers import BaselineProvider, CompatibleProvider, validate_judgment
+from .providers import BaselineProvider, CompatibleProvider, ProviderError, validate_judgment
 from .retrieval import search
 
 TERMINAL = {"completed", "failed", "cancelled", "stale"}
@@ -31,9 +31,21 @@ def require(session, model, value):
     return record
 
 
+def retired_demo_evidence(session, run: Run) -> bool:
+    """Historical seed snapshots remain auditable but cannot become fresh context."""
+    ids = {
+        row["id"] for row in run.snapshot.get("evidence", [])
+        if row.get("origin") == "archive" and row["id"].startswith("archive:")
+    }
+    if not ids:
+        return False
+    remaining = set(session.scalars(select(Article.id).where(Article.id.in_(ids))))
+    return bool(ids - remaining)
+
+
 def build_run(session, goal: Goal, expected_version: int, mode: str) -> Run:
     if goal.version != expected_version or goal.status != "active":
-        raise HTTPException(409, "目标已修改或暂停，请刷新后重试")
+        raise HTTPException(409, "目标已修改、暂停或取消关注，请刷新后重试")
     running = session.scalar(
         select(Run).where(Run.goal_id == goal.id, Run.status.in_(["queued", "running"]))
     )
@@ -42,11 +54,13 @@ def build_run(session, goal: Goal, expected_version: int, mode: str) -> Run:
     rows = [article.data for article in session.scalars(select(Article))]
     candidates = search(goal.data, rows)
     basis = fingerprint(sorted((row["id"], row["content_hash"]) for row in candidates))
-    previous = session.scalar(
-        select(Run)
-        .where(Run.goal_id == goal.id, Run.goal_version == goal.version, Run.status == "completed")
-        .order_by(Run.created_at.desc())
-        .limit(1)
+    previous = next(
+        (run for run in session.scalars(
+            select(Run)
+            .where(Run.goal_id == goal.id, Run.goal_version == goal.version, Run.status == "completed")
+            .order_by(Run.created_at.desc())
+        ) if not retired_demo_evidence(session, run)),
+        None,
     )
     decision = session.scalar(
         select(Decision)
@@ -54,6 +68,8 @@ def build_run(session, goal: Goal, expected_version: int, mode: str) -> Run:
         .order_by(Decision.created_at.desc())
         .limit(1)
     )
+    if decision and retired_demo_evidence(session, session.get(Run, decision.run_id)):
+        decision = None
     snapshot = {
         "goal": goal_dict(goal),
         "evidence": candidates,
@@ -180,9 +196,11 @@ class RunEngine:
             self.tasks[run_id] = task
             task.add_done_callback(lambda _: self.tasks.pop(run_id, None))
 
-    def mark(self, run_id, status, message):
+    def mark(self, run_id, status, message, metrics=None):
         with self.database.session.begin() as session:
             run = session.get(Run, run_id)
+            if run and metrics is not None:
+                run.metrics = metrics
             if run and run.status not in TERMINAL:
                 run.status = status
                 if status in TERMINAL:
@@ -193,6 +211,15 @@ class RunEngine:
 
     async def execute(self, run_id):
         started = time.perf_counter()
+        candidate_count = 0
+
+        def telemetry(metrics):
+            return {
+                **metrics,
+                "elapsed_ms": round((time.perf_counter() - started) * 1000),
+                "candidate_count": candidate_count,
+            }
+
         try:
             async with self.semaphore:
                 with self.database.session.begin() as session:
@@ -207,6 +234,7 @@ class RunEngine:
                         return
                     run.status = "running"
                     snapshot = run.snapshot
+                    candidate_count = len(snapshot["evidence"])
                     add_event(
                         session,
                         run_id,
@@ -217,7 +245,10 @@ class RunEngine:
                         session,
                         run_id,
                         "analysis",
-                        "执行词法基线" if run.mode == "baseline" else "正在请求模型进行语义判断",
+                        "没有候选，本轮跳过模型调用" if not candidate_count else (
+                            "执行词法基线" if run.mode == "baseline"
+                            else "正在请求模型进行语义判断"
+                        ),
                     )
                 if snapshot["evidence"]:
                     result, metrics = await self.provider.judge(snapshot)
@@ -227,6 +258,8 @@ class RunEngine:
                 validate_judgment(result, snapshot)
                 with self.database.session.begin() as session:
                     run = require(session, Run, run_id)
+                    # Retain actual request costs even when publication has become invalid.
+                    run.metrics = telemetry(metrics)
                     if run.cancel_requested or run.status in TERMINAL:
                         return
                     reason = invalidation_reason(session, run)
@@ -251,22 +284,24 @@ class RunEngine:
                     run.result = result.model_dump()
                     run.status = "completed"
                     run.finished_at = utcnow()
-                    run.metrics = {
-                        **metrics,
-                        "elapsed_ms": round((time.perf_counter() - started) * 1000),
-                        "candidate_count": len(snapshot["evidence"]),
-                    }
                     add_event(session, run_id, "completed", "验证完成，结果已保存")
-        except asyncio.CancelledError:
-            self.mark(run_id, "failed", "服务停止，本轮未完成；已完成的历史结果仍可查看")
+        except asyncio.CancelledError as exc:
+            metrics = telemetry(getattr(exc, "metrics", {}))
+            self.mark(
+                run_id, "failed", "服务停止，本轮未完成；已完成的历史结果仍可查看", metrics
+            )
             raise
+        except ProviderError as exc:
+            logger.error("Run %s failed (provider:%s)", run_id, exc.code)
+            self.mark(run_id, "failed", str(exc), telemetry(exc.metrics))
         except Exception as exc:
             logger.error("Run %s failed (%s)", run_id, type(exc).__name__)
             # Never persist response bodies, prompts or credentials from provider exceptions.
             message = (
-                str(exc) if isinstance(exc, ValueError) else "检查失败，请查看服务端日志并重试"
+                "本轮结果未通过校验；请调整条件后重试" if isinstance(exc, ValueError)
+                else "检查失败，请查看服务端日志并重试"
             )
-            self.mark(run_id, "failed", message[:500])
+            self.mark(run_id, "failed", message, telemetry({"error_code": "internal"}))
 
     async def close(self):
         tasks = list(self.tasks.values())

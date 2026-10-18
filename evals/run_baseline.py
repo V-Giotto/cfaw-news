@@ -23,7 +23,7 @@ def main():
     dataset = json.loads((ROOT / "evals/seed_cases.json").read_text("utf-8"))
     database = Database("sqlite:///:memory:")
     database.create()
-    seed(database, ROOT, demo=False)
+    seed(database, ROOT, demo=False, include_archive=True)
     with database.session() as session:
         articles = [row.data for row in session.scalars(select(Article))]
     results = []

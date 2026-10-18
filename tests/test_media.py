@@ -1,10 +1,11 @@
 import asyncio
-import base64
 import copy
+import hashlib
 import json
 import socket
 import ssl
 from datetime import datetime
+from io import BytesIO
 from pathlib import Path
 
 import httpx
@@ -18,6 +19,7 @@ from cfaw_news.media import (
     MEDIA_REVISION,
     OriginTLS,
     PageImages,
+    cover_dimensions,
     image_extension,
     pinned_addresses,
     public_document,
@@ -25,11 +27,16 @@ from cfaw_news.media import (
 )
 from cfaw_news.service import build_run
 from fastapi.testclient import TestClient
+from PIL import Image
 
 ROOT = Path(__file__).resolve().parents[1]
-PNG = base64.b64decode(
-    "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO+jRZkAAAAASUVORK5CYII="
-)
+def png(size=(320, 180)):
+    buffer = BytesIO()
+    Image.new("RGB", size, "#36547a").save(buffer, format="PNG")
+    return buffer.getvalue()
+
+
+PNG = png()
 
 
 @pytest.fixture(autouse=True)
@@ -192,6 +199,98 @@ def test_parser_prefers_share_image_then_article_picture_and_skips_icons():
         "https://publisher.example/article.jpg",
         "https://publisher.example/other.jpg",
     ]
+
+
+@pytest.mark.parametrize("format", ["PNG", "JPEG", "GIF", "WEBP"])
+def test_cover_validation_uses_actual_raster_dimensions(format):
+    buffer = BytesIO()
+    Image.new("RGB", (320, 180), "#36547a").save(buffer, format=format)
+    assert cover_dimensions(buffer.getvalue()) == (320, 180)
+    with pytest.raises(ValueError, match="image_too_small"):
+        cover_dimensions(png((9, 6)))
+    with pytest.raises((ValueError, OSError)):
+        cover_dimensions(PNG[:30])
+
+
+def test_bad_positive_cache_is_not_served_and_can_be_replaced(media_app, cover_documents):
+    client, cache, article = media_app
+    tiny = png((9, 6))
+    filename = hashlib.sha256(tiny).hexdigest() + ".png"
+    cache.root.mkdir(parents=True)
+    (cache.root / filename).write_bytes(tiny)
+    with cache.database.session.begin() as session:
+        session.add(ArticleMedia(article_id=article["id"], data={
+            "filename": filename, "content_type": "image/png", "status": "ready",
+            "page_url": article["original_url"], "feed_image": None,
+            "fetch_revision": MEDIA_REVISION, "retry_at": "2099-01-01T00:00:00+00:00",
+        }))
+    shown = cache.decorate([article])[0]
+    assert shown["image_url"] is None and shown["image_error"] == "invalid_cached_image"
+    assert client.get(f"/api/articles/{article['id']}/image").status_code == 404
+    cache.enabled = True
+    assert cache.decorate([article])[0]["image_status"] == "pending"
+    assert cache.queue.qsize() == 1
+    asyncio.run(cache.process(article))
+    replacement = cache.decorate([article])[0]
+    assert replacement["image_status"] == "ready"
+    assert client.get(replacement["image_url"]).content == PNG
+    with cache.database.session() as session:
+        assert session.get(Article, article["id"]).data == article
+        data = session.get(ArticleMedia, article["id"]).data
+        assert (data["width"], data["height"]) == (320, 180)
+
+
+def test_new_media_revision_rechecks_good_old_cache_without_hiding_it(media_app, cover_documents):
+    _, cache, article = media_app
+    asyncio.run(cache.process(article))
+    with cache.database.session.begin() as session:
+        record = session.get(ArticleMedia, article["id"])
+        record.data = {**record.data, "fetch_revision": MEDIA_REVISION - 1}
+    cache.enabled = True
+    shown = cache.decorate([article])[0]
+    assert shown["image_status"] == "ready" and shown["image_url"]
+    assert cache.queue.qsize() == 1
+    cache.decorate([article])
+    assert cache.queue.qsize() == 1
+
+
+@pytest.mark.parametrize("has_photo", [False, True])
+@pytest.mark.parametrize("body_class", ["left_zw", "tuji_current_img"])
+def test_chinanews_selects_body_photo_instead_of_navigation_or_recommendations(media_app, monkeypatch, has_photo, body_class):
+    _, cache, article = media_app
+    article = {**article, "original_url": "https://www.chinanews.com.cn/sh/2026/10-18/10716877.shtml"}
+    photo = '<img src="//i2.chinanews.com.cn/photos/story.jpg">' if has_photo else ""
+    markup = '<header><img src="/toparr.png"><img src="/large-banner.png"></header><div class="' + body_class + '"><p>Actual source text</p>' + photo + '</div><aside><img src="/other-story.jpg"></aside>'
+    calls = []
+
+    async def read(url, *, image=False, referer=""):
+        calls.append((url, image))
+        if image:
+            assert url == "https://i2.chinanews.com.cn/photos/story.jpg"
+            return url, "image/png", PNG
+        return url, "text/html", markup.encode()
+
+    monkeypatch.setattr("cfaw_news.media.public_document", read)
+    asyncio.run(cache.process(article))
+    shown = cache.decorate([article])[0]
+    assert shown["image_status"] == ("ready" if has_photo else "no_image")
+    assert len(calls) == (2 if has_photo else 1)
+    assert not any("toparr" in url or "banner" in url or "other-story" in url for url, _ in calls)
+
+
+def test_missing_chinanews_body_does_not_use_large_unrelated_images(media_app, monkeypatch):
+    _, cache, article = media_app
+    article = {**article, "original_url": "https://www.chinanews.com.cn/test.shtml"}
+    calls = []
+
+    async def read(url, **kwargs):
+        calls.append(url)
+        return url, "text/html", b'<meta property="og:image" content="/advertisement.jpg"><img src="/recommendation.jpg">'
+
+    monkeypatch.setattr("cfaw_news.media.public_document", read)
+    asyncio.run(cache.process(article))
+    assert cache.decorate([article])[0]["image_status"] == "unavailable"
+    assert len(calls) == 1
 
 
 @pytest.mark.parametrize("body", [b"<svg></svg>", b"<script>bad()</script>", b"not a photo"])

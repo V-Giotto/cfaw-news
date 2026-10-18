@@ -50,6 +50,12 @@ class ArticleMedia(Base):
     data: Mapped[dict] = mapped_column(JSON, default=dict)
 
 
+class ArticleReading(Base):
+    __tablename__ = "article_reading"
+    article_id: Mapped[str] = mapped_column(ForeignKey("articles.id"), primary_key=True)
+    data: Mapped[dict] = mapped_column(JSON, default=dict)
+
+
 class Run(Base):
     __tablename__ = "runs"
     id: Mapped[str] = mapped_column(String, primary_key=True, default=identifier)

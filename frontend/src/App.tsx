@@ -1,20 +1,20 @@
 import { useCallback, useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { api, post, type Article, type Config, type Goal, type GoalInput, type Run, type Schedule, type TaskEvent } from './api'
-import NewsLibrary, { articleTime, newsTime } from './NewsLibrary'
+import NewsLibrary from './NewsLibrary'
+import ArticleReader from './ArticleReader'
+import GoalWorkspace from './GoalWorkspace'
+import { CalendarView, HistoryView } from './ActivityPages'
 import Icon from './Icon'
 
 type Page = 'workspace' | 'library' | 'calendar' | 'history'
 const terminal = new Set(['completed', 'failed', 'cancelled', 'stale'])
-const statusText: Record<string, string> = { queued: '排队中', running: '检查中', completed: '已保存', failed: '检查失败', cancelled: '已取消', stale: '目标或依据已变更' }
-const outcomeText: Record<string, string> = { update: '有相关进展', no_change: '继续观察', insufficient_evidence: '证据不足', needs_review: '候选待核实' }
 const decisions: Record<string, string> = { watch: '继续观察', handled: '已处理', dismissed: '不采纳' }
-const time = (date: string) => new Date(date).toLocaleString('zh-CN', { month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit' })
 
-function Modal({ title, close, children }: { title: string; close: () => void; children: ReactNode }) {
+function Modal({ title, close, children, reader = false }: { title: string; close: () => void; children: ReactNode; reader?: boolean }) {
   const ref = useRef<HTMLDialogElement>(null)
   useEffect(() => { ref.current?.showModal(); return () => ref.current?.close() }, [])
-  return <dialog ref={ref} className="modal" onCancel={close} aria-label={title}>
-    <div className="modal-head"><h2>{title}</h2><button className="icon-button" onClick={close} aria-label="关闭"><Icon name="close"/></button></div>
+  return <dialog ref={ref} className={reader ? 'modal reader-dialog' : 'modal'} onCancel={close} aria-label={title}>
+    {!reader && <div className="modal-head"><h2>{title}</h2><button className="icon-button" onClick={close} aria-label="关闭"><Icon name="close"/></button></div>}
     {children}
   </dialog>
 }
@@ -47,18 +47,23 @@ function GoalForm({ goal, close, saved }: { goal?: Goal; close: () => void; save
   </Modal>
 }
 
-function EvidenceModal({ article, close }: { article: Article; close: () => void }) {
-  return <Modal title="核对证据" close={close}>
-    <div className="source-line">{article.source} · {articleTime(article)}</div>
-    <h3 className="evidence-title">{article.title}</h3>
-    <p className="caption">{article.origin === 'archive' ? '迁移的历史归档，未在本轮联网复核。' : '本地保存的来源条目。'}采集于 {newsTime(article.captured_at)}。{article.first_seen_at && `首次发现于 ${newsTime(article.first_seen_at)}。`}</p>
-    <h4>保存的摘要</h4><p className="reading">{article.summary || '来源未提供摘要'}</p>
-    <h4>保存的原句 / 片段</h4>
-    {article.paragraphs.length ? article.paragraphs.map(p => <blockquote key={p.id}><span className="caption">{p.id} · {({ curator_paraphrase: '归档编写文本', rss_body: 'RSS 提供的正文片段', rss_description: 'RSS 描述片段', community_text: '社区提交文本' } as Record<string, string>)[p.kind] || '归档原句'}</span><p>{p.text}</p></blockquote>) : <p className="muted">没有可用正文。摘要不等于阅读全文。</p>}
-    <div className="note">{article.coverage_note || '引用可追溯不代表结论必然正确，请核对来源与适用条件。'}</div>
-    {article.source_url && <a className="button secondary" href={article.source_url} target="_blank" rel="noreferrer noopener">打开原始来源<Icon name="link" size={16}/></a>}
-    {article.original_url && <a className="button secondary" href={article.original_url} target="_blank" rel="noreferrer noopener">打开外链报道<Icon name="link" size={16}/></a>}
-  </Modal>
+function RunDetails({ run }: { run: Run }) {
+  const metrics = run.metrics
+  const usage = metrics.token_usage
+  const counts = (key: 'prompt_tokens' | 'completion_tokens') => usage?.length && usage.every(item => typeof item?.[key] === 'number') ? usage.reduce((sum, item) => sum + item![key]!, 0).toLocaleString('zh-CN') : '未完整返回'
+  const errors: Record<string, string> = { authentication: '鉴权失败', rate_limit: '限流或额度受限', quota: '余额不足', timeout: '请求超时', connection: '连接失败', configuration: '配置错误', provider_http: '服务响应异常', output_truncated: '输出截断', content_filtered: '没有可用输出', invalid_output: '结构或引用不合格', input_too_large: '输入超出上限', cancelled: '请求已取消', internal: '内部检查失败' }
+  return <details className="run-details"><summary>本轮模型与用量</summary><dl>
+    <div><dt>模型调用</dt><dd>{metrics.model_called === true ? `已发起 ${metrics.request_count ?? 1} 次请求` : metrics.model_called === false ? '未调用模型' : '未记录'}</dd></div>
+    {metrics.model && <div><dt>请求模型</dt><dd>{metrics.model}</dd></div>}
+    {metrics.response_model && <div><dt>返回模型</dt><dd>{metrics.response_model}</dd></div>}
+    <div><dt>总耗时</dt><dd>{metrics.elapsed_ms != null ? `${(metrics.elapsed_ms / 1000).toFixed(2)} 秒` : '未记录'}</dd></div>
+    {metrics.model_called && <><div><dt>输入 / 输出 Token</dt><dd>{counts('prompt_tokens')} / {counts('completion_tokens')}</dd></div><div><dt>格式修正</dt><dd>{metrics.repair_count ?? 0} 次</dd></div></>}
+    {metrics.error_code && <div><dt>错误类别</dt><dd>{errors[metrics.error_code] || '检查失败'}</dd></div>}
+  </dl>{metrics.model_called && <p className="caption">用量仅采用服务方返回值，含格式修正请求；未返回部分保持未知。费用以服务方账单为准。</p>}</details>
+}
+
+function EvidenceModal({ article, focus, close, snapshot }: { article: Article; focus?: string; close: () => void; snapshot: boolean }) {
+  return <Modal title={snapshot ? '核对本轮证据' : '阅读新闻'} close={close} reader><ArticleReader article={article} focus={focus} close={close} snapshot={snapshot}/></Modal>
 }
 
 function ApprovalModal({ run, close, approved }: { run: Run; close: () => void; approved: () => void }) {
@@ -101,19 +106,24 @@ export default function App() {
   const [events, setEvents] = useState<TaskEvent[]>([])
   const [goalForm, setGoalForm] = useState<Goal | 'new' | null>(null)
   const [article, setArticle] = useState<Article | null>(null)
+  const [citationFocus, setCitationFocus] = useState<string | undefined>()
+  const [citationSnapshot, setCitationSnapshot] = useState(false)
   const [approval, setApproval] = useState(false)
   const [notice, setNotice] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(true)
   const [starting, setStarting] = useState(false)
-  const goal = goals.find(item => item.id === selected)
+  const [changingGoal, setChangingGoal] = useState('')
+  const following = goals.filter(item => item.status !== 'unfollowed')
+  const historicalGoal = historyRunId && run?.goal_id === selected ? run.snapshot?.goal : undefined
+  const goal = goals.find(item => item.id === selected) || (historicalGoal ? { ...historicalGoal, status: 'unfollowed' as const, latest_run: null } : undefined)
   const active = !!run && !terminal.has(run.status)
-  const stale = !!goal && !!run && goal.version !== run.goal_version
+  const stale = !!run && (!!run.retired_demo_evidence || !goal || goal.status !== 'active' || goal.version !== run.goal_version)
 
   const load = useCallback(async () => {
-    const [g, c, s, r] = await Promise.all([api<Goal[]>('/goals'), api<Config>('/config'), api<Schedule[]>('/schedules'), api<Run[]>('/runs')])
+    const [g, c, s, r] = await Promise.all([api<Goal[]>('/goals?include_unfollowed=true'), api<Config>('/config'), api<Schedule[]>('/schedules'), api<Run[]>('/runs')])
     setGoals(g); setConfig(c); setSchedules(s); setRuns(r)
-    setSelected(old => old || g[0]?.id || '')
+    setSelected(old => g.some(item => item.id === old) ? old : g.find(item => item.status !== 'unfollowed')?.id || '')
   }, [])
   useEffect(() => { load().catch(err => setError(err.message)).finally(() => setLoading(false)) }, [load])
   useEffect(() => {
@@ -153,19 +163,34 @@ export default function App() {
     try { await post(`/runs/${run.id}/decisions`, { choice }); setRun(await api<Run>(`/runs/${run.id}`)); setNotice(`已记录：${decisions[choice]}`) }
     catch (err) { setError((err as Error).message) }
   }
-  const evidence = run?.snapshot?.evidence || []
+  async function changeFollowing(follow: boolean) {
+    if (!goal || changingGoal) return
+    const current = goal
+    setChangingGoal(current.id); setError(''); setApproval(false)
+    try {
+      const updated = await post<Goal>(`/goals/${current.id}/${follow ? 'follow' : 'unfollow'}`, { expected_version: current.version })
+      setHistoryRunId(null); setRun(null); setEvents([])
+      if (follow) setSelected(updated.id)
+      else setSelected(following.find(item => item.id !== current.id)?.id || '')
+      await load()
+      setNotice(follow ? `已恢复关注：${current.name}。可以重新检查当前新闻。` : `已取消关注：${current.name}。历史判断和已保存日程仍保留，可在“已取消关注”中恢复。`)
+    } catch (err) { setError((err as Error).message) }
+    finally { setChangingGoal('') }
+  }
+  const inspect = (item: Article, paragraphId?: string, snapshot = true) => { setCitationFocus(paragraphId); setCitationSnapshot(snapshot); setArticle(item) }
   const titles: Record<Page, string> = { workspace: '我的关注', library: '新闻首页', calendar: '行动日程', history: '检查记录' }
 
   const navigate = (next: Page) => { setPage(next); window.scrollTo({ top: 0, behavior: 'instant' }) }
-  const navigation = ([['library', 'home', '首页'], ['workspace', 'target', '我的关注'], ['calendar', 'calendar', '行动日程'], ['history', 'history', '检查记录']] as [Page, string, string][])
+  const navigation = ([['library', 'home', '新闻首页'], ['workspace', 'target', '我的关注'], ['calendar', 'calendar', '行动日程'], ['history', 'history', '检查记录']] as [Page, string, string][])
 
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main-content">跳到主要内容</a>
     <aside className="sidebar" aria-label="工作空间侧栏">
-      <a className="brand" href="#home" onClick={e => { e.preventDefault(); navigate('library') }} aria-label="CFAW News 首页"><span className="brand-monogram">c.</span><span className="brand-full">cfaw-news<small>NEWS THAT MOVES YOU</small></span></a>
+      <a className="brand" href="#home" onClick={e => { e.preventDefault(); navigate('library') }} aria-label="CFAW News 首页"><span className="brand-monogram">c.</span><span className="brand-full">cfaw<span>.news</span><small>让新消息，与你的下一步有关。</small></span></a>
       <div className="sidebar-label">工作空间</div>
-      <nav className="side-nav" aria-label="主导航">{navigation.map(([key, icon, label]) => <button key={key} aria-label={label} title={label} aria-current={page === key ? 'page' : undefined} className={page === key ? 'selected' : ''} onClick={() => navigate(key)}><Icon name={icon} size={20}/><span className="nav-label">{label}</span>{key === 'workspace' && goals.length > 0 && <span className="nav-count">{goals.length}</span>}{key === 'calendar' && schedules.some(s => s.status !== 'completed') && <span className="nav-count">{schedules.filter(s => s.status !== 'completed').length}</span>}</button>)}</nav>
+      <nav className="side-nav" aria-label="主导航">{navigation.map(([key, icon, label]) => <button key={key} aria-label={label} title={label} aria-current={page === key ? 'page' : undefined} className={page === key ? 'selected' : ''} onClick={() => navigate(key)}><Icon name={icon} size={20}/><span className="nav-label">{label}</span>{key === 'workspace' && following.length > 0 && <span className="nav-count">{following.length}</span>}{key === 'calendar' && schedules.some(s => s.status !== 'completed') && <span className="nav-count">{schedules.filter(s => s.status !== 'completed').length}</span>}</button>)}</nav>
       <button className="sidebar-create button primary" aria-label="添加关注目标" title="添加关注目标" onClick={() => setGoalForm('new')}><Icon name="plus" size={18}/><span className="nav-label">新建关注</span></button>
+      <div className="sidebar-focus"><div className="sidebar-label">快捷关注</div>{following.slice(0, 3).map(item => <button key={item.id} onClick={() => { setHistoryRunId(null); setSelected(item.id); navigate('workspace') }}><span className="focus-dot"/><span>{item.name}</span></button>)}</div>
       <div className="sidebar-bottom"><div className="local-workspace"><Icon name="library" size={19}/><div><strong>本机工作区</strong><p>目标、证据与决定<br/>保存在你的本机。</p></div></div><div className="sidebar-mode"><span className="status-dot"/><span>{config?.mode === 'compatible' ? `模型 · ${config.model}` : 'BM25 开发基线'}</span></div><span className="sidebar-version">CFAW NEWS · v{config?.version || '0.2.0'}</span></div>
     </aside>
     <div className="page-shell">
@@ -175,37 +200,18 @@ export default function App() {
         {error && <div className="alert error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭错误"><Icon name="close" size={16}/></button></div>}
         {notice && <div className="alert success" role="status">{notice}<button onClick={() => setNotice('')} aria-label="关闭提示"><Icon name="close" size={16}/></button></div>}
         {loading ? <div className="empty">正在打开工作空间…</div> : <>
-          {page !== 'library' && <section className="hero"><div><span className="eyebrow">YOUR NEXT STEP</span><h1>{titles[page]}</h1><p>{page === 'workspace' ? '让新消息，与你的下一步有关。' : page === 'calendar' ? '把确认过的下一步，留在日程里。' : '每一次判断，都有迹可循。'}</p></div>{page === 'workspace' && <button className="button primary" onClick={() => setGoalForm('new')}><Icon name="plus" size={18}/>添加关注</button>}</section>}
-          {page === 'workspace' && <div className="metrics"><div><span>我的关注</span><strong>{goals.length.toString().padStart(2, '0')}</strong><small>由你确认的方向</small></div><div><span>新闻资料</span><strong>{config?.counts.articles || 0}</strong><small>保留来源与采集时间</small></div><div><span>检查记录</span><strong>{runs.length.toString().padStart(2, '0')}</strong><small>回看判断与依据</small></div></div>}
-
-          {page === 'workspace' && <>
-            <div className="section-head"><h2>我的关注<span>{goals.length}</span></h2><span className="caption">先写清目标，再判断变化</span></div>
-            {goals.length ? <div className="goal-grid">{goals.map((item, index) => <button className={`goal-card ${item.id === selected ? 'active' : ''}`} key={item.id} onClick={() => { setHistoryRunId(null); setSelected(item.id) }}><div className="goal-top"><span className={`goal-symbol color-${index % 3}`}><Icon name="target" size={21}/></span><span className="badge">{item.status === 'paused' ? '已暂停' : item.is_demo ? '示例目标' : '我的目标'}</span></div><h3>{item.name}</h3><p>{item.purpose}</p><div className="goal-bottom"><span>{item.latest_run ? statusText[item.latest_run.status] : '等待首次检查'}</span><Icon name="arrow" size={17}/></div></button>)}</div> : <div className="empty">添加你的第一个目标，让新闻与你有关。</div>}
-            {goal && <section className="workspace-panel">
-              <div className="panel-header"><div><span className="eyebrow">当前关注 · V{goal.version}</span><h2>{goal.name}</h2></div><button className="text-button" onClick={() => setGoalForm(goal)}>编辑目标</button></div>
-              <div className="goal-context"><p>{goal.constraints || '尚未补充个人条件。'}</p><div className="tags">{goal.keywords.map(word => <span key={word}>{word}</span>)}</div></div>
-              <div className="check-bar"><div><strong>这一轮，发现了什么？</strong><p>{config?.mode === 'baseline' ? '基线只召回候选，语义适用性和事实变化待核实。' : '仅使用本轮证据与当前目标，不自动执行建议。'}</p></div><button className="button primary" disabled={active || starting || goal.status === 'paused'} onClick={check}><Icon name="refresh" size={16}/>{active || starting ? '正在检查…' : '检查本轮证据'}</button></div>
-              {active && <div className="progress"><span className="spinner"/>{events.at(-1)?.message || '正在准备检查…'}<button className="text-button" onClick={async () => { try { await post(`/runs/${run!.id}/cancel`); setRun(await api<Run>(`/runs/${run!.id}`)); await load() } catch (err) { setError((err as Error).message) } }}>取消</button></div>}
-              {run && terminal.has(run.status) && run.status !== 'completed' && <div className="note">{run.error || statusText[run.status]}。已完成的历史记录仍可在运行记录中查看。</div>}
-              {stale && <div className="note">目标已编辑，下方为旧版本结果。请重新检查后再做决定或导入安排。</div>}
-              {run?.result && <div className="result-layout">
-                <div className="judgment"><div className="result-label"><span className="badge purple">{outcomeText[run.result.outcome]}</span><span className="caption">{run.mode === 'baseline' ? '词法基线 · 待人工核实' : '模型结果 · 已通过结构/引用校验'}</span></div><h3>目前情况</h3><p className="reading">{run.result.summary}</p><div className="next-step"><span className="eyebrow">建议下一步</span><p>{run.result.next_step}</p></div>{run.result.material_change && <p className="reading">变化说明：{run.result.material_change}</p>}<div className="uncertainties"><h4>仍需核实</h4>{run.result.uncertainties.map(item => <p key={item}><span>·</span>{item}</p>)}</div><div className="decision-bar"><span>我的决定</span>{Object.entries(decisions).map(([key, label]) => <button key={key} className={`decision ${run.decision?.choice === key ? 'chosen' : ''}`} disabled={stale} onClick={() => decide(key)}>{label}</button>)}</div>{run.result.proposal && !stale && <div className="proposal"><Icon name="calendar"/><div><strong>{run.result.proposal.title}</strong><p>{run.result.proposal.duration_minutes} 分钟 · {run.result.proposal.kind === 'verification' ? '核实任务，不代表试用推荐' : '先核实条件，再有限试用'}</p></div><button className="text-button" onClick={() => setApproval(true)}>预览并确认<Icon name="arrow" size={16}/></button></div>}</div>
-                <aside className="evidence-panel"><div className="section-head"><h3>本轮候选证据</h3><span className="caption">{evidence.length} 篇</span></div><p className="caption">点击查看本轮保存的原句。引用存在不代表结论已被证实。</p>{evidence.map((item, index) => <button key={item.id} className="evidence-card" onClick={() => setArticle(item)}><span className="source-line"><span>{String(index + 1).padStart(2, '0')}</span>{item.source}</span><h4>{item.title}</h4><div className="evidence-footer"><span>{item.origin === 'archive' ? '历史归档' : '来源条目'} · {item.published_at?.slice(0, 10) || '日期未知'}</span><Icon name="arrow" size={15}/></div></button>)}{!evidence.length && <p className="muted">没有召回候选。可调整关键词或刷新来源。</p>}</aside>
-              </div>}
-              {!run && <div className="first-check"><div className="orbit-icon"><Icon name="target" size={30}/></div><h3>从一次有边界的检查开始</h3><p>检查本地资料中的相关候选，保留证据与尚未确认的条件。<br/>“继续观察”也可以是一个合理结果。</p></div>}
-            </section>}
-          </>}
-
-          {page === 'library' && <NewsLibrary inspect={setArticle} changed={setConfig} openGoals={() => navigate('workspace')} openCalendar={() => navigate('calendar')} goalCount={goals.length} todayCount={schedules.filter(s => s.status !== 'completed' && new Date(s.start).toDateString() === new Date().toDateString()).length} />}
-          {page === 'calendar' && <section className="simple-panel">{schedules.length ? schedules.map(item => <article className="schedule" key={item.id}><div className="calendar-symbol"><Icon name="calendar" size={25}/></div><div><span className="caption">{time(item.start)} — {time(item.end)}</span><h3>{item.title}</h3><p>{item.content}</p></div>{item.status === 'completed' ? <span className="badge purple">已完成</span> : <button className="button secondary" onClick={async () => { try { await post(`/schedules/${item.id}/complete`); await load() } catch (err) { setError((err as Error).message) } }}>标记完成</button>}</article>) : <div className="empty"><Icon name="calendar" size={35}/><h3>还没有需要执行的安排</h3><p>检查证据后，只有你确认的核实或试用任务才会保存到这里。</p><button className="button secondary" onClick={() => setPage('workspace')}>返回关注工作台</button></div>}</section>}
-          {page === 'history' && <section className="simple-panel"><div className="history-head"><span>关注 / 时间</span><span>模式</span><span>状态</span><span>耗时</span></div>{runs.map(item => <button className="history-row" key={item.id} onClick={async () => { try { const current = await api<Run>(`/runs/${item.id}`); setHistoryRunId(item.id); setSelected(item.goal_id); setPage('workspace'); setRun(current) } catch (err) { setError((err as Error).message) } }}><span><strong>{goals.find(g => g.id === item.goal_id)?.name || '历史目标'}</strong><small>{time(item.created_at)} · V{item.goal_version}</small></span><span>{item.mode === 'baseline' ? 'BM25 基线' : '模型'}</span><span className="badge">{statusText[item.status]}</span><span>{item.metrics.elapsed_ms != null ? `${item.metrics.elapsed_ms} ms` : '—'}</span></button>)}{!runs.length && <div className="empty">尚无检查记录。完成第一轮检查后，结果会保存在这里。</div>}</section>}
+          {(page === 'calendar' || page === 'history') && <section className="hero"><div><span className="eyebrow">YOUR NEXT STEP</span><h1>{titles[page]}</h1><p>{page === 'calendar' ? '把确认过的下一步，留在日程里。' : '每一次判断，都有迹可循。'}</p></div></section>}
+          {page === 'workspace' && <GoalWorkspace goals={goals} goal={goal} run={run} config={config} active={active} stale={stale} starting={starting} changing={changingGoal === goal?.id} unfollow={() => void changeFollowing(false)} refollow={() => void changeFollowing(true)} events={events} select={id => { setHistoryRunId(null); setSelected(id) }} create={() => setGoalForm('new')} edit={setGoalForm} check={check} cancel={async () => { try { await post('/runs/' + run!.id + '/cancel'); setRun(await api<Run>('/runs/' + run!.id)); await load() } catch (err) { setError((err as Error).message) } }} decide={decide} approve={() => setApproval(true)} inspect={inspect} runDetails={run && <RunDetails run={run}/>}/>}
+          {page === 'library' && <NewsLibrary inspect={item => inspect(item, undefined, false)} changed={setConfig} openGoals={() => navigate('workspace')} goalCount={following.length}/>}
+          {page === 'calendar' && <CalendarView schedules={schedules} openGoals={() => navigate('workspace')} complete={async id => { try { await post('/schedules/' + id + '/complete'); await load() } catch (err) { setError((err as Error).message) } }}/>}
+          {page === 'history' && <HistoryView runs={runs} goals={goals} open={async item => { try { const current = await api<Run>('/runs/' + item.id); setHistoryRunId(item.id); setSelected(item.goal_id); navigate('workspace'); setRun(current) } catch (err) { setError((err as Error).message) } }}/>}
           <footer className="footer"><span>CFAW NEWS · 让新消息，与你的下一步有关。</span><span>来源事实 · 模型解释 · 用户决定</span></footer>
         </>}
       </section>
     </main>
     </div>
     {goalForm && <GoalForm goal={goalForm === 'new' ? undefined : goalForm} close={() => setGoalForm(null)} saved={value => { navigate('workspace'); setHistoryRunId(null); setSelected(value.id); void load() }}/>}
-    {article && <EvidenceModal article={article} close={() => setArticle(null)}/>}
+    {article && <EvidenceModal article={article} focus={citationFocus} snapshot={citationSnapshot} close={() => setArticle(null)}/>}
     {approval && run?.result?.proposal && <ApprovalModal run={run} close={() => setApproval(false)} approved={() => { setNotice('已保存到行动日程。重复批准不会创建重复安排。'); void load() }}/>}
   </div>
 }

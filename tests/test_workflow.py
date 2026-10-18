@@ -7,8 +7,8 @@ from pathlib import Path
 import httpx
 import pytest
 from cfaw_news.config import Settings
-from cfaw_news.database import Article, Run
-from cfaw_news.ingestion import parse_source, validate_feed_url
+from cfaw_news.database import Article, ArticleMedia, Run
+from cfaw_news.ingestion import article_row, parse_source, validate_feed_url
 from cfaw_news.main import create_app
 from cfaw_news.providers import BaselineProvider, CompatibleProvider, validate_judgment
 from cfaw_news.retrieval import search, tokenize
@@ -25,6 +25,7 @@ def settings(tmp_path):
         database_url=f"sqlite:///{(tmp_path / 'test.db').as_posix()}",
         root=ROOT,
         demo_seed=True,
+        archive_seed=True,
         llm_mode="baseline",
         news_auto_refresh=False,
         news_media_fetch=False,
@@ -72,6 +73,75 @@ def test_baseline_end_to_end_and_snapshot_citations(client):
     assert len(run["snapshot"]["evidence"]) <= 8
     validate_judgment(Judgment.model_validate(run["result"]), run["snapshot"])
     assert "未调用大模型" in "".join(run["result"]["uncertainties"])
+
+
+def test_default_startup_has_no_demo_news_and_skips_model(settings):
+    class MustNotCall:
+        async def judge(self, snapshot):
+            raise AssertionError("no preloaded news means no model call")
+
+    settings = settings.model_copy(update={"archive_seed": False})
+    with TestClient(create_app(settings, MustNotCall())) as client:
+        assert client.get("/api/articles").json() == []
+        assert client.get("/api/config").json()["counts"]["articles"] == 0
+        run = check(client)
+        assert run["snapshot"]["evidence"] == []
+        assert run["metrics"]["model_called"] is False
+
+
+def test_retire_demo_news_keeps_feed_history_and_user_records(settings):
+    with TestClient(create_app(settings)) as client:
+        run = check(client)
+        client.post(f"/api/runs/{run['id']}/decisions", json={"choice": "watch"})
+        client.post(f"/api/runs/{run['id']}/approve", json=interval(run))
+        before = client.get(f"/api/runs/{run['id']}").json()
+        schedules = client.get("/api/schedules").json()
+        goal_ids = [g["id"] for g in client.get("/api/goals").json()]
+        feed = article_row(
+            {"id": "ithome", "label": "IT之家"}, "https://www.ithome.com/post/123",
+            "Mac 会议公开新闻", "Mac 会议来源片段", [], None,
+        )
+        with client.app.state.database.session.begin() as session:
+            session.add(Article(id=feed["id"], content_hash=feed["content_hash"], origin="feed", data=feed))
+            session.add(ArticleMedia(article_id=run["snapshot"]["evidence"][0]["id"], data={}))
+
+    runtime = settings.model_copy(update={"archive_seed": False})
+    for _ in range(2):  # Repeated startup must not repopulate the fixture corpus.
+        with TestClient(create_app(runtime)) as client:
+            assert client.get("/api/articles?origin=archive").json() == []
+            assert [a["id"] for a in client.get("/api/articles").json()] == [feed["id"]]
+            with client.app.state.database.session() as session:
+                assert session.get(ArticleMedia, run["snapshot"]["evidence"][0]["id"]) is None
+            restored = client.get(f"/api/runs/{run['id']}").json()
+            for key in ("snapshot", "result", "metrics", "decision"):
+                assert restored[key] == before[key]
+            assert restored["retired_demo_evidence"] is True
+            assert client.get("/api/schedules").json() == schedules
+            goals = client.get("/api/goals").json()
+            assert [g["id"] for g in goals] == goal_ids
+            assert goals[0]["latest_run"] is None
+            assert client.get("/api/runs").json()[0]["retired_demo_evidence"] is True
+            assert client.post(f"/api/runs/{run['id']}/decisions", json={"choice": "handled"}).status_code == 409
+            # An exact retry only returns the existing schedule; it creates nothing.
+            retry = client.post(f"/api/runs/{run['id']}/approve", json=interval(run))
+            assert retry.status_code == 200 and retry.json()["created"] is False
+            assert client.get("/api/schedules").json() == schedules
+
+    with TestClient(create_app(runtime)) as client:
+        current = check(client)
+        assert [a["id"] for a in current["snapshot"]["evidence"]] == [feed["id"]]
+        assert current["snapshot"]["previous"] is None
+        assert current["snapshot"]["previous_decision"] is None
+        assert client.get("/api/goals").json()[0]["latest_run"]["id"] == current["id"]
+
+
+def test_retired_demo_proposal_cannot_create_a_schedule(settings):
+    with TestClient(create_app(settings)) as client:
+        run = check(client)
+        assert run["result"]["proposal"] is not None
+    with TestClient(create_app(settings.model_copy(update={"archive_seed": False}))) as client:
+        assert client.post(f"/api/runs/{run['id']}/approve", json=interval(run)).status_code == 409
+        assert client.get("/api/schedules").json() == []
 
 
 def test_approval_is_explicit_and_idempotent(client):

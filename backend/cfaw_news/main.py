@@ -24,11 +24,21 @@ from .database import (
     run_dict,
     utcnow,
 )
+from .following import FollowingConflict, change_following
 from .ingestion import NewsIngestor
 from .media import MediaCache
+from .reading import ReadingCache
 from .schemas import ApprovalInput, CheckInput, DecisionInput, GoalInput, GoalUpdate, RefreshInput
 from .seed import seed
-from .service import TERMINAL, RunEngine, approve, build_run, require, schedule_dict
+from .service import (
+    TERMINAL,
+    RunEngine,
+    approve,
+    build_run,
+    require,
+    retired_demo_evidence,
+    schedule_dict,
+)
 
 
 def create_app(settings: Settings | None = None, provider=None):
@@ -37,11 +47,12 @@ def create_app(settings: Settings | None = None, provider=None):
     engine = RunEngine(database, settings, provider)
     news = NewsIngestor(database, settings.root)
     media = MediaCache(database, settings.root / ".local/media", enabled=settings.news_media_fetch)
+    reading = ReadingCache(database, media, enabled=settings.news_reading_fetch)
 
     @asynccontextmanager
     async def lifespan(app):
         database.create()
-        seed(database, settings.root, demo=settings.demo_seed)
+        seed(database, settings.root, demo=settings.demo_seed, include_archive=settings.archive_seed)
         with database.session.begin() as session:
             for run in session.scalars(select(Run).where(Run.status.in_(["queued", "running"]))):
                 run.status = "failed"
@@ -51,9 +62,11 @@ def create_app(settings: Settings | None = None, provider=None):
         if settings.news_auto_refresh:
             news.start()
         media.start()
+        reading.start()
         try:
             yield
         finally:
+            await reading.close()
             await media.close()
             await news.close()
             await engine.close()
@@ -69,6 +82,7 @@ def create_app(settings: Settings | None = None, provider=None):
     app.state.run_engine = engine
     app.state.news_ingestor = news
     app.state.media_cache = media
+    app.state.reading_cache = reading
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -87,7 +101,7 @@ def create_app(settings: Settings | None = None, provider=None):
         with database.session() as session:
             counts = {
                 "articles": session.scalar(select(func.count()).select_from(Article)),
-                "goals": session.scalar(select(func.count()).select_from(Goal)),
+                "goals": session.scalar(select(func.count()).select_from(Goal).where(Goal.status != "unfollowed")),
                 "runs": session.scalar(select(func.count()).select_from(Run)),
             }
         return {
@@ -96,20 +110,21 @@ def create_app(settings: Settings | None = None, provider=None):
             "model": settings.llm_model if settings.llm_mode == "compatible" else None,
             "counts": counts,
             "scope": "local-single-user",
-            "archive_date": "2026-10-13",
             "news_auto_refresh": settings.news_auto_refresh,
         }
 
     @app.get("/api/goals")
-    async def goals():
+    async def goals(include_unfollowed: bool = False):
         with database.session() as session:
             result = []
             for goal in session.scalars(select(Goal).order_by(Goal.created_at)):
-                latest = session.scalar(
-                    select(Run)
-                    .where(Run.goal_id == goal.id)
-                    .order_by(Run.created_at.desc())
-                    .limit(1)
+                if goal.status == "unfollowed" and not include_unfollowed:
+                    continue
+                latest = next(
+                    (run for run in session.scalars(
+                        select(Run).where(Run.goal_id == goal.id).order_by(Run.created_at.desc())
+                    ) if not retired_demo_evidence(session, run)),
+                    None,
                 )
                 result.append(
                     {
@@ -130,7 +145,9 @@ def create_app(settings: Settings | None = None, provider=None):
     @app.patch("/api/goals/{goal_id}")
     async def edit_goal(goal_id: str, body: GoalUpdate):
         with database.session.begin() as session:
-            require(session, Goal, goal_id)
+            goal = require(session, Goal, goal_id)
+            if goal.status == "unfollowed":
+                raise HTTPException(409, "目标已取消关注，请先恢复关注后再编辑")
             changed = session.execute(
                 update(Goal)
                 .where(Goal.id == goal_id, Goal.version == body.expected_version)
@@ -144,6 +161,31 @@ def create_app(settings: Settings | None = None, provider=None):
             if changed.rowcount != 1:
                 raise HTTPException(409, "目标已被修改，请刷新后重试")
             return goal_dict(session.get(Goal, goal_id))
+
+    async def set_following(goal_id, body, following):
+        with database.session.begin() as session:
+            goal = require(session, Goal, goal_id)
+            try:
+                goal, cancelled = change_following(
+                    session, goal, body.expected_version, following=following
+                )
+            except FollowingConflict as exc:
+                raise HTTPException(409, str(exc)) from None
+            value = goal_dict(goal)
+        # Persistence wins even if an inference task ignores cancellation.
+        for run_id in cancelled:
+            task = engine.tasks.get(run_id)
+            if task:
+                task.cancel()
+        return value
+
+    @app.post("/api/goals/{goal_id}/unfollow")
+    async def unfollow_goal(goal_id: str, body: CheckInput):
+        return await set_following(goal_id, body, False)
+
+    @app.post("/api/goals/{goal_id}/follow")
+    async def follow_goal(goal_id: str, body: CheckInput):
+        return await set_following(goal_id, body, True)
 
     @app.post("/api/goals/{goal_id}/checks", status_code=202)
     async def start_check(goal_id: str, body: CheckInput):
@@ -159,7 +201,9 @@ def create_app(settings: Settings | None = None, provider=None):
     async def runs():
         with database.session() as session:
             return [
-                run_dict(run, include_snapshot=False)
+                {**run_dict(run, include_snapshot=False),
+                 "goal_name": run.snapshot.get("goal", {}).get("name", "历史目标"),
+                 "retired_demo_evidence": retired_demo_evidence(session, run)}
                 for run in session.scalars(select(Run).order_by(Run.created_at.desc()).limit(100))
             ]
 
@@ -170,6 +214,7 @@ def create_app(settings: Settings | None = None, provider=None):
             decision = session.scalar(select(Decision).where(Decision.run_id == run_id))
             return {
                 **run_dict(run),
+                "retired_demo_evidence": retired_demo_evidence(session, run),
                 "decision": {"choice": decision.choice, "reason": decision.reason}
                 if decision
                 else None,
@@ -243,8 +288,10 @@ def create_app(settings: Settings | None = None, provider=None):
         with database.session.begin() as session:
             run = require(session, Run, run_id)
             goal = require(session, Goal, run.goal_id)
-            if run.status != "completed" or goal.version != run.goal_version:
+            if run.status != "completed" or goal.status != "active" or goal.version != run.goal_version:
                 raise HTTPException(409, "本轮尚未完成或目标已改变")
+            if retired_demo_evidence(session, run):
+                raise HTTPException(409, "本轮演示新闻已移除，请重新检查当前新闻")
             value = session.scalar(select(Decision).where(Decision.run_id == run.id))
             if value:
                 value.choice, value.reason, value.created_at = body.choice, body.reason, utcnow()
@@ -272,6 +319,7 @@ def create_app(settings: Settings | None = None, provider=None):
         origin: str = "all",
         source_id: str = "",
         category: str = "",
+        exclude_discovery: bool = False,
         limit: int = Query(default=200, ge=1, le=500),
         offset: int = Query(default=0, ge=0),
     ):
@@ -284,6 +332,7 @@ def create_app(settings: Settings | None = None, provider=None):
                 if (origin == "all" or row["origin"] == origin)
                 and (not source_id or row.get("source_id") == source_id)
                 and (not category or row.get("category") == category)
+                and (not exclude_discovery or news.sources.get(row.get("source_id"), {}).get("display_role") != "discovery")
                 and q.lower() in (row["title"] + row["summary"] + row["source"]).lower()
             ],
             key=lambda row: (
@@ -294,12 +343,26 @@ def create_app(settings: Settings | None = None, provider=None):
         )[offset : offset + limit]
         return media.decorate(result)
 
+
+    @app.get("/api/articles/{article_id}/reading")
+    async def read_article(article_id: str):
+        with database.session() as session:
+            article = dict(require(session, Article, article_id).data)
+        return reading.get(article)
+
+    @app.get("/api/articles/{article_id}/reading/images/{image_index}")
+    async def reading_image(article_id: str, image_index: int):
+        try:
+            file, kind = await reading.image(article_id, image_index)
+        except (ValueError, OSError):
+            raise HTTPException(404, "该正文图片暂不可用") from None
+        return FileResponse(file, media_type=kind, headers={"Cache-Control": "public, max-age=86400", "X-Content-Type-Options": "nosniff"})
     @app.get("/api/articles/{article_id}/image")
     async def article_image(article_id: str):
         with database.session() as session:
             entry = session.get(ArticleMedia, article_id)
             data = dict(entry.data) if entry else {}
-        path = media.image_file(data)
+        path = media.cover_file(data)
         if not path:
             raise HTTPException(404, "该条目暂无可用配图")
         return FileResponse(
@@ -338,6 +401,8 @@ def create_app(settings: Settings | None = None, provider=None):
     dist = settings.root / "frontend/dist"
     if (dist / "assets").is_dir():
         app.mount("/assets", StaticFiles(directory=dist / "assets"), name="assets")
+    if (dist / "source-brands").is_dir():
+        app.mount("/source-brands", StaticFiles(directory=dist / "source-brands"), name="source-brands")
 
     @app.get("/icon.svg", include_in_schema=False)
     async def icon():

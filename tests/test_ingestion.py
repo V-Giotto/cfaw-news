@@ -15,7 +15,7 @@ from fastapi.testclient import TestClient
 from sqlalchemy import select
 
 ROOT = Path(__file__).resolve().parents[1]
-PRIMARY = {"chinanews", "ithome", "36kr", "solidot", "ifanr", "geekpark", "mit", "hn"}
+PRIMARY = {"chinanews", "ithome", "36kr", "solidot", "ifanr", "geekpark", "mit", "hn", "github-blog", "ruanyifeng"}
 
 
 def rss(host="www.ithome.com", title="Mac 会议新闻", tracking="", image_url=""):
@@ -208,18 +208,20 @@ def test_hn_keeps_submission_and_original_article_distinct():
     assert row["paragraphs"][0]["kind"] == "community_text"
 
 
-def test_refresh_all_eight_filters_pagination_and_conditional_dedup(settings, mocked_network):
+def test_refresh_primary_filters_pagination_and_conditional_dedup(settings, mocked_network):
     calls, _ = mocked_network
     with TestClient(create_app(settings)) as client:
         result = client.post("/api/sources/refresh", json={"source_ids": sorted(PRIMARY)})
         assert result.status_code == 200
         assert all(r["status"] == "ok" for r in result.json()["results"])
         rows = client.get("/api/articles?origin=feed").json()
-        assert len(rows) == 9
+        assert len(rows) == 11
         first = {r["id"]: r for r in rows}
-        assert len(client.get("/api/articles?origin=archive").json()) == 26
+        assert client.get("/api/articles?origin=archive").json() == []
         assert len(client.get("/api/articles?origin=feed&category=tech").json()) == 5
         assert len(client.get("/api/articles?source_id=hn").json()) == 2
+        assert len(client.get("/api/articles?exclude_discovery=true").json()) == 9
+        assert len(client.get("/api/articles?category=developer&exclude_discovery=true").json()) == 2
         ordered = client.get("/api/articles?origin=feed&limit=2").json()
         rest = client.get("/api/articles?origin=feed&offset=2&limit=2").json()
         assert {r["id"] for r in ordered}.isdisjoint(r["id"] for r in rest)
@@ -464,8 +466,8 @@ def test_background_polling_ingests_without_triggering_goal_runs(settings, mocke
             time.sleep(0.01)
         else:
             pytest.fail("background refresh did not finish")
-        assert len(client.get("/api/articles?origin=feed").json()) == 9
+        assert len(client.get("/api/articles?origin=feed").json()) == 11
         assert client.get("/api/runs").json() == []
         assert client.get("/api/schedules").json() == []
         with client.app.state.database.session() as session:
-            assert len(list(session.scalars(select(Article)))) == 35
+            assert len(list(session.scalars(select(Article)))) == 11

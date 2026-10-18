@@ -6,8 +6,10 @@ import ipaddress
 import json
 import re
 import socket
+import warnings
 from datetime import datetime, timedelta, timezone
 from html.parser import HTMLParser
+from io import BytesIO
 from itertools import zip_longest
 from pathlib import Path
 from time import monotonic
@@ -15,13 +17,15 @@ from urllib.parse import quote, urlencode, urljoin, urlsplit, urlunsplit
 from uuid import uuid4
 
 import httpx
+from PIL import Image
 from sqlalchemy import select
 
+from .article_html import article_markup
 from .database import ArticleMedia, utcnow
 
 IMAGE_TYPES = {"jpg": "image/jpeg", "png": "image/png", "webp": "image/webp", "gif": "image/gif"}
 DNS_CACHE = {}
-MEDIA_REVISION = 3
+MEDIA_REVISION = 4
 
 
 class OriginTLS:
@@ -146,7 +150,7 @@ async def connection_addresses(url):
             yield address
 
 
-async def public_document(url, *, image=False, referer="", json_data=False):
+async def public_document(url, *, image=False, referer="", json_data=False, max_bytes=None):
     """Pin each connection to a checked IP; retain the original TLS name and Host."""
     url = public_url(url)
     for _ in range(4):
@@ -163,7 +167,7 @@ async def public_document(url, *, image=False, referer="", json_data=False):
         if referer:
             page = urlsplit(public_url(referer))
             headers["Referer"] = f"{page.scheme}://{page.netloc}/"
-        limit = 4_000_000 if image else 524_288
+        limit = max_bytes or (4_000_000 if image else 524_288)
         redirected = False
         last_error = None
         async for address in connection_addresses(url):
@@ -296,7 +300,7 @@ class PageImages(HTMLParser):
             value = attrs.get(key) or ""
             path = value.lower().split("?")[0]
             if value and not any(
-                word in path for word in ("logo", "avatar", "favicon", "badge", "pixel", ".svg")
+                word in path for word in ("logo", "avatar", "favicon", "badge", "pixel", "toparr", ".svg")
             ):
                 values.append(value)
 
@@ -318,7 +322,7 @@ class PageImages(HTMLParser):
                 parts.path.lower().endswith(".svg")
                 or any(
                     word in parts.path.lower()
-                    for word in ("logo", "avatar", "favicon", "badge", "pixel")
+                    for word in ("logo", "avatar", "favicon", "badge", "pixel", "toparr")
                 )
                 or parts.hostname == "id.rlcdn.com"
             ):
@@ -340,6 +344,26 @@ def image_extension(body):
     raise ValueError("unsupported_image")
 
 
+def cover_dimensions(body):
+    """Inspect raster headers and structure; never upscale tiny interface assets."""
+    image_extension(body)
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(BytesIO(body), formats=["JPEG", "PNG", "GIF", "WEBP"]) as picture:
+                width, height = picture.size
+                if width * height > 40_000_000 or max(width, height) > 20_000:
+                    raise ValueError("image_too_large")
+                if min(width, height) < 120:
+                    raise ValueError("image_too_small")
+                picture.verify()
+                return width, height
+    except (Image.DecompressionBombWarning, Image.DecompressionBombError) as exc:
+        raise ValueError("image_too_large") from exc
+    except SyntaxError as exc:
+        raise ValueError("unsupported_image") from exc
+
+
 class MediaCache:
     def __init__(self, database, root, *, enabled=True):
         self.database = database
@@ -349,6 +373,7 @@ class MediaCache:
         self.pending = set()
         self.tasks = []
         self.host_locks = {}
+        self.checked_files = {}
 
     def image_file(self, data):
         filename = data.get("filename", "")
@@ -361,6 +386,28 @@ class MediaCache:
             return None
         path = (self.root / filename).resolve()
         return path if path.is_relative_to(self.root) and path.is_file() else None
+
+    def cover_file(self, data):
+        path = self.image_file(data)
+        if not path:
+            return None
+        try:
+            stat = path.stat()
+            key = (path.name, stat.st_size, stat.st_mtime_ns)
+            if key not in self.checked_files:
+                if len(self.checked_files) >= 512:
+                    self.checked_files.pop(next(iter(self.checked_files)))
+                try:
+                    if stat.st_size > 4_000_000:
+                        raise ValueError("image_too_large")
+                    cover_dimensions(path.read_bytes())
+                    valid = True
+                except (ValueError, OSError):
+                    valid = False
+                self.checked_files[key] = valid
+            return path if self.checked_files[key] else None
+        except OSError:
+            return None
 
     def decorate(self, articles):
         if not articles:
@@ -377,17 +424,14 @@ class MediaCache:
         result = []
         for article in articles:
             data = entries.get(article["id"], {})
-            file = self.image_file(data)
+            file = self.cover_file(data)
             page = article.get("original_url") or article.get("source_url", "")
             if self.enabled and article.get("origin") == "feed" and page:
                 fresh = (
                     data.get("page_url") == page
                     and data.get("feed_image") == article.get("image_url")
                     and data.get("retry_at", "") > utcnow()
-                    and (
-                        data.get("status") == "ready"
-                        or data.get("fetch_revision") == MEDIA_REVISION
-                    )
+                    and data.get("fetch_revision") == MEDIA_REVISION
                 )
                 if (
                     (not fresh or (data.get("status") == "ready" and not file))
@@ -401,6 +445,7 @@ class MediaCache:
                 if file
                 else "pending"
                 if article["id"] in self.pending
+                else "unavailable" if data.get("status") == "ready"
                 else data.get("status", "no_image")
             )
             result.append(
@@ -411,7 +456,7 @@ class MediaCache:
                     else article.get("image_url"),
                     "image_status": status,
                     "image_origin": data.get("origin"),
-                    "image_error": data.get("error_code") if status == "unavailable" else None,
+                    "image_error": (data.get("error_code") or "invalid_cached_image") if status == "unavailable" else None,
                 }
             )
         return result
@@ -425,6 +470,7 @@ class MediaCache:
         async def download(url, origin, page):
             final, _, body = await public_document(url, image=True, referer=page)
             extension = image_extension(body)
+            width, height = cover_dimensions(body)
             self.root.mkdir(parents=True, exist_ok=True)
             filename = hashlib.sha256(body).hexdigest() + "." + extension
             path = self.root / filename
@@ -440,6 +486,7 @@ class MediaCache:
                 "content_type": IMAGE_TYPES[extension],
                 "origin": origin,
                 "source_image_url": final,
+                "width": width, "height": height,
             }
 
         for url, origin in candidates:
@@ -455,10 +502,14 @@ class MediaCache:
             final_page, content_type, body = await public_document(page_url)
             if not body:
                 return None
+            markup = httpx.Response(200, headers={"content-type": content_type}, content=body).text
+            scoped = article_markup(markup, final_page)
+            if scoped is not None:
+                markup = scoped
+            if not markup:
+                raise ValueError("article_body_missing")
             parser = PageImages()
-            parser.feed(
-                httpx.Response(200, headers={"content-type": content_type}, content=body).text
-            )
+            parser.feed(markup)
             urls = parser.candidates(final_page)
             origin = "page_metadata"
         error = None
@@ -527,10 +578,10 @@ class MediaCache:
             )
             if entry:
                 if (
-                    data["status"] != "ready"
+                    data["status"] == "unavailable"
                     and entry.data.get("page_url") == page
                     and entry.data.get("feed_image") == article.get("image_url")
-                    and self.image_file(entry.data)
+                    and self.cover_file(entry.data)
                 ):
                     data = {**entry.data, **data}
                 entry.data = data
