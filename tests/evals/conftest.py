@@ -77,10 +77,15 @@ def refresh(root, *, frozen=False):
         if entry["role"] == "source_registry":
             entry["record_count"] = len(json.loads(raw)["sources"])
             manifest["source_registry_sha256"] = entry["sha256"]
-    docs = read_rows(root, "documents.jsonl")
+    def role_rows(role):
+        return [json.loads(line) for entry in manifest["file_hashes"] if entry["role"] == role
+                and (root / entry["path"]).is_file()
+                for line in (root / entry["path"]).read_bytes().splitlines()]
+
+    docs = role_rows("documents")
     origins = Counter(row["record_origin"] for row in docs)
     manifest["record_origin_breakdown"] = {k: origins[k] for k in ("real", "synthetic")}
-    families = {r["family_id"]: r["split"] for r in read_rows(root, "families.jsonl")}
+    families = {r["family_id"]: r["split"] for r in role_rows("families")}
     splits = Counter(families.values())
     manifest["family_split_counts"] = {k: splits[k] for k in ("train", "dev", "test")}
     path.write_bytes((canonical_json(manifest) + "\n").encode())

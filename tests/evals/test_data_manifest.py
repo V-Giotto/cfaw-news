@@ -21,7 +21,10 @@ def codes(report):
 def test_shipped_bundle_and_complete_three_steps():
     report = validate_dataset(SOURCE / "manifests/dataset_manifest.json")
     assert report.ok
-    assert report.counts["documents"] == 4 and report.counts["steps"] == 3
+    # PR1's three-step fixture remains intact; DEV-01 adds seven versions/six steps.
+    assert len(read_rows(SOURCE, "documents.jsonl")) == 4
+    assert len(read_rows(SOURCE, "steps.jsonl")) == 3
+    assert report.counts["documents"] == 11 and report.counts["steps"] == 9
     assert report.counts["gold"] == 3
     assert report.manifest_sha256 == sha256_bytes(
         (SOURCE / "manifests/dataset_manifest.json").read_bytes())

@@ -19,7 +19,7 @@ from .exceptions import ContractError
 from .hashing import canonical_json, content_sha256
 from .temporal import INSTANT_PATTERN, format_instant, parse_instant, utc_instant
 
-SCHEMA_REVISION = "g1-pr1-1"
+SCHEMA_REVISION = "g1-pr2-1"
 NonEmpty = Annotated[str, Field(min_length=1, pattern=r"\S")]
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 PositiveInt = Annotated[int, Field(gt=0)]
@@ -181,6 +181,22 @@ class ReferenceRecord(StrictModel):
     provenance_uri: NonEmpty
 
 
+class DocumentObservation(ReferenceRecord):
+    observation_id: NonEmpty
+    doc_version_id: NonEmpty
+    observed_at: Instant
+    content_sha256: Sha256
+
+
+class EventRelation(ReferenceRecord):
+    left_doc_version_id: NonEmpty
+    right_doc_version_id: NonEmpty
+    relation: Literal["exact_duplicate", "syndicated", "same_event_different_evidence",
+                      "related_distinct_event", "unrelated", "uncertain"]
+    rationale: NonEmpty
+    evidence_at: Instant
+
+
 class EventGroup(ReferenceRecord):
     event_id: NonEmpty
     family_id: NonEmpty
@@ -235,6 +251,53 @@ class GoldLabel(ReferenceRecord):
     adjudication_status: Literal["pending", "agreed", "adjudicated", "unresolved"]
 
 
+class ClaimReview(StrictModel):
+    claim_text: NonEmpty
+    evidence_refs: Annotated[tuple[EvidenceRef, ...], Field(min_length=1)]
+    semantic_support: Literal["supported", "unsupported", "uncertain"]
+    scope: NonEmpty
+    limitations: tuple[NonEmpty, ...]
+
+
+class AnnotationJudgment(StrictModel):
+    local_event_id: NonEmpty
+    document_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    relevance: Score
+    potential_value: Score
+    novelty_to_persona: Score
+    evidence_quality: Score
+    graded_relevance: Score
+    material_change: Literal["new", "meaningful_update", "no_change", "correction",
+                             "withdrawal", "insufficient"]
+    tier: Literal["focus", "radar", "archive", "hold"]
+    rationale: NonEmpty
+    uncertainty: tuple[NonEmpty, ...]
+    document_relations: tuple[EventRelation, ...]
+    claim_reviews: tuple[ClaimReview, ...]
+
+
+class Annotation(StrictModel):
+    annotation_id: NonEmpty
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    persona_version_id: NonEmpty
+    annotation_version: NonEmpty
+    annotator_id: NonEmpty
+    submitted_at: Instant
+    guide_revision: NonEmpty
+    packet_sha256: Sha256
+    initial_label: AnnotationJudgment
+
+
+class Adjudication(StrictModel):
+    adjudication_id: NonEmpty
+    prior_annotation_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=2)]
+    final_label: GoldLabel
+    reason: NonEmpty
+    adjudicator_id: NonEmpty
+    adjudicated_at: Instant
+
+
 class SourceRestrictions(StrictModel):
     max_excerpt_chars: PositiveInt | None
     note: NonEmpty
@@ -282,7 +345,8 @@ class FileEntry(StrictModel):
     path: NonEmpty
     role: Literal["documents", "personas", "steps", "deliveries", "exposures", "coverage",
                   "events", "claims", "gold", "families", "source_registry", "schema",
-                  "code", "support", "baseline_config"]
+                  "code", "support", "baseline_config", "observations", "event_relations",
+                  "annotations", "adjudications"]
     sha256: Sha256
     record_count: Annotated[int, Field(ge=0)] | None
 
@@ -338,6 +402,8 @@ SCHEMA_MODELS = {
     "manifest": Manifest, "source_registry": SourceRegistry, "event_group": EventGroup,
     "claim": Claim, "gold_label": GoldLabel, "delivery": Delivery,
     "family_split": FamilySplit, "candidate_document_version": CandidateDocumentVersion,
+    "document_observation": DocumentObservation, "event_relation": EventRelation,
+    "annotation": Annotation, "adjudication": Adjudication,
 }
 
 

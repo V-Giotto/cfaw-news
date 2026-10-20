@@ -10,11 +10,15 @@ from pydantic import ValidationError
 from .contracts import (
     SCHEMA_MODELS,
     SCHEMA_REVISION,
+    Adjudication,
+    Annotation,
     Claim,
     CoverageWindow,
     Delivery,
+    DocumentObservation,
     DocumentVersion,
     EventGroup,
+    EventRelation,
     Exposure,
     FamilySplit,
     GoldLabel,
@@ -26,6 +30,7 @@ from .contracts import (
 )
 from .exceptions import ContractError, DatasetValidationError, Issue, ValidationReport
 from .hashing import canonical_json, sha256_bytes
+from .pilot import annotation_packet, citation_status
 from .provenance import (
     SENSITIVE,
     check_document,
@@ -46,6 +51,11 @@ RECORD_MODELS = {
     "documents": DocumentVersion, "personas": PersonaVersion, "steps": ReplayStep,
     "deliveries": Delivery, "exposures": Exposure, "coverage": CoverageWindow,
     "events": EventGroup, "claims": Claim, "gold": GoldLabel, "families": FamilySplit,
+    "observations": DocumentObservation, "event_relations": EventRelation,
+    "annotations": Annotation, "adjudications": Adjudication,
+}
+REQUIRED_RECORD_ROLES = frozenset(RECORD_MODELS) - {
+    "observations", "event_relations", "annotations", "adjudications",
 }
 ID_FIELDS = {
     "documents": ("doc_version_id",), "personas": ("persona_version_id",),
@@ -54,6 +64,9 @@ ID_FIELDS = {
     "events": ("event_id",), "claims": ("claim_id", "valid_as_of"),
     "gold": ("timeline_id", "step_id", "persona_version_id", "event_id", "annotation_version"),
     "families": ("family_id",),
+    "observations": ("observation_id",),
+    "event_relations": ("left_doc_version_id", "right_doc_version_id", "evidence_at"),
+    "annotations": ("annotation_id",), "adjudications": ("adjudication_id",),
 }
 REQUIRED_SCHEMAS = {f"schema/{name}.schema.json": model for name, model in SCHEMA_MODELS.items()}
 
@@ -156,7 +169,7 @@ class _Validator:
         for relative in sorted(required - entries.keys()):
             self.issue(ContractError("UNLISTED_INPUT"), path=relative)
         roles = Counter(entry.role for entry in entries.values())
-        for role in {*RECORD_MODELS, "source_registry"}:
+        for role in {*REQUIRED_RECORD_ROLES, "source_registry"}:
             if not roles[role] or (role == "source_registry" and roles[role] != 1):
                 self.issue(ContractError("UNLISTED_INPUT"), path=role)
         if self.report.errors:
@@ -233,6 +246,38 @@ class _Validator:
         if any(getattr(manifest.family_split_counts, k) != splits[k] for k in ("train", "dev", "test")):
             self.issue(ContractError("RECORD_COUNT_MISMATCH", field="family_split_counts"))
         self.run(lambda: version_chains(r["documents"]))
+        for observation in r["observations"]:
+            def check_observation():
+                document = _need(documents, observation.doc_version_id)
+                check_provenance(observation.record_origin, observation.provenance_uri,
+                                 self.root, controlled)
+                if observation.record_origin != document.record_origin:
+                    raise ContractError("ORIGIN_MISMATCH")
+                if observation.observed_at < document.observed_at:
+                    raise ContractError("FUTURE_EVIDENCE")
+                if observation.content_sha256 != document.content_sha256:
+                    raise ContractError("SHA_MISMATCH", field="content_sha256")
+            self.run(check_observation, observation)
+        relation_keys = set()
+        for relation in r["event_relations"]:
+            def check_relation():
+                left = _need(documents, relation.left_doc_version_id)
+                right = _need(documents, relation.right_doc_version_id)
+                check_provenance(relation.record_origin, relation.provenance_uri,
+                                 self.root, controlled)
+                if left.doc_version_id == right.doc_version_id:
+                    raise ContractError("SCHEMA_INVALID", field="right_doc_version_id")
+                if any(d.record_origin != relation.record_origin for d in (left, right)):
+                    raise ContractError("ORIGIN_MISMATCH")
+                if _need(families, left.family_id) != _need(families, right.family_id):
+                    raise ContractError("CROSS_FAMILY_SPLIT")
+                if max(left.available_at, right.available_at) > relation.evidence_at:
+                    raise ContractError("FUTURE_EVIDENCE")
+                key = (*sorted((left.doc_version_id, right.doc_version_id)), relation.evidence_at)
+                if key in relation_keys:
+                    raise ContractError("DUPLICATE_ID")
+                relation_keys.add(key)
+            self.run(check_relation, relation)
         for document in r["documents"]:
             def check_doc():
                 check_document(document, sources, self.root, controlled)
@@ -382,6 +427,87 @@ class _Validator:
                     if document.available_at > step.as_of:
                         raise ContractError("FUTURE_EVIDENCE")
             self.run(check_gold, gold)
+        # Raw human records are optional. Structural validity is not human confirmation.
+        annotations = {a.annotation_id: a for a in r["annotations"]}
+        annotation_targets = set()
+        for annotation in r["annotations"]:
+            def check_annotation():
+                step = _need(steps, (annotation.timeline_id, annotation.step_id))
+                if (annotation.persona_version_id != step.persona_version_id
+                        or annotation.annotation_version != manifest.annotation_version):
+                    raise ContractError("REFERENCE_NOT_FOUND")
+                if annotation.guide_revision != "dev01-guide-v1":
+                    raise ContractError("UNSUPPORTED_REVISION", field="guide_revision")
+                if "ANNOTATION_GUIDE.md" not in controlled:
+                    raise ContractError("UNLISTED_INPUT", field="guide_revision")
+                if annotation.submitted_at < step.as_of:
+                    raise ContractError("INVALID_INTERVAL", field="submitted_at")
+                packet = annotation_packet(r["documents"], r["personas"], r["coverage"], step=step)
+                if sha256_bytes(packet) != annotation.packet_sha256:
+                    raise ContractError("SHA_MISMATCH", field="packet_sha256")
+                label = annotation.initial_label
+                target = (annotation.annotator_id, annotation.timeline_id, annotation.step_id,
+                          label.local_event_id, annotation.annotation_version)
+                if target in annotation_targets:
+                    raise ContractError("DUPLICATE_ID")
+                annotation_targets.add(target)
+                for version_id in label.document_version_ids:
+                    if version_id not in step.visible_doc_version_ids:
+                        raise ContractError("FUTURE_EVIDENCE", field="document_version_ids")
+                relation_keys = set()
+                for relation in label.document_relations:
+                    pair = (*sorted((relation.left_doc_version_id, relation.right_doc_version_id)),
+                            relation.evidence_at)
+                    if pair in relation_keys:
+                        raise ContractError("DUPLICATE_ID", field="document_relations")
+                    relation_keys.add(pair)
+                    check_provenance(relation.record_origin, relation.provenance_uri,
+                                     self.root, controlled)
+                    for version_id in (relation.left_doc_version_id, relation.right_doc_version_id):
+                        if version_id not in step.visible_doc_version_ids:
+                            raise ContractError("FUTURE_EVIDENCE", field="document_relations")
+                        if _need(documents, version_id).record_origin != relation.record_origin:
+                            raise ContractError("ORIGIN_MISMATCH", field="document_relations")
+                    if relation.left_doc_version_id == relation.right_doc_version_id:
+                        raise ContractError("SCHEMA_INVALID", field="document_relations")
+                    if max(documents[v].available_at for v in (
+                        relation.left_doc_version_id, relation.right_doc_version_id
+                    )) > relation.evidence_at:
+                        raise ContractError("FUTURE_EVIDENCE", field="document_relations")
+                    if relation.evidence_at > step.as_of:
+                        raise ContractError("FUTURE_EVIDENCE", field="document_relations")
+                for review in label.claim_reviews:
+                    for ref in review.evidence_refs:
+                        document = _need(documents, ref.doc_version_id)
+                        if document.family_id not in step.family_scope_ids:
+                            raise ContractError("CROSS_FAMILY_SPLIT", field="evidence_refs")
+                        citation_status(r["documents"], ref, as_of=step.as_of)
+            self.run(check_annotation, annotation)
+        for adjudication in r["adjudications"]:
+            def check_adjudication():
+                prior = [_need(annotations, key) for key in adjudication.prior_annotation_ids]
+                if len(set(adjudication.prior_annotation_ids)) != len(prior):
+                    raise ContractError("DUPLICATE_ID", field="prior_annotation_ids")
+                if len({a.annotator_id for a in prior}) < 2:
+                    raise ContractError("SCHEMA_INVALID", field="prior_annotation_ids")
+                label = adjudication.final_label
+                for annotation in prior:
+                    if (annotation.timeline_id, annotation.step_id, annotation.persona_version_id,
+                        annotation.annotation_version) != (label.timeline_id, label.step_id,
+                        label.persona_version_id, label.annotation_version):
+                        raise ContractError("REFERENCE_NOT_FOUND", field="final_label")
+                    if annotation.submitted_at > adjudication.adjudicated_at:
+                        raise ContractError("INVALID_INTERVAL", field="adjudicated_at")
+                key = tuple(getattr(label, name) for name in ID_FIELDS["gold"])
+                final = [g for g in r["gold"] if tuple(getattr(g, n) for n in ID_FIELDS["gold"]) == key]
+                if len(final) != 1 or final[0] != label:
+                    raise ContractError("REFERENCE_NOT_FOUND", field="final_label")
+                if label.adjudication_status not in {"adjudicated", "unresolved"}:
+                    raise ContractError("SCHEMA_INVALID", field="final_label.adjudication_status")
+                if (label.adjudication_status == "unresolved"
+                        and "unresolved_adjudication" not in self.report.pending):
+                    self.report.pending += ("unresolved_adjudication",)
+            self.run(check_adjudication, adjudication)
 
 
 def validate_dataset(manifest_path: str | Path, *, strict: bool = True) -> ValidationReport:

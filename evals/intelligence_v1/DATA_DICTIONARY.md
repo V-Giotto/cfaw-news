@@ -1,6 +1,6 @@
-# G1-PR1 data dictionary (g1-pr1-1)
+# G1-PR1/PR2 data dictionary (g1-pr2-1)
 
-Pydantic frozen models are the source of all 13 JSON Schemas. extra=forbid and
+Pydantic frozen models are the source of all 17 JSON Schemas. extra=forbid and
 strict=True reject unknown fields and coercion, including bool as score/budget.
 Nested collections are tuples or frozen models. Whitespace is never silently
 stripped from evidence. NonEmpty requires at least one non-whitespace character.
@@ -77,8 +77,9 @@ model serialization emits UTC Z, without rewriting source files.
 
 Version links stay within one document, have one root, no cycle or branch, and
 nondecreasing availability. Equal-time versions need explicit linear succession.
-Same document/content SHA cannot create another version; repeated observations
-are unsupported rather than presented as new changes. No observation table exists.
+Same document/content SHA cannot create another version. PR2 observations refer
+to an existing version and preserve each observation ID/time/content SHA. There
+is no business observation table or automatic ingestion/version writer.
 visible_versions validates chains using metadata, selects the last eligible node,
 and returns documents by document_id. Published time never drives this choice.
 
@@ -155,11 +156,60 @@ RIGHTS_UNKNOWN_FULLTEXT, RIGHTS_USE_NOT_ALLOWED. Split: FAMILY_NOT_FOUND,
 CROSS_FAMILY_SPLIT. Multiple diagnostics are sorted by path, line, code, ID, field.
 
 Pending: independent human semantic/rights review, complete lineage, real historical
-materials, predictions/prompts/index/metrics, Annotation/Adjudication/EventRelation
-workflows and G1-a acceptance. T25 N/A. No changes to existing business contracts,
+materials, predictions/prompts/index/metrics, actual human submission/adjudication
+and G1-a acceptance. T25 N/A. No changes to existing business contracts,
 database schemas or historical audit documents.
 
 Windows path comparisons also reject sensitive names case-insensitively, trailing
 spaces/dots and multiple manifest entries resolving to the same file. Exact URL
 or content-SHA identities cannot cross splits even under different declared
 family IDs; this is integrity matching, not semantic grouping.
+
+## PR2 additive records and preparation
+
+DocumentObservation: observation_id, doc_version_id, observed_at, content_sha256,
+record_origin/provenance_uri. Its target must exist with the same origin/hash and
+must have been observed by this time. Multiple observations do not add versions.
+
+EventRelation: left/right doc_version_id, relation, rationale, evidence_at,
+record_origin/provenance_uri. Relations are exact_duplicate/syndicated/
+same_event_different_evidence/related_distinct_event/unrelated/uncertain. Both ends
+exist with compatible origins/splits and are available by evidence_at. Self-pairs
+and reversed duplicate pairs at the same instant are rejected. These are reference
+labels, never predicted groups or independently verified truth.
+
+Annotation wraps annotation_id, timeline/step/persona, annotation_version,
+annotator_id, submitted_at, guide_revision, packet_sha256 and initial_label.
+Initial_label has a local_event_id, visible document_version_ids, the four 0-3
+scores, graded_relevance, material_change, tier, rationale, uncertainty,
+document_relations and claim_reviews. ClaimReview has claim_text, evidence_refs,
+semantic_support=supported/unsupported/uncertain, scope and limitations. Scores,
+timestamps and packet SHA are strict; a blank template is not an Annotation.
+Guide revision is dev01-guide-v1, whose controlled manual is mandatory. Repeated
+submissions for the same annotator/step/local event/version cannot overwrite.
+Within each initial_label, an unordered document pair plus evidence_at must occur
+only once, including identical or contradictory reversed entries. The same pair
+may be revisited at a different instant or in a different annotator's submission.
+
+Adjudication has adjudication_id, prior_annotation_ids, final_label (GoldLabel),
+reason, adjudicator_id, adjudicated_at. Prior records must exist for at least two
+different IDs, share the final scenario/version, and precede adjudication. The
+final label must match an explicitly stored Gold record with status adjudicated
+or unresolved. Unresolved adds unresolved_adjudication to the pending report and
+is not completion. Two IDs do
+not certify two real people: independent_annotation remains pending. No exporter
+creates human records, Gold or arbitration automatically.
+
+Manifest adds optional observations/event_relations/annotations/adjudications
+roles. Empty human JSONL files have record_count=0. Every JSONL remains controlled;
+role/schema disguise, missing files and all old path/hash guards remain errors.
+The main package includes both PR1 and DEV-01, so origin counts and split counts
+aggregate both. The old fixture bytes and its annotation_version remain unchanged.
+
+pilot.annotation_packet returns canonical bytes for one step after version/persona/
+coverage gates, using CandidateDocumentVersion's field allowlist. It takes no
+reference events, relations, Claims or Gold. pilot.visible_claim_states is reference-
+only and ignores future state payload before accessing its ID/text. citation_status
+checks availability and paragraph existence and always leaves semantic support
+not_measured. The replay module is limited to PR2 dry-run export with an external
+Manifest SHA pin. There are no prediction, metrics, full replay or loader interfaces.

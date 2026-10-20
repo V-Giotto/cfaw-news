@@ -1,6 +1,7 @@
 from types import SimpleNamespace
 
 import pytest
+from conftest import BASE
 
 from evals.intelligence_v1.contracts import DocumentVersion
 from evals.intelligence_v1.exceptions import ContractError
@@ -9,7 +10,7 @@ from evals.intelligence_v1.temporal import parse_instant, project_candidate, vis
 
 def docs(bundle):
     return [DocumentVersion.model_validate_json(x)
-            for x in next(bundle.rglob("documents.jsonl")).read_bytes().splitlines()]
+            for x in (bundle / BASE / "documents.jsonl").read_bytes().splitlines()]
 
 
 def test_T03_returns_exact_old_text_sha_without_reading_future_payload(bundle):

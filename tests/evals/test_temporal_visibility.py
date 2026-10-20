@@ -2,6 +2,7 @@ import json
 from datetime import datetime
 
 import pytest
+from conftest import BASE
 
 from evals.intelligence_v1.contracts import Delivery, DocumentVersion, Exposure, PersonaVersion
 from evals.intelligence_v1.exceptions import ContractError
@@ -18,7 +19,7 @@ from evals.intelligence_v1.temporal import (
 
 def records(bundle, name, model):
     return [model.model_validate_json(line)
-            for line in next(bundle.rglob(name)).read_bytes().splitlines()]
+            for line in (bundle / BASE / name).read_bytes().splitlines()]
 
 
 def test_T01_future_corpus_is_valid_but_not_a_candidate(bundle):
