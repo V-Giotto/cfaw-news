@@ -1,0 +1,3 @@
+{"coverage_window_id":"coverage:covered","end_at":"2026-01-02T00:00:00Z","observed_at":"2026-01-02T00:00:00Z","reason":"Synthetic coverage requirement: fixture records complete.","source_id":"fixture_official","start_at":"2026-01-01T00:00:00Z","status":"covered"}
+{"coverage_window_id":"coverage:unknown","end_at":"2026-01-04T00:00:00Z","observed_at":"2026-01-04T00:00:00Z","reason":"Synthetic observation gap.","source_id":"fixture_official","start_at":"2026-01-02T00:00:00Z","status":"unknown"}
+{"coverage_window_id":"coverage:offline","end_at":"2026-01-07T00:00:00Z","observed_at":"2026-01-07T00:00:00Z","reason":"Synthetic service stopped.","source_id":"fixture_official","start_at":"2026-01-04T00:00:00Z","status":"service_offline"}

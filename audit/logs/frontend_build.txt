@@ -1,0 +1,14 @@
+
+> cfaw-news-web@0.2.0 build
+> tsc --noEmit && vite build
+
+vite v8.3.4 building client environment for production...
+transforming...
+✓ 24 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.63 kB │ gzip:  0.44 kB
+dist/assets/index-BXbyWVB-.css   48.79 kB │ gzip: 11.05 kB
+dist/assets/index-ChWBcluR.js   279.45 kB │ gzip: 86.39 kB
+
+✓ built in 713ms

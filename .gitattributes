@@ -6,3 +6,6 @@ data/sources.json -text
 frontend/public/icon.svg -text
 LICENSE -text
 docs/provenance/legacy-NOTICE.txt -text whitespace=cr-at-eol
+# Frozen G0 fingerprints describe these exact bytes, including their line endings.
+audit/G0_BASELINE.json -text whitespace=cr-at-eol
+audit/G0_SCHEMA.sql -text whitespace=cr-at-eol,-blank-at-eof

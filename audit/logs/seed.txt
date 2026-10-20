@@ -1,0 +1,1 @@
+{"dataset": "seed-sanity-v1", "mean": {"recall_at_k": 1.0, "mrr_at_k": 0.8333333333333334, "ndcg_at_k": 0.8645724197652078}, "output": "<WORKSPACE>\\.local\\evals\\baseline.json"}

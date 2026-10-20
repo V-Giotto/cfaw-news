@@ -1,0 +1,586 @@
+{
+  "captured_at": "2026-10-20T06:07:57.928435+00:00",
+  "product_baseline": "docs/CFAW_News_V1.md",
+  "git_sha": "7f7f50324156b6a6ac61480a82311ba6ebd813b2",
+  "initial_untracked_documents": [
+    "docs/AI_PROJECT_HANDOFF.md",
+    "docs/CFAW_News_V1.md"
+  ],
+  "environment": {
+    "python": "3.12.14",
+    "os": "Windows",
+    "os_version": "10.0.26200",
+    "architecture": "AMD64",
+    "sqlite": "3.53.1",
+    "node": "v24.21.0",
+    "python_dependencies": {
+      "Pygments": "2.21.0",
+      "SQLAlchemy": "2.1.4",
+      "annotated-doc": "0.0.5",
+      "annotated-types": "0.8.0",
+      "anyio": "4.15.1",
+      "babel": "2.18.0",
+      "certifi": "2026.7.22",
+      "cfaw-news": "0.2.0",
+      "charset-normalizer": "3.5.2",
+      "click": "8.5.0",
+      "colorama": "0.4.6",
+      "courlan": "1.4.0",
+      "dateparser": "1.4.3",
+      "fastapi": "0.143.1",
+      "feedparser": "6.0.14",
+      "feedparser-sgmllib": "2.1.0",
+      "h11": "0.16.0",
+      "htmldate": "1.11.0",
+      "httpcore": "1.0.9",
+      "httpx": "0.28.1",
+      "idna": "3.20",
+      "iniconfig": "2.3.1",
+      "jusText": "3.0.2",
+      "lxml": "6.1.3",
+      "lxml_html_clean": "0.4.5",
+      "opentelemetry-api": "1.45.1",
+      "packaging": "26.3",
+      "pillow": "13.0.0",
+      "pip": "25.0.1",
+      "pluggy": "1.6.0",
+      "pydantic": "2.14.1",
+      "pydantic-settings": "2.16.0",
+      "pydantic_core": "2.50.1",
+      "pytest": "9.1.1",
+      "python-dateutil": "2.9.0.post0",
+      "python-dotenv": "1.2.4",
+      "pytz": "2026.5",
+      "regex": "2026.9.29",
+      "ruff": "0.17.0",
+      "six": "1.17.0",
+      "starlette": "1.8.0",
+      "tld": "0.13.2",
+      "trafilatura": "2.3.1",
+      "typing-inspection": "0.4.4",
+      "typing_extensions": "4.16.0",
+      "tzdata": "2026.5",
+      "tzlocal": "5.4.4",
+      "urllib3": "2.8.0",
+      "uvicorn": "0.54.0"
+    },
+    "npm": "11.19.0",
+    "powershell": "5.1.26100.9711",
+    "requirements_lock_mismatches": [],
+    "frontend_installed_versions": {
+      "react": "19.3.0",
+      "react-dom": "19.3.0",
+      "typescript": "7.0.2",
+      "vite": "8.3.4",
+      "@vitejs/plugin-react": "6.1.2"
+    }
+  },
+  "file_sha256": {
+    "requirements.lock": "fb14c8af21a7af52f25e31044ad6b0101f7acfb794f6a5c8ec668d45b3f4d72d",
+    "pyproject.toml": "de24cd2072f46d360be071f1bb60f2b184f3ab680d0636e1e791264d356ed7da",
+    "frontend/package-lock.json": "b867e6c2da39e9c56d9cdaeb5b7456bed8751d4355672269a459ac7c515d961f",
+    "frontend/package.json": "4235a71d1b3a900333c5d5f57f673960881e4eb969842a42989db8dbe76a53ec",
+    "data/archive/articles.json": "8e8f3f5ade820fc00f365abef7717c9d66dfa31a9323c30b7c13b6e0f31e18ef",
+    "data/sources.json": "aea897d457fef1ef79c9108a00091160d2553817ef9e7e03b9f532617b63bce9",
+    "data/live_sources.json": "9f71fe20d050b9320d1aacb306f063d77f75be856af3e6919ad22f09ab58d9bb",
+    "docs/CFAW_News_V1.md": "93ffeb537617c088e35f5916a868de3a67379eebb3f7af7b0ff0d3c51889a5e8"
+  },
+  "provenance_asset_hashes_match": {
+    "data/archive/articles.json": true,
+    "data/sources.json": true,
+    "frontend/public/icon.svg": true,
+    "LICENSE": true,
+    "docs/provenance/legacy-NOTICE.txt": true
+  },
+  "database": {
+    "source": ".local/cfaw-news.db",
+    "backup_dir": ".local/g0/2026-10-20/capture-20261020T060756Z",
+    "backup_sha256": "e9bb60a115799136174ad512941c816e220d4e704136c5ab466e1a8331ba7b04",
+    "restored_pre_start_sha256": "e9bb60a115799136174ad512941c816e220d4e704136c5ab466e1a8331ba7b04",
+    "backup_matches_consistent_source_snapshot": true,
+    "source_database_opened_read_only": true,
+    "schema_and_counts": {
+      "tables": {
+        "article_media": {
+          "count": 462,
+          "rows_sha256": "94e382b9ec5fcfc056eb7f9c0b76bed7b437de16b688092fcfa0e7032665a437"
+        },
+        "article_reading": {
+          "count": 64,
+          "rows_sha256": "3454c02ed4af89af8368ff75507d8b081862fca43e4cb4f62d47a18b7cd77544"
+        },
+        "articles": {
+          "count": 912,
+          "rows_sha256": "2d49f063e554b2733f0c93e58a801bf386b6c7730a0e3eab674f81f914b3bdaa"
+        },
+        "decisions": {
+          "count": 0,
+          "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "goals": {
+          "count": 1,
+          "rows_sha256": "7ee5d70cbfc23637de06009f7eb23b69615ddc559772c3b6fdf340a2983bbe01"
+        },
+        "meta": {
+          "count": 1,
+          "rows_sha256": "018f3e3957e2062218faf2f2f38377434d372bdb11f5d4cf300b15074fb4629c"
+        },
+        "run_events": {
+          "count": 4,
+          "rows_sha256": "0de0164af5d44e45d68663e1a2fc703d8409804d4078351d696d2b7f0abb22fe"
+        },
+        "runs": {
+          "count": 1,
+          "rows_sha256": "f2952478bb664be51fdb0c412ff4a8de4152e49271d32eac1d741171cb071807"
+        },
+        "schedules": {
+          "count": 0,
+          "rows_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "source_states": {
+          "count": 10,
+          "rows_sha256": "2486f30c811bd9a164284bd42eae93c6d065823062120a710faa82a8970513ac"
+        }
+      },
+      "schema": [
+        {
+          "type": "index",
+          "name": "ix_decisions_goal_id",
+          "table": "decisions",
+          "sql": "CREATE INDEX ix_decisions_goal_id ON decisions (goal_id)"
+        },
+        {
+          "type": "index",
+          "name": "ix_run_events_run_id",
+          "table": "run_events",
+          "sql": "CREATE INDEX ix_run_events_run_id ON run_events (run_id)"
+        },
+        {
+          "type": "index",
+          "name": "ix_runs_created_at",
+          "table": "runs",
+          "sql": "CREATE INDEX ix_runs_created_at ON runs (created_at)"
+        },
+        {
+          "type": "index",
+          "name": "ix_runs_goal_id",
+          "table": "runs",
+          "sql": "CREATE INDEX ix_runs_goal_id ON runs (goal_id)"
+        },
+        {
+          "type": "index",
+          "name": "ix_runs_status",
+          "table": "runs",
+          "sql": "CREATE INDEX ix_runs_status ON runs (status)"
+        },
+        {
+          "type": "table",
+          "name": "article_media",
+          "table": "article_media",
+          "sql": "CREATE TABLE article_media (\n\tarticle_id VARCHAR NOT NULL, \n\tdata JSON NOT NULL, \n\tPRIMARY KEY (article_id), \n\tFOREIGN KEY(article_id) REFERENCES articles (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "article_reading",
+          "table": "article_reading",
+          "sql": "CREATE TABLE article_reading (\n\tarticle_id VARCHAR NOT NULL, \n\tdata JSON NOT NULL, \n\tPRIMARY KEY (article_id), \n\tFOREIGN KEY(article_id) REFERENCES articles (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "articles",
+          "table": "articles",
+          "sql": "CREATE TABLE articles (\n\tid VARCHAR NOT NULL, \n\tcontent_hash VARCHAR NOT NULL, \n\torigin VARCHAR NOT NULL, \n\tdata JSON NOT NULL, \n\tPRIMARY KEY (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "decisions",
+          "table": "decisions",
+          "sql": "CREATE TABLE decisions (\n\tid VARCHAR NOT NULL, \n\trun_id VARCHAR NOT NULL, \n\tgoal_id VARCHAR NOT NULL, \n\tgoal_version INTEGER NOT NULL, \n\tbasis_hash VARCHAR NOT NULL, \n\tchoice VARCHAR NOT NULL, \n\treason TEXT NOT NULL, \n\tcreated_at VARCHAR NOT NULL, \n\tPRIMARY KEY (id), \n\tUNIQUE (run_id), \n\tFOREIGN KEY(run_id) REFERENCES runs (id), \n\tFOREIGN KEY(goal_id) REFERENCES goals (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "goals",
+          "table": "goals",
+          "sql": "CREATE TABLE goals (\n\tid VARCHAR NOT NULL, \n\tversion INTEGER NOT NULL, \n\tstatus VARCHAR NOT NULL, \n\tis_demo BOOLEAN NOT NULL, \n\tdata JSON NOT NULL, \n\tcreated_at VARCHAR NOT NULL, \n\tPRIMARY KEY (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "meta",
+          "table": "meta",
+          "sql": "CREATE TABLE meta (\n\t\"key\" VARCHAR NOT NULL, \n\tvalue VARCHAR NOT NULL, \n\tPRIMARY KEY (\"key\")\n)"
+        },
+        {
+          "type": "table",
+          "name": "run_events",
+          "table": "run_events",
+          "sql": "CREATE TABLE run_events (\n\tid INTEGER NOT NULL, \n\trun_id VARCHAR NOT NULL, \n\tkind VARCHAR NOT NULL, \n\tmessage TEXT NOT NULL, \n\tcreated_at VARCHAR NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(run_id) REFERENCES runs (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "runs",
+          "table": "runs",
+          "sql": "CREATE TABLE runs (\n\tid VARCHAR NOT NULL, \n\tgoal_id VARCHAR NOT NULL, \n\tgoal_version INTEGER NOT NULL, \n\tstatus VARCHAR NOT NULL, \n\tmode VARCHAR NOT NULL, \n\tsnapshot JSON NOT NULL, \n\tresult JSON, \n\tbasis_hash VARCHAR NOT NULL, \n\terror TEXT, \n\tcancel_requested BOOLEAN NOT NULL, \n\tcreated_at VARCHAR NOT NULL, \n\tfinished_at VARCHAR, \n\tmetrics JSON NOT NULL, \n\tPRIMARY KEY (id), \n\tFOREIGN KEY(goal_id) REFERENCES goals (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "schedules",
+          "table": "schedules",
+          "sql": "CREATE TABLE schedules (\n\tid VARCHAR NOT NULL, \n\tproposal_key VARCHAR NOT NULL, \n\trun_id VARCHAR NOT NULL, \n\ttitle VARCHAR NOT NULL, \n\tcontent TEXT NOT NULL, \n\tstart VARCHAR NOT NULL, \n\t\"end\" VARCHAR NOT NULL, \n\tstatus VARCHAR NOT NULL, \n\tcreated_at VARCHAR NOT NULL, \n\tPRIMARY KEY (id), \n\tUNIQUE (proposal_key), \n\tFOREIGN KEY(run_id) REFERENCES runs (id)\n)"
+        },
+        {
+          "type": "table",
+          "name": "source_states",
+          "table": "source_states",
+          "sql": "CREATE TABLE source_states (\n\tsource_id VARCHAR NOT NULL, \n\tdata JSON NOT NULL, \n\tPRIMARY KEY (source_id)\n)"
+        }
+      ],
+      "integrity_check": "ok",
+      "foreign_key_violations": 0
+    },
+    "restored_api": {
+      "transport": "ASGI with real application lifespan",
+      "model_called": false,
+      "http_status": {
+        "/api/health": 200,
+        "/api/config": 200,
+        "/api/goals?include_unfollowed=true": 200,
+        "/api/runs": 200,
+        "/api/schedules": 200,
+        "/api/articles?limit=2": 200,
+        "/api/sources": 200
+      },
+      "runs_read": 1,
+      "results_reference_validated": 1,
+      "citation_count": 9,
+      "decisions_read": 0
+    },
+    "after_startup_changed_tables": [],
+    "after_startup_integrity": "ok",
+    "media_files_backed_up": false
+  },
+  "source_fault_scenario": {
+    "record_origin": "synthetic",
+    "live_network": false,
+    "initial_status": "ok",
+    "failure_status": "error",
+    "error_code": "http_503",
+    "cache_unchanged": true,
+    "last_success_preserved": true,
+    "domain_records_created": 0,
+    "reading_disabled_explicit": true
+  },
+  "structural_boundary_probe": {
+    "record_origin": "synthetic",
+    "semantic_support_checked": false,
+    "false_claim_with_valid_id_accepted": true,
+    "future_dated_article_returned_without_temporal_wrapper": true,
+    "stable_tie_break": "id ascending",
+    "no_live_model": true
+  },
+  "synthetic_server_database": ".local/g0/2026-10-20/capture-20261020T060756Z/synthetic-smoke.db",
+  "scope": {
+    "live_model_called": false,
+    "live_feed_fetch": false,
+    "migration_executed": false,
+    "production_db_written": false
+  },
+  "finalized_at": "2026-10-20T06:21:18.753226+00:00",
+  "checks": {
+    "ruff": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/ruff.log",
+      "log_sha256": "a4443afdcfb6d7363adb285762515ccf7cf50473b1a05c20c1a50f6bed4d26b0",
+      "public_log": "audit/logs/ruff.txt",
+      "public_log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18"
+    },
+    "pytest": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/pytest-unsandboxed.log",
+      "log_sha256": "1abf94ea1306455f68ee60599b79d375f450da94a228897e35efd3a1af3a37db",
+      "public_log": "audit/logs/pytest.txt",
+      "public_log_sha256": "7be17799e9f19f13485e4bc8afc8216b8cdd0cf02d5a730c32b9c4b7a5de29dc",
+      "tests_passed": 125,
+      "warnings": 1,
+      "elapsed_seconds": 21.39,
+      "sandbox_attempt": "interrupted: Windows asyncio socketpair initialization hung",
+      "diagnostic_log": ".local/g0/2026-10-20/pytest-diagnostic.log"
+    },
+    "seed": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/seed.log",
+      "log_sha256": "e5d908996265aa179827eb9cfd883ecbe5e9f8faa83252bff1ea287882b3813a",
+      "public_log": "audit/logs/seed.txt",
+      "public_log_sha256": "7c4c54d434eafd132ac1c9326f1649e3ef816692b496cc44856c3ea101b253d9",
+      "result": {
+        "dataset_revision": "seed-sanity-v1",
+        "scope": "开发者手选的部分相关条目；不是独立测试集或穷尽相关性标注。",
+        "method": "bm25-han-bigram-v1",
+        "corpus_count": 26,
+        "k": 8,
+        "model_called": false,
+        "results": [
+          {
+            "id": "mac-meeting",
+            "recall_at_k": 1.0,
+            "mrr_at_k": 1.0,
+            "ndcg_at_k": 0.961999147059583,
+            "ranked_ids": [
+              "archive:time-whisper-notes",
+              "archive:time-foresight",
+              "archive:time-apple-notes",
+              "archive:time-notebooklm-slides",
+              "archive:time-meet-in-person",
+              "archive:time-notion-conditions",
+              "archive:time-notion-workflow",
+              "archive:money-china-battery"
+            ]
+          },
+          {
+            "id": "laptop",
+            "recall_at_k": 1.0,
+            "mrr_at_k": 1.0,
+            "ndcg_at_k": 0.8710785440003369,
+            "ranked_ids": [
+              "archive:money-arm-compatibility",
+              "archive:money-older-independent-review",
+              "archive:money-china-catalog",
+              "archive:money-china-battery",
+              "archive:money-repeat",
+              "archive:money-launch",
+              "archive:time-foresight",
+              "archive:money-copilot-difference"
+            ]
+          },
+          {
+            "id": "photos",
+            "recall_at_k": 1.0,
+            "mrr_at_k": 0.5,
+            "ndcg_at_k": 0.7606395682357036,
+            "ranked_ids": [
+              "archive:trust-regional-price",
+              "archive:trust-storage-quota",
+              "archive:trust-privacy",
+              "archive:trust-controls",
+              "archive:trust-family-storage",
+              "archive:time-meet-in-person",
+              "archive:trust-launch",
+              "archive:time-notion-conditions"
+            ]
+          }
+        ],
+        "mean": {
+          "recall_at_k": 1.0,
+          "mrr_at_k": 0.8333333333333334,
+          "ndcg_at_k": 0.8645724197652078
+        }
+      }
+    },
+    "pip_check": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/pip-check.log",
+      "log_sha256": "672aec65a45bed50e70229c70934a7eebf0462595c459b83023027645d57cccf",
+      "public_log": "audit/logs/pip_check.txt",
+      "public_log_sha256": "9261363b733079a641c2e4cc9bc46ffa1d8336945a87f807b6cf68847dbc9b09"
+    },
+    "frontend_build": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/frontend-build.log",
+      "log_sha256": "7ff7ac80ffda2adb7afc3ebcac938734e65629bdf475fb300d411265a13add8c",
+      "public_log": "audit/logs/frontend_build.txt",
+      "public_log_sha256": "2c1af2f98dcb4e4d7d2fcebcaa0321faa05bea65338cff74898a21933cb0847c"
+    },
+    "capture": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/capture.log",
+      "log_sha256": "26e56234b15492e521084cbce547d6112c0d1ba3d054a5b3c29c185d2ff26915",
+      "public_log": "audit/logs/capture.txt",
+      "public_log_sha256": "7a799c0156a700aca127d146fb9eaa891d7e7c6fc72c663f95d650990909dfcb"
+    },
+    "browser": {
+      "status": "passed",
+      "exit_code": 0,
+      "log": ".local/g0/2026-10-20/browser.log",
+      "log_sha256": "ee6510cb99207fc53ad644a003c603765b7cb229048f5fc65755257fcca89ee2",
+      "public_log": "audit/logs/browser.txt",
+      "public_log_sha256": "02838b7765b69e467490ca0a8ecb38fd6bcec8b767f3e34a91a95a8fcc92e22e"
+    }
+  },
+  "browser_smoke": {
+    "status": "passed",
+    "browser": "existing Microsoft Edge, headless Playwright",
+    "viewport": "1440x1000",
+    "record_origin": "synthetic",
+    "production_database_used": false,
+    "checks": [
+      "HTTP 200 and synthetic article visible without Goal",
+      "source failure and cached article coexist",
+      "reader opens and disabled fetch is explicit",
+      "Goal/calendar/history navigation remains accessible"
+    ],
+    "console_errors": [],
+    "screenshot": ".local/g0/2026-10-20/source-failure.png",
+    "live_model_called": false
+  },
+  "persisted_source_health": {
+    "scope": "backup snapshot; not a live network probe",
+    "sources": [
+      {
+        "source_id": "36kr",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:25:11.816757+00:00",
+        "last_success_at": "2026-10-18T15:25:11.816757+00:00",
+        "next_refresh_at": "2026-10-18T15:35:11.831273+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "chinanews",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:24:41.373842+00:00",
+        "last_success_at": "2026-10-18T15:24:41.373842+00:00",
+        "next_refresh_at": "2026-10-18T15:34:41.396355+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "geekpark",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:19:40.374559+00:00",
+        "last_success_at": "2026-10-18T15:19:40.374559+00:00",
+        "next_refresh_at": "2026-10-18T15:34:40.400288+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "github-blog",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:19:40.752619+00:00",
+        "last_success_at": "2026-10-18T15:19:40.752619+00:00",
+        "next_refresh_at": "2026-10-18T15:34:40.752619+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "hn",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:25:18.091524+00:00",
+        "last_success_at": "2026-10-18T15:25:18.091524+00:00",
+        "next_refresh_at": "2026-10-18T15:35:18.109395+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "ifanr",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:19:40.847107+00:00",
+        "last_success_at": "2026-10-18T15:19:40.847107+00:00",
+        "next_refresh_at": "2026-10-18T15:34:40.884632+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "ithome",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:25:11.710459+00:00",
+        "last_success_at": "2026-10-18T15:25:11.710459+00:00",
+        "next_refresh_at": "2026-10-18T15:35:11.737576+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "mit",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:04:36.405931+00:00",
+        "last_success_at": "2026-10-18T15:04:36.405931+00:00",
+        "next_refresh_at": "2026-10-18T15:34:36.453039+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "ruanyifeng",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:04:38.228972+00:00",
+        "last_success_at": "2026-10-18T15:04:38.228972+00:00",
+        "next_refresh_at": "2026-10-18T15:34:38.228972+00:00",
+        "error_code": null
+      },
+      {
+        "source_id": "solidot",
+        "status": "ok",
+        "last_attempt_at": "2026-10-18T15:19:40.071576+00:00",
+        "last_success_at": "2026-10-18T15:19:40.071576+00:00",
+        "next_refresh_at": "2026-10-18T15:34:40.082210+00:00",
+        "error_code": null
+      }
+    ]
+  },
+  "article_time_coverage": {
+    "article_count": 912,
+    "non_null_counts": {
+      "published_at": 613,
+      "submitted_at": 299,
+      "updated_at": 3,
+      "captured_at": 912,
+      "first_seen_at": 873,
+      "last_seen_at": 873,
+      "available_at": 0,
+      "doc_version_id": 0,
+      "event_id": 0
+    }
+  },
+  "audited_source_sha256": {
+    "backend/cfaw_news/__init__.py": "b26dc71fc6e06f1219b825d053ba088de4cb9ff3c8ff30ed9dc064dd967c1bbb",
+    "backend/cfaw_news/article_html.py": "6aa65aa9efb490c4ab2039ccfa591dc6cc37f6a70270f9b2c7da696da6374667",
+    "backend/cfaw_news/config.py": "151a60e5b28309533232a0076178ee4899ee8645dbabffff403e80e6f59b5698",
+    "backend/cfaw_news/database.py": "01896f66a4ccedd2a44450251d232c45eaa28b3e72eec809d227744163771d7e",
+    "backend/cfaw_news/following.py": "794bd125e48461af58bc3e265d47b000bee58a1604db9ce481c6ee3ee52a93a0",
+    "backend/cfaw_news/ingestion.py": "1c01ff522e5ddcf3a0705289194d84d24975dcd31a286ad8d1bb7c22c94afb20",
+    "backend/cfaw_news/live_check.py": "aca7f75e2fe4681046ad6a44cf0d9d954c8f8846f61e6de08d0aaae9b9949231",
+    "backend/cfaw_news/main.py": "f3571fce2e9ab91812b3b1e27e859a51a6b4327b0372c5136b336ea0e1781b66",
+    "backend/cfaw_news/media.py": "c5bf4a8ec8caa640510f9688c26c4d0d92b5988a1ae7cd0e5dd4e20d1bd688ff",
+    "backend/cfaw_news/prompts/judgment.v1.txt": "c04fbc878a4830c7c70ae0b5de72c3cd96d402ffab0924423e421e56220bb33e",
+    "backend/cfaw_news/providers.py": "2c594f55c0fd2da0fd9d5302b53d24aa741f5aa42428d92aa00b0856850826e2",
+    "backend/cfaw_news/reading.py": "1222108f31f24b23b394571946d250ff8afa4670ac3314285848340a4ae03942",
+    "backend/cfaw_news/retrieval.py": "e16f00e73e7e55894841ced261bf37fbd724851125dbb2cf7d4b2e2d2a8c7ea6",
+    "backend/cfaw_news/schemas.py": "4fa60b1d4efe2a92871188ce3825921d5003e364a306f6d77b54573720813bde",
+    "backend/cfaw_news/seed.py": "c1b61c524fe8ae7340be4f0de86cdcafa1e89f5e5a0d0f6a62c5429fe7fc6ea0",
+    "backend/cfaw_news/service.py": "35163e73c20b510c5974cad319b1e19a5d7cdf3766b3b2a25c8357bc7bbce32b",
+    "evals/run_baseline.py": "cacc132e1ae164c3c883a5fd208322c9bb1fe0d10c8e405af550230cc83cc4b6",
+    "evals/seed_cases.json": "a1e8272e79fa1018c344b85033cbc377c43a5fad68425af920fdaff38fea5ac4",
+    "frontend/src/ActivityPages.tsx": "9a6b20eeb74a2c1035cd4bfb489197a7ad83dbe2d4a545ceda4a229f4e26616d",
+    "frontend/src/App.tsx": "71f2bb126b1bcd82d3b76032837db5644e4914a6bc90d31166a840ad7486f4f0",
+    "frontend/src/ArticleReader.tsx": "f854a15a58e50ed51e74df7b97341a3f140c75cbadf0f9d6b9df97d5ae54f269",
+    "frontend/src/GoalWorkspace.tsx": "6714ad87581cfef98739503cb2b6250426c6fb836a1d09ee46bf705ca63dad59",
+    "frontend/src/Icon.tsx": "cdfbed1c64496b12e5054a83ef2cf7bd37269d843e5f4fea5994ab5c2a23fae2",
+    "frontend/src/NewsLibrary.tsx": "db7f79a76e4682c396ed16f9422ff9c7ea9e37da6e0ab1d7e84fc7905d495963",
+    "frontend/src/ReadingContent.tsx": "b46353eff3157636acc07e253ec9189da041f96ebb9002139af4ed6b59376bf0",
+    "frontend/src/api.ts": "5abc13888a4750974b44d86eb0c7559f384b7ea6e88d1ea0dce71a4cd7f8530c",
+    "frontend/src/format.ts": "78cea579aed66e4f6a7ef7a65f183dc4d80fb2b7935b25732a290e666cd804e5",
+    "frontend/src/main.tsx": "10ac689b4eb57228d6be39425516819110d59de99ccaff9eba6ab68ae07abcc3",
+    "frontend/src/styles.css": "4504caf12af5577618c09d93fa689cb6db375fd63acda4c5ae435c29a2b3fe31",
+    "frontend/src/vite-env.d.ts": "65996936fbb042915f7b74a200fcdde7e410f32a669b1ab9597cfaa4b0faddb5",
+    "tests/test_following.py": "a80f9a9ea6fe3ee1e75b5b201a9b36a3e8a07a0c49cf5b37cee60df17f026f3f",
+    "tests/test_ingestion.py": "f519806b12f983a6fb4ef341977c0793096f3a0f822125fe2f0dc5b35a125119",
+    "tests/test_media.py": "bb70044b84a50a981dfe9d9e9a4dccb7cf87b9e51083db08197ef6050e260436",
+    "tests/test_providers.py": "83e0c38539c46c515f5060d4950ea337ba9c3a20562a4b21e28bb417fa53c26a",
+    "tests/test_reading.py": "54e0b1a454b472ad9335e215e7258076689543f7c8f61f86633d12423ae2c0d3",
+    "tests/test_workflow.py": "c7220f28a8f5ba219f3f6c112348ff0ddf775fa0d8fe75ad253aef0dd16a56c9"
+  },
+  "g0_gate": {
+    "status": "ready_for_offline_G1_only",
+    "existing_code_checks_pass": true,
+    "historical_database_restore_verified": true,
+    "G1_or_V1_product_implemented": false,
+    "migration_status": "not_performed"
+  },
+  "audit_artifact_sha256": {
+    "audit/G0_REUSE_AUDIT.md": "04734cf331bf82027ff2b7b936f2624884b8f5fa4dd432c0ace8cb3172dffe34",
+    "audit/G0_SCHEMA.sql": "554b1c1e239932bdf6e33da4bdedb8508b30d21d958707632fc739e627c2281a",
+    "audit/run_g0_checks.py": "5be683ef84d28d228eb163fe2dd9cd39e4766a2b60fab41771473fdb4789b7c6",
+    "audit/g0_browser_smoke.cjs": "bd205a25b854483a9ed82d09158d3524dd17914742f2221292d5405a1ed92eb1",
+    "AGENTS.md": "511411933a1fa1691199a4602f14133360fbf843b718f92c7e8f553acbd032c7",
+    "README.md": "0f2bf544e8fbd7ba36895eb415c9ef504a26005fffe824dd255c43c4d7ff588a",
+    "docs/ROADMAP.md": "417654166821f75ea1caa980757eecb84faaa48328ca592474fd590b8b1fefae",
+    "docs/TIMELINE.md": "2533e161b14d7faec448bd0798584ed88c19e602904cfe5bb2141bc27913cff9",
+    "docs/后续开发规划.md": "0ee7b60d0500fac6a5d70ae419a2ca9b51b0286ed252568e024b4eaf3ab239ef",
+    "docs/AI_PROJECT_HANDOFF.md": "4a84981806bc150836dadd3ba0a7d4191b38c91af48c7a93231ea1d47b647079"
+  }
+}
