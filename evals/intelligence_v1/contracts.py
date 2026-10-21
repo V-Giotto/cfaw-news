@@ -19,7 +19,7 @@ from .exceptions import ContractError
 from .hashing import canonical_json, content_sha256
 from .temporal import INSTANT_PATTERN, format_instant, parse_instant, utc_instant
 
-SCHEMA_REVISION = "g1-pr2-1"
+SCHEMA_REVISION = "g1-pr3-1"
 NonEmpty = Annotated[str, Field(min_length=1, pattern=r"\S")]
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 PositiveInt = Annotated[int, Field(gt=0)]
@@ -396,6 +396,102 @@ class CandidateDocumentVersion(StrictModel):
     upstream_document_id: NonEmpty | None
 
 
+class BaselineConfig(StrictModel):
+    config_revision: Literal["pr3-baselines-v1"] = "pr3-baselines-v1"
+    tokenizer_revision: Literal["bm25-han-bigram-v1"] = "bm25-han-bigram-v1"
+    query_revision: Literal["persona-query-v1"] = "persona-query-v1"
+    grouping_revision: Literal["conservative-v1"] = "conservative-v1"
+    k1: Literal[1.2] = 1.2
+    b: Literal[0.75] = 0.75
+    title_weight: Literal[2] = 2
+    score_decimals: Literal[5] = 5
+    body_jaccard: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] = 0.95
+    title_jaccard: Annotated[float, Field(ge=0, le=1, allow_inf_nan=False)] = 0.80
+    min_body_tokens: PositiveInt = 12
+    metric_k: Literal[5] = 5
+    random_seed: Literal[0] = 0
+    retrieval_sha256: Sha256 | None = None
+
+
+class VisibleExposure(StrictModel):
+    exposure_id: NonEmpty
+    delivery_id: NonEmpty
+    event_prediction_id: NonEmpty | None
+    kind: Literal["included", "rendered", "opened", "acknowledged", "dismissed"]
+    occurred_at: Instant
+    source: NonEmpty
+
+
+class ReplayContext(StrictModel):
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    as_of: Instant
+    persona: PersonaVersion
+    candidate_doc_version_ids: tuple[NonEmpty, ...]
+    previous_delivery_id: NonEmpty | None
+    attention_budget_seconds: PositiveInt
+    time_window_start: Instant
+    time_window_end: Instant
+    source_coverage: tuple[CoverageWindow, ...]
+    exposure_history: tuple[VisibleExposure, ...]
+
+    @model_validator(mode="after")
+    def historical(self):
+        if not self.time_window_start <= self.time_window_end <= self.as_of:
+            raise ContractError("INVALID_INTERVAL")
+        if self.persona.available_at > self.as_of:
+            raise ContractError("FUTURE_PERSONA")
+        if any(c.observed_at > self.as_of or c.end_at > self.as_of for c in self.source_coverage):
+            raise ContractError("FUTURE_COVERAGE")
+        if any(e.occurred_at > self.as_of for e in self.exposure_history):
+            raise ContractError("FUTURE_EXPOSURE")
+        if len(set(self.candidate_doc_version_ids)) != len(self.candidate_doc_version_ids):
+            raise ContractError("DUPLICATE_ID")
+        return self
+
+
+MergeReason = Literal["exact_url_hash", "visible_upstream", "conservative_text", "oracle_reference"]
+Independence = Literal["not_independent", "unknown"]
+
+
+class PredictedEventGroup(StrictModel):
+    predicted_event_id: NonEmpty
+    doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    merge_reasons: tuple[MergeReason, ...]
+    evidence_independence: Independence
+
+    @model_validator(mode="after")
+    def unique(self):
+        if self.doc_version_ids != tuple(sorted(set(self.doc_version_ids))):
+            raise ContractError("GROUP_MEMBERS_INVALID")
+        return self
+
+
+class ScoreComponents(StrictModel):
+    bm25: Annotated[float, Field(ge=0, allow_inf_nan=False)] | None = None
+    available_at: Instant | None = None
+    aggregation: Literal["none", "max"] = "none"
+
+
+class RankedItem(StrictModel):
+    rank: PositiveInt
+    doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    representative_doc_version_id: NonEmpty
+    representative_source_id: NonEmpty
+    score: Annotated[float, Field(ge=0, allow_inf_nan=False)] | None
+    score_components: ScoreComponents
+    predicted_event_id: NonEmpty | None = None
+    merge_reasons: tuple[MergeReason, ...] = ()
+    evidence_independence: Independence = "unknown"
+
+    @model_validator(mode="after")
+    def member(self):
+        if (self.representative_doc_version_id not in self.doc_version_ids
+                or len(set(self.doc_version_ids)) != len(self.doc_version_ids)):
+            raise ContractError("GROUP_MEMBERS_INVALID")
+        return self
+
+
 SCHEMA_MODELS = {
     "document_version": DocumentVersion, "persona_version": PersonaVersion,
     "replay_step": ReplayStep, "exposure": Exposure, "coverage_window": CoverageWindow,
@@ -404,6 +500,8 @@ SCHEMA_MODELS = {
     "family_split": FamilySplit, "candidate_document_version": CandidateDocumentVersion,
     "document_observation": DocumentObservation, "event_relation": EventRelation,
     "annotation": Annotation, "adjudication": Adjudication,
+    "baseline_config": BaselineConfig, "replay_context": ReplayContext,
+    "predicted_event_group": PredictedEventGroup, "ranked_item": RankedItem,
 }
 
 

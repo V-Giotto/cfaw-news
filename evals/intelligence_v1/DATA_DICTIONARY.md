@@ -1,6 +1,6 @@
-# G1-PR1/PR2 data dictionary (g1-pr2-1)
+# G1-PR1/PR2/PR3 data dictionary (g1-pr3-1)
 
-Pydantic frozen models are the source of all 17 JSON Schemas. extra=forbid and
+Pydantic frozen models are the source of all 21 JSON Schemas. extra=forbid and
 strict=True reject unknown fields and coercion, including bool as score/budget.
 Nested collections are tuples or frozen models. Whitespace is never silently
 stripped from evidence. NonEmpty requires at least one non-whitespace character.
@@ -211,5 +211,65 @@ coverage gates, using CandidateDocumentVersion's field allowlist. It takes no
 reference events, relations, Claims or Gold. pilot.visible_claim_states is reference-
 only and ignores future state payload before accessing its ID/text. citation_status
 checks availability and paragraph existence and always leaves semantic support
-not_measured. The replay module is limited to PR2 dry-run export with an external
-Manifest SHA pin. There are no prediction, metrics, full replay or loader interfaces.
+not_measured. PR2 dry-run export still requires an external Manifest SHA pin.
+
+## PR3 prediction and evaluation interfaces
+
+load_bundle(manifest_path, manifest_sha256, config_path=None) reads only prediction
+roles. It verifies the external pin, controlled paths, unique IDs, schemas,
+executable code and scoring kernel, source rights and family/split context.
+As of pr3-replay-v2, split_metadata.split_metadata_issues is shared with full
+validation: document family is immutable; non-null URL/SHA identities cannot
+cross splits; upstream documents must exist, belong to the same family and have
+an available version by the child's availability. Each timeline and persona_id
+(across all persona versions referenced by steps) belongs to one split. These
+global admission checks inspect metadata only; they never score future bodies or
+preferences, or open reference events/labels. Illegal split reuse fails during
+load_bundle with CROSS_FAMILY_SPLIT, before load_step/ranking/output creation.
+It never imports the full validator or opens reference answers. Full validation
+remains strict and mandatory for evaluation, not ordinary prediction.
+
+load_step(bundle, timeline_id, step_id, config) returns ReplayContext and an
+immutable tuple of CandidateDocumentVersion. Historical document/persona metadata
+is selected before payload projection. Actual visible IDs must equal the frozen
+step exactly (VISIBLE_SET_MISMATCH is fatal). time_window_start never removes old
+visible documents. Context has scenario/time, visible Persona, candidate IDs,
+previous delivery ID, budget, selected coverage and safe exposure history; it has
+no family/split/reference IDs. Exposure history is scoped by preceding delivery
+references in the same timeline, filtered at as_of, and retains unbound fixture
+history without its reference-event target. It never mutates knowledge_known.
+
+BaselineConfig freezes revisions, k1=1.2, b=.75, title_weight=2, five-decimal
+scores, thresholds (.95 body/.80 title/min 12 tokens), metric_k=5, seed=0 and the
+retrieval.py SHA. ReplayContext/PredictedEventGroup/RankedItem/BaselineConfig add
+four schemas; the prior 17 schemas and all prior JSONL stay byte-identical.
+
+RankerProtocol.rank(context, candidates) returns all RankedItems, before any
+presentation truncation. Each item has rank, member version IDs, representative
+version/source, nullable score and frozen score components. B0 score is null and
+its available_at sort signal is explicit. B1/B2 use nonnegative BM25, including
+zero. B2 adds predicted_event_id, merge_reasons and evidence_independence;
+only observable duplicates/upstream yield not_independent, otherwise unknown.
+No output claims independent support based merely on a source category/domain.
+
+PredictedEventGroup has sorted unique members and an ID derived from members and
+rule revision. Text joins use complete linkage, preventing transitive bridges.
+oracle.py is an explicit exception that reads reference events, intersects visible
+members and preserves unmapped singletons. Ordinary rankers do not import it.
+
+evaluate_run validates the full pinned bundle and recorded run artifacts, checks
+the input snapshot against rederived historical inputs, then reads reference gold.
+Recall@5 counts distinct focus events from displayed representative versions;
+nDCG uses 2^graded_relevance-1 and retains zero-gain duplicate positions. Each
+metric includes numerator/denominator/value/undefined_reason. Missing labels yield
+gold_not_available; pending/unresolved-only labels yield gold_pending_or_unresolved.
+No focus events/zero ideal gain have explicit null reasons, never fake 100%.
+Pair diagnostics compare all visible mapped pairs with synthetic reference groups,
+record TP/TN/FP/FN and unmapped IDs. These are not independent human measurements.
+
+Additional failures: MANIFEST_SHA_MISMATCH, CONFIG_NOT_PINNED, RUNTIME_CODE_MISMATCH,
+PREDICTION_PATH_INVALID, GROUP_MEMBERS_INVALID, UNKNOWN_ALGORITHM,
+ORACLE_REQUIRES_EXPLICIT_PATH, ORACLE_OUTPUT_PATH_REQUIRED, ORACLE_MARKER_INVALID,
+RUN_INPUT_MISMATCH, TIMELINE_REQUIRED. No validator repairs or rehashes inputs.
+PR3 does not clear the aggregate replay_rankers_metrics pending flag: B3/B4 and
+complete G1 metrics/acceptance still remain outstanding.

@@ -90,7 +90,7 @@ def test_R3_help_is_available_without_local_scripts():
                             capture_output=True, text=True, timeout=20)
     assert result.returncode == 0, result.stderr
     assert "--manifest-sha256" in result.stdout and "--dry-run" in result.stdout
-    assert "--algo" not in result.stdout
+    assert "--algo" in result.stdout  # PR3 adds an explicit, mutually exclusive ranking mode.
 
 
 def test_R3_export_is_pinned_deterministic_and_does_not_copy_reference_answers(bundle, tmp_path):
@@ -164,6 +164,7 @@ from pathlib import Path
 from evals.intelligence_v1.replay import main
 root, out = Path(sys.argv[1]).resolve(), Path(sys.argv[3]).resolve()
 runtime = [Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve()]
+package_code = Path(sys.modules['evals.intelligence_v1.replay'].__file__).parent.resolve()
 def guard(event, args):
     if event.startswith('socket.'):
         raise AssertionError('network attempted')
@@ -176,7 +177,7 @@ def guard(event, args):
             assert target.is_relative_to(out), 'outside write'
         else:
             code = (target.suffix in {'.py', '.pyc', '.pyd'}
-                    and any(target.is_relative_to(p) for p in runtime))
+                    and any(target.is_relative_to(p) for p in [*runtime, package_code]))
             assert target.is_relative_to(root) or code, 'outside data read'
 sys.addaudithook(guard)
 status = main(['--manifest', str(root/'manifests/dataset_manifest.json'),

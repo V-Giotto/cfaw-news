@@ -2,6 +2,7 @@
 
 import asyncio
 import json
+import threading
 import time
 from pathlib import Path
 
@@ -235,26 +236,30 @@ def test_cancel_during_real_adapter_request_preserves_cancellation(configured, m
 
 
 def test_edited_goal_cannot_publish_but_retains_returned_usage(configured, monkeypatch):
+    response_started = threading.Event()
+    release_response = threading.Event()
+
     async def handler(request):
         payload = json.loads(request.content)
         snapshot = json.loads(payload["messages"][1]["content"].removeprefix("SNAPSHOT:\n"))
         result, _ = await BaselineProvider().judge(snapshot)
-        await asyncio.sleep(0.15)
+        response_started.set()
+        assert await asyncio.to_thread(release_response.wait, 5), "edit did not release mock response"
         return httpx.Response(200, json=envelope(result.model_dump()))
 
     mock_transport(monkeypatch, handler)
     with TestClient(create_app(configured)) as client:
         run_id = start(client)
-        for _ in range(200):
-            if client.get(f"/api/runs/{run_id}").json()["status"] == "running":
-                break
-            time.sleep(0.01)
+        assert response_started.wait(5), "mock provider did not start"
         goal = client.get("/api/goals").json()[0]
         fields = {key: goal[key] for key in (
             "name", "purpose", "scope", "constraints", "keywords", "trial_requested",
         )}
         fields.update(expected_version=goal["version"], purpose="只核实另一项条件与目标")
-        assert client.patch(f"/api/goals/{goal['id']}", json=fields).status_code == 200
+        try:
+            assert client.patch(f"/api/goals/{goal['id']}", json=fields).status_code == 200
+        finally:
+            release_response.set()
         run = poll(client, run_id)
         assert run["status"] == "stale" and run["result"] is None
         assert run["metrics"]["token_usage"][0]["total_tokens"] == 50

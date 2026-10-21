@@ -44,3 +44,27 @@ def search(goal: dict, articles: list[dict], limit: int = 8) -> list[dict]:
         if score > 0:
             ranked.append({**article, "retrieval_score": round(score, 5)})
     return sorted(ranked, key=lambda row: (-row["retrieval_score"], row["id"]))[:limit]
+
+
+def score_all(query: str, articles: list[dict]) -> list[dict]:
+    """Explicit corpus BM25: legacy formula, stable term order, no filtering or TopK.
+
+    Each article has id/title/summary. Callers own historical visibility. An empty
+    query assigns zero to every candidate; the legacy search() behavior is unchanged.
+    """
+    terms = sorted(set(tokenize(query)))
+    docs = [Counter(tokenize(row["title"] + " " + row["title"] + " " + row["summary"]))
+            for row in articles]
+    lengths = [sum(doc.values()) for doc in docs]
+    average = (sum(lengths) / len(docs) or 1) if docs else 1
+    df = Counter(term for doc in docs for term in doc)
+    result = []
+    for article, counts, length in zip(articles, docs, lengths, strict=True):
+        score = 0.0
+        for term in terms:
+            tf = counts[term]
+            if tf:
+                idf = math.log(1 + (len(docs) - df[term] + 0.5) / (df[term] + 0.5))
+                score += idf * tf * 2.2 / (tf + 1.2 * (0.25 + 0.75 * length / average))
+        result.append({**article, "retrieval_score": round(score, 5)})
+    return sorted(result, key=lambda row: (-row["retrieval_score"], row["id"]))

@@ -12,6 +12,7 @@ from .contracts import (
     SCHEMA_REVISION,
     Adjudication,
     Annotation,
+    BaselineConfig,
     Claim,
     CoverageWindow,
     Delivery,
@@ -38,6 +39,7 @@ from .provenance import (
     check_source,
     controlled_path,
 )
+from .split_metadata import split_metadata_issues
 from .temporal import (
     previous_delivery,
     require_visible_version,
@@ -214,6 +216,11 @@ class _Validator:
                         raise ContractError("RECORD_COUNT_MISMATCH")
                 except ContractError as error:
                     self.issue(error, path=relative)
+            elif entry.role == "baseline_config":
+                try:
+                    _parse(BaselineConfig, raw)
+                except ContractError as error:
+                    self.issue(error, path=relative)
             elif relative in REQUIRED_SCHEMAS or entry.role == "schema":
                 model = REQUIRED_SCHEMAS.get(relative)
                 if model is None or raw != schema_text(model).encode():
@@ -246,6 +253,9 @@ class _Validator:
         if any(getattr(manifest.family_split_counts, k) != splits[k] for k in ("train", "dev", "test")):
             self.issue(ContractError("RECORD_COUNT_MISMATCH", field="family_split_counts"))
         self.run(lambda: version_chains(r["documents"]))
+        for row, error in split_metadata_issues(r["documents"], families, r["personas"], r["steps"]):
+            path, line, record_id = self.locations.get(id(row), ("", None, ""))
+            self.issue(error, path=path, line=line, record_id=record_id)
         for observation in r["observations"]:
             def check_observation():
                 document = _need(documents, observation.doc_version_id)
@@ -279,34 +289,7 @@ class _Validator:
                 relation_keys.add(key)
             self.run(check_relation, relation)
         for document in r["documents"]:
-            def check_doc():
-                check_document(document, sources, self.root, controlled)
-                if document.family_id not in families:
-                    raise ContractError("FAMILY_NOT_FOUND")
-                upstream = document.upstream_document_id
-                if upstream is not None:
-                    parents = [x for x in r["documents"] if x.document_id == upstream]
-                    if not parents:
-                        raise ContractError("REFERENCE_NOT_FOUND")
-                    if any(x.family_id != document.family_id for x in parents):
-                        raise ContractError("CROSS_FAMILY_SPLIT")
-                    if not any(x.available_at <= document.available_at for x in parents):
-                        raise ContractError("FUTURE_EVIDENCE")
-            self.run(check_doc, document)
-        # Family is immutable across document versions, not a mechanism to relabel splits.
-        document_families = defaultdict(set)
-        identity_splits = defaultdict(set)
-        for document in r["documents"]:
-            document_families[document.document_id].add(document.family_id)
-            split = families.get(document.family_id)
-            if document.canonical_url is not None:
-                identity_splits[("url", document.canonical_url)].add(split)
-            if document.content_sha256 is not None:
-                identity_splits[("sha", document.content_sha256)].add(split)
-        if any(len(values) != 1 for values in document_families.values()):
-            self.issue(ContractError("CROSS_FAMILY_SPLIT"))
-        if any(len(values) > 1 for values in identity_splits.values()):
-            self.issue(ContractError("CROSS_FAMILY_SPLIT"))
+            self.run(lambda: check_document(document, sources, self.root, controlled), document)
         for event in r["events"]:
             def check_event():
                 if event.family_id not in families:
@@ -338,14 +321,8 @@ class _Validator:
         for persona in r["personas"]:
             self.run(lambda: visible_persona(r["personas"], persona_id=persona.persona_id,
                                              as_of=persona.available_at), persona)
-        timeline_splits, persona_splits = {}, {}
         for step in r["steps"]:
             def check_step():
-                for family_id in step.family_scope_ids:
-                    if family_id not in families:
-                        raise ContractError("FAMILY_NOT_FOUND")
-                    if families[family_id] != step.split:
-                        raise ContractError("CROSS_FAMILY_SPLIT")
                 persona = _need(personas, step.persona_version_id)
                 if persona.available_at > step.as_of:
                     raise ContractError("FUTURE_PERSONA")
@@ -353,11 +330,6 @@ class _Validator:
                                            as_of=step.as_of)
                 if selected.persona_version_id != persona.persona_version_id:
                     raise ContractError("VERSION_CONFLICT")
-                for mapping, key in ((timeline_splits, step.timeline_id),
-                                     (persona_splits, persona.persona_id)):
-                    if key in mapping and mapping[key] != step.split:
-                        raise ContractError("CROSS_FAMILY_SPLIT")
-                    mapping[key] = step.split
                 for version_id in step.visible_doc_version_ids:
                     require_visible_version(_need(documents, version_id), as_of=step.as_of)
                 scoped = [x for x in r["documents"] if x.family_id in step.family_scope_ids]

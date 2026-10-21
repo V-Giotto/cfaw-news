@@ -77,6 +77,8 @@ def refresh(root, *, frozen=False):
         if entry["role"] == "source_registry":
             entry["record_count"] = len(json.loads(raw)["sources"])
             manifest["source_registry_sha256"] = entry["sha256"]
+        if entry["role"] == "baseline_config":
+            manifest["baseline_config_sha256"] = entry["sha256"]
     def role_rows(role):
         return [json.loads(line) for entry in manifest["file_hashes"] if entry["role"] == role
                 and (root / entry["path"]).is_file()

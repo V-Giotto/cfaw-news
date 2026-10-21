@@ -16,7 +16,7 @@ CFAW News 面向 AI 开发者，从新闻、官方材料、论文与开源项目
 
 **G0、G1-PR1 及 G1-PR2 技术交付已完成，真实人工标注与独立复审仍待完成，G1 尚未整体通过。** 当前只推进独立离线的 G1 数据与评测基座；不提前开展训练、复杂 UI 重做、持续自动 Agent 或生产数据库迁移。
 
-G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与家族拆分校验、合成样例和回归测试。PR2 已提供 DEV-01 六时点、七份合成文档版本、Claim/事件关系、标注手册、数据卡和带外部 Manifest pin 的最小 dry-run 导出；[当前修复与验收记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)明确区分技术通过与人工待完成。PR3–PR5 的完整回放、B0–B4、指标和标注验收尚未实施。情报页也属于后续设计。旧目标研究路线、24 周排期、重复交接、过渡归档和旧界面验收文档已删除，不再作为执行依据。
+G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与家族拆分校验、合成样例和回归测试。PR2 已提供 DEV-01 六时点、七份合成文档版本、Claim/事件关系、标注手册、数据卡和带外部 Manifest pin 的最小 dry-run 导出；[修复与验收记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)明确区分技术通过与人工待完成。PR3 提供离线 as_of Replay、共享全候选的 B0/B1/B2-predicted、单列的 B2-oracle 及最小事后诊断，入口和边界见[离线说明](evals/intelligence_v1/README.md)。PR4/PR5 的 B3/B4、完整预算/回访指标和标注验收仍未实施。情报页也属于后续设计。旧目标研究路线、24 周排期、重复交接、过渡归档和旧界面验收文档已删除，不再作为执行依据。
 
 ## 当前代码的可用能力
 
@@ -27,7 +27,7 @@ G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与
 - 旧 Goal、不可变运行快照、引用定位、用户决定和明确批准后的应用内日程。版本、取消、失效防发布和幂等规则继续保留。
 - 独立的阅读正文与图片缓存。当前阅读内容不会改写历史运行证据，来源标识不冒充文章配图。
 
-当前在线应用尚未接入 V1 文档版本库、事件/主张、情报分层、曝光历史、回访排序或时间回放。离线 PR1/PR2 中的契约与合成试点不等于这些业务能力已上线，也不构成独立研究数据集。现有文章库不能还原全部历史；引用 ID 存在不等于语义支持。
+当前在线应用尚未接入 V1 文档版本库、事件/主张、情报分层、曝光历史、回访排序或时间回放。离线 PR1–PR3 的契约、合成试点和基线不等于这些业务能力已上线，也不构成独立研究数据集。现有文章库不能还原全部历史；引用 ID 存在不等于语义支持。
 
 Goal/决定/日程保留兼容，不再是新产品主线。G1 不读取实际业务数据库、不加载 `.env`、不运行联网采集或实时模型，也不修改现有前端。
 
@@ -73,7 +73,7 @@ npm run build
 
 也可运行 `powershell -ExecutionPolicy Bypass -File scripts/verify.ps1`。前端修改源码后构建，`frontend/dist` 是生成物。
 
-旧 `evals/run_baseline.py` 保留为 26 条归档、3 组手选标签的 seed-sanity 烟测，不属于 G1 金标或独立算法成果。已实现的 PR1 校验和 PR2 dry-run 命令见 [离线契约与试点说明](evals/intelligence_v1/README.md)；PR1 证据见 [冻结记录](evals/intelligence_v1/G1_BASELINE_LOCK.md)，PR2 当前 pin、修复和测试见 [PR2 审查修复记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)。其余 G1 命令与 T01–T26 以实施计划为准，尚未实现的 CLI 不作为可用能力。
+旧 `evals/run_baseline.py` 保留为 26 条归档、3 组手选标签的 seed-sanity 烟测，不属于 G1 金标或独立算法成果。PR1 校验、PR2 dry-run 和 PR3 回放/事后评测命令见 [离线说明](evals/intelligence_v1/README.md)；历史证据见 [PR1 冻结记录](evals/intelligence_v1/G1_BASELINE_LOCK.md)、[PR2 修复记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)及 [PR3 v1 记录](evals/intelligence_v1/reports/PR3_ACCEPTANCE.md)，当前 v2 输入 pin 与复审修复验收见 [PR3 split 隔离修复](evals/intelligence_v1/reports/PR3_SPLIT_REVIEW_FIX.md)。PR4/PR5 和其余 T01–T26 仍以实施计划为准，尚未实现的 CLI 不作为可用能力。
 
 本机检查、mock、真实模型、真实来源、远端 CI 和部署分别报告。仓库中的 Linux/Docker/GitHub Actions 配置不等于本轮已执行或部署。
 

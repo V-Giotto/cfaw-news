@@ -1,4 +1,4 @@
-"""PR2 pinned dry-run data preparation only; no rankers, predictions or metrics.
+"""Pinned offline PR2 preparation or PR3 replay; no online models or business DB.
 
 All-step output is for the administrator. Give a human reviewer only their current
 single-step packet, following ANNOTATION_GUIDE.md; exporting is not distribution.
@@ -11,9 +11,7 @@ from pathlib import Path
 from .contracts import Manifest
 from .exceptions import ContractError, DatasetValidationError
 from .hashing import canonical_json, sha256_bytes
-from .pilot import annotation_packet
 from .provenance import SENSITIVE, controlled_path
-from .validate import RECORD_MODELS, validate_dataset
 
 
 def _manifest_location(value):
@@ -47,6 +45,9 @@ def _output_location(value, bundle_root):
 
 def export_pilot(manifest_path, *, manifest_sha256, timeline_id, out, step_id=None):
     """Validate a pinned bundle, prepare bytes in memory, then write a NEW directory."""
+    from .pilot import annotation_packet
+    from .validate import RECORD_MODELS, validate_dataset
+
     pin = manifest_sha256.lower()
     if re.fullmatch(r"[0-9a-f]{64}", pin) is None:
         raise ContractError("MANIFEST_SHA_MISMATCH")
@@ -103,26 +104,140 @@ def export_pilot(manifest_path, *, manifest_sha256, timeline_id, out, step_id=No
     return metadata
 
 
+def write_payloads(output, payloads):
+    output.mkdir(parents=True, exist_ok=False)
+    for name, raw in sorted(payloads.items()):
+        target = output / name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with target.open("xb") as stream:
+            stream.write(raw)
+
+
+def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
+               timeline_id=None, step_id=None, config_path=None):
+    import platform
+    import subprocess
+    from datetime import datetime, timezone
+    from time import perf_counter
+
+    from .baselines import get_ranker, persona_query, rank_groups
+    from .loader import load_bundle, load_step
+
+    start = perf_counter()
+    if algorithm_id not in {"b0", "b1", "b2-predicted", "b2-oracle"}:
+        raise ContractError("UNKNOWN_ALGORITHM")
+    if step_id and not timeline_id:
+        raise ContractError("TIMELINE_REQUIRED")
+    data = load_bundle(manifest_path, manifest_sha256=manifest_sha256, config_path=config_path)
+    output = _output_location(out, data.root)
+    oracle = algorithm_id == "b2-oracle"
+    if oracle and "oracle" not in output.name.casefold():
+        raise ContractError("ORACLE_OUTPUT_PATH_REQUIRED")
+    steps = sorted((s for s in data.steps if (split is None or s.split == split)
+                    and (timeline_id is None or s.timeline_id == timeline_id)
+                    and (step_id is None or s.step_id == step_id)),
+                   key=lambda s: (s.timeline_id, s.as_of, s.step_id))
+    if not steps:
+        raise ContractError("REFERENCE_NOT_FOUND", field="steps")
+    ranker = None if oracle else get_ranker(algorithm_id, data.config)
+    snapshots, predictions, queries = [], [], []
+    for step in steps:
+        context, candidates = load_step(data, timeline_id=step.timeline_id, step_id=step.step_id,
+                                        config=data.config)
+        docs = [d.model_dump(mode="json") for d in candidates]
+        snapshot = {"context": context.model_dump(mode="json"), "candidates": docs}
+        candidate_hash = sha256_bytes(canonical_json(docs).encode())
+        context_hash = sha256_bytes(canonical_json(snapshot["context"]).encode())
+        snapshots.append(snapshot)
+        queries.append({"timeline_id": step.timeline_id, "step_id": step.step_id,
+                        "query": persona_query(context.persona),
+                        "used": algorithm_id != "b0"})
+        if oracle:
+            from .oracle import oracle_groups
+
+            ranked = rank_groups(context, candidates, oracle_groups(data, candidates,
+                                                                    as_of=context.as_of))
+        else:
+            ranked = ranker.rank(context, candidates)
+        predictions.append({"algorithm_id": algorithm_id, "oracle_mode": oracle,
+            "timeline_id": step.timeline_id, "step_id": step.step_id,
+            "as_of": context.model_dump(mode="json")["as_of"],
+            "candidate_doc_count": len(candidates), "candidate_sha256": candidate_hash,
+            "ranked_item_count": len(ranked),
+            "predicted_event_count": len(ranked) if algorithm_id.startswith("b2-") else None,
+            "available_source_count": len({d.source_id for d in candidates}),
+            "coverage_gap_count": sum(c.status != "covered" for c in context.source_coverage),
+            "context_sha256": context_hash, "ranked_items": [r.model_dump(mode="json") for r in ranked],
+            "coverage_interpretation": "observed_sources_only; gaps_are_unknown"})
+    payloads = {
+        "input_snapshot.json": (canonical_json({"snapshot_revision": "pr3-input-v1",
+                                               "steps": snapshots}) + "\n").encode(),
+        "baseline_config.json": (canonical_json(data.config.model_dump(mode="json")) + "\n").encode(),
+        "predictions.jsonl": "".join(canonical_json(r) + "\n" for r in predictions).encode(),
+    }
+    repo = Path(__file__).resolve().parents[2]
+    git = subprocess.run(["git", "rev-parse", "HEAD"], cwd=repo, capture_output=True, text=True,
+                         timeout=10)
+    if git.returncode:
+        raise ContractError("GIT_FINGERPRINT_UNAVAILABLE")
+    lock_hashes = {name: sha256_bytes((repo/name).read_bytes())
+                   for name in ("requirements.lock", "frontend/package-lock.json")}
+    metadata = {"algorithm_id": algorithm_id, "oracle_mode": oracle,
+        "dataset_revision": data.manifest.dataset_revision, "schema_revision": data.manifest.schema_revision,
+        "annotation_version": data.manifest.annotation_version,
+        "dataset_manifest_sha256": manifest_sha256.lower(), "git_sha": git.stdout.strip(),
+        "python_version": platform.python_version(), "dependency_lock_sha256": lock_hashes,
+        "baseline_config_sha256": data.manifest.baseline_config_sha256,
+        "runtime_source_sha256": {**{k: v for k, v in data.verified_hashes.items() if k.endswith(".py")},
+                                  "backend/cfaw_news/retrieval.py": data.config.retrieval_sha256},
+        "validation_scope": "prediction_inputs", "full_dataset_validated": False,
+        "reference_groups_read": oracle, "gold_labels_read": False,
+        "network_access": False, "live_model_called": False, "model_tokens": 0,
+        "random_seed": data.config.random_seed, "queries": queries, "split": split,
+        "timeline_id": timeline_id, "step_id": step_id,
+        "predictions_sha256": sha256_bytes(payloads["predictions.jsonl"]),
+        "input_snapshot_sha256": sha256_bytes(payloads["input_snapshot.json"]),
+        "config_snapshot_sha256": sha256_bytes(payloads["baseline_config.json"]),
+        "generated_at": datetime.now(timezone.utc).isoformat(),
+        "execution_ms": round((perf_counter() - start) * 1000, 3)}
+    payloads["run_metadata.json"] = (canonical_json(metadata) + "\n").encode()
+    write_payloads(output, payloads)
+    return metadata
+
+
 def main(argv=None):
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--manifest", type=Path,
                         default=Path(__file__).parent / "manifests/dataset_manifest.json")
     parser.add_argument("--manifest-sha256", required=True, help="Externally pinned Manifest SHA256")
-    parser.add_argument("--timeline", choices=["DEV-01"], required=True)
-    parser.add_argument("--dry-run", action="store_true", required=True)
+    parser.add_argument("--timeline")
+    mode = parser.add_mutually_exclusive_group(required=True)
+    mode.add_argument("--dry-run", action="store_true")
+    mode.add_argument("--algo", choices=["b0", "b1", "b2-predicted", "b2-oracle"])
+    parser.add_argument("--split", choices=["train", "dev", "test"])
+    parser.add_argument("--config", type=Path, help="Config already listed in the pinned Manifest")
     parser.add_argument("--step", help="Export only this step; withhold later packets from annotators")
     parser.add_argument("--out", type=Path, required=True, help="New output directory; never overwritten")
     args = parser.parse_args(argv)
+    if args.step and not args.timeline:
+        parser.error("--step requires --timeline")
+    if args.dry_run and (args.timeline != "DEV-01" or args.split or args.config):
+        parser.error("--dry-run requires --timeline DEV-01 and accepts no ranking options")
     try:
-        metadata = export_pilot(args.manifest, manifest_sha256=args.manifest_sha256,
-                                timeline_id=args.timeline, step_id=args.step, out=args.out)
+        if args.dry_run:
+            metadata = export_pilot(args.manifest, manifest_sha256=args.manifest_sha256,
+                                    timeline_id=args.timeline, step_id=args.step, out=args.out)
+        else:
+            metadata = run_replay(args.manifest, manifest_sha256=args.manifest_sha256,
+                algorithm_id=args.algo, out=args.out, split=args.split, timeline_id=args.timeline,
+                step_id=args.step, config_path=args.config)
     except DatasetValidationError as error:
         print(canonical_json(error.report.to_dict()))
         return 1
     except ContractError as error:
         print(canonical_json({"ok": False, "errors": [{"code": error.code, "field": error.field}]}))
         return 1
-    except (OSError, ValueError, RuntimeError):
+    except (OSError, ValueError, RuntimeError, KeyError, TypeError):
         print(canonical_json({"ok": False, "errors": [{"code": "EXPORT_IO_ERROR"}]}))
         return 1
     print(canonical_json({"ok": True, **metadata}))

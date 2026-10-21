@@ -45,3 +45,16 @@ PR1 v3 的完整输入保存在 .local/g1-pr2/pr1-contract-v3/，且原字节可
 v3 只修复审查指出的关系唯一性、未决仲裁保存和有外部 Manifest pin 的 PR2 准备入口；
 所有 JSONL（含空人工文件和原 gold）保持 v2 原字节。v2 完整包已先保存在本地审查证据目录。
 没有业务库、ORM、HTTP/UI、依赖、旧基线或迁移资产改动；T25=N/A。
+
+## PR3 revision 补充
+
+当前输入为 pr3-replay-v2 / g1-pr3-1；上文 PR2 v3 和 PR3 v1 是历史冻结记录。
+v2 仅修复预测入口遗漏的 split/派生隔离校验，与完整验证器共用纯元数据检查。
+v1 完整包保存在 .local/evals/g1/pr3-split-review/pr3-replay-v1/；新 pin 见
+reports/PR3_SPLIT_REVIEW_FIX.md。全部 JSONL（含 gold）和 Schema 字节不变。
+PR2 完整包先保存在 .local/evals/g1/pr3/pr2-dev01-v3/。全部 22 个既有 JSONL、
+17 份既有 Schema 和人的空记录保持原字节，统计仍为 11 个 synthetic 文档版本、
+9 步，其中 DEV-01 为 7 版本/6 步。新增的排序、oracle 和事后分组诊断不增加真实样本。
+DEV-01 Recall/nDCG 缺金标为 null，PR1 pending 标签不当作完成标注。
+本轮只给旧 retrieval.py 添加纯评分函数，旧 search/业务契约不变；没有新依赖或业务迁移。
+B3/B4、预算与七天回访仍待 PR4；人工试标、手册真人试用、独立复审和 G1-a 仍未完成。
