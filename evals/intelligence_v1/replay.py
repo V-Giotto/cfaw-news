@@ -114,21 +114,29 @@ def write_payloads(output, payloads):
 
 
 def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
-               timeline_id=None, step_id=None, config_path=None):
+                timeline_id=None, step_id=None, config_path=None, budget_seconds=None,
+                half_life_days=None):
     import platform
     import subprocess
     from datetime import datetime, timezone
     from time import perf_counter
 
     from .baselines import get_ranker, persona_query, rank_groups
+    from .budget import apply_budget
+    from .contracts import BudgetPolicy
     from .loader import load_bundle, load_step
 
     start = perf_counter()
-    if algorithm_id not in {"b0", "b1", "b2-predicted", "b2-oracle"}:
+    if algorithm_id not in {"b0", "b1", "b2-predicted", "b2-oracle", "b3", "b4"}:
         raise ContractError("UNKNOWN_ALGORITHM")
     if step_id and not timeline_id:
         raise ContractError("TIMELINE_REQUIRED")
     data = load_bundle(manifest_path, manifest_sha256=manifest_sha256, config_path=config_path)
+    half = data.config.half_life_days if half_life_days is None else half_life_days
+    if (type(half) is not int or half not in data.config.registered_half_lives
+            or (budget_seconds is not None and (type(budget_seconds) is not int
+                or budget_seconds not in data.config.registered_budgets))):
+        raise ContractError("UNREGISTERED_EXPERIMENT")
     output = _output_location(out, data.root)
     oracle = algorithm_id == "b2-oracle"
     if oracle and "oracle" not in output.name.casefold():
@@ -139,9 +147,12 @@ def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
                    key=lambda s: (s.timeline_id, s.as_of, s.step_id))
     if not steps:
         raise ContractError("REFERENCE_NOT_FOUND", field="steps")
-    ranker = None if oracle else get_ranker(algorithm_id, data.config)
-    snapshots, predictions, queries = [], [], []
+    if half != data.config.half_life_days and any(s.split != "dev" for s in steps):
+        raise ContractError("SENSITIVITY_REQUIRES_DEV")
+    ranker = None if oracle else get_ranker(algorithm_id, data.config, half_life_days=half)
+    snapshots, predictions, queries, step_performance = [], [], [], []
     for step in steps:
+        step_start = perf_counter()
         context, candidates = load_step(data, timeline_id=step.timeline_id, step_id=step.step_id,
                                         config=data.config)
         docs = [d.model_dump(mode="json") for d in candidates]
@@ -159,18 +170,26 @@ def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
                                                                     as_of=context.as_of))
         else:
             ranked = ranker.rank(context, candidates)
+        presentation = apply_budget(ranked, BudgetPolicy(max_read_seconds=(
+            context.attention_budget_seconds if budget_seconds is None else budget_seconds)))
+        elapsed = (perf_counter()-step_start)*1000
+        step_performance.append({"timeline_id": step.timeline_id, "step_id": step.step_id,
+            "candidate_doc_count": len(candidates), "execution_ms": round(elapsed, 3),
+            "latency_per_100_docs_ms": elapsed*100/len(candidates) if candidates else None,
+            "undefined_reason": None if candidates else "no_candidate_documents"})
         predictions.append({"algorithm_id": algorithm_id, "oracle_mode": oracle,
             "timeline_id": step.timeline_id, "step_id": step.step_id,
             "as_of": context.model_dump(mode="json")["as_of"],
             "candidate_doc_count": len(candidates), "candidate_sha256": candidate_hash,
             "ranked_item_count": len(ranked),
-            "predicted_event_count": len(ranked) if algorithm_id.startswith("b2-") else None,
+            "predicted_event_count": len(ranked) if algorithm_id not in {"b0", "b1"} else None,
             "available_source_count": len({d.source_id for d in candidates}),
             "coverage_gap_count": sum(c.status != "covered" for c in context.source_coverage),
             "context_sha256": context_hash, "ranked_items": [r.model_dump(mode="json") for r in ranked],
+            "presentation": presentation.model_dump(mode="json"),
             "coverage_interpretation": "observed_sources_only; gaps_are_unknown"})
     payloads = {
-        "input_snapshot.json": (canonical_json({"snapshot_revision": "pr3-input-v1",
+        "input_snapshot.json": (canonical_json({"snapshot_revision": "pr4-input-v1",
                                                "steps": snapshots}) + "\n").encode(),
         "baseline_config.json": (canonical_json(data.config.model_dump(mode="json")) + "\n").encode(),
         "predictions.jsonl": "".join(canonical_json(r) + "\n" for r in predictions).encode(),
@@ -194,6 +213,8 @@ def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
         "reference_groups_read": oracle, "gold_labels_read": False,
         "network_access": False, "live_model_called": False, "model_tokens": 0,
         "random_seed": data.config.random_seed, "queries": queries, "split": split,
+        "experiment": {"budget_seconds_override": budget_seconds, "half_life_days": half},
+        "step_performance": step_performance, "model_cost": 0,
         "timeline_id": timeline_id, "step_id": step_id,
         "predictions_sha256": sha256_bytes(payloads["predictions.jsonl"]),
         "input_snapshot_sha256": sha256_bytes(payloads["input_snapshot.json"]),
@@ -213,7 +234,9 @@ def main(argv=None):
     parser.add_argument("--timeline")
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument("--dry-run", action="store_true")
-    mode.add_argument("--algo", choices=["b0", "b1", "b2-predicted", "b2-oracle"])
+    mode.add_argument("--algo", choices=["b0", "b1", "b2-predicted", "b2-oracle", "b3", "b4"])
+    parser.add_argument("--budget-seconds", type=int, choices=[180, 420, 900])
+    parser.add_argument("--half-life-days", type=int, choices=[3, 7, 14])
     parser.add_argument("--split", choices=["train", "dev", "test"])
     parser.add_argument("--config", type=Path, help="Config already listed in the pinned Manifest")
     parser.add_argument("--step", help="Export only this step; withhold later packets from annotators")
@@ -221,7 +244,8 @@ def main(argv=None):
     args = parser.parse_args(argv)
     if args.step and not args.timeline:
         parser.error("--step requires --timeline")
-    if args.dry_run and (args.timeline != "DEV-01" or args.split or args.config):
+    if args.dry_run and (args.timeline != "DEV-01" or args.split or args.config
+                        or args.budget_seconds is not None or args.half_life_days is not None):
         parser.error("--dry-run requires --timeline DEV-01 and accepts no ranking options")
     try:
         if args.dry_run:
@@ -230,7 +254,8 @@ def main(argv=None):
         else:
             metadata = run_replay(args.manifest, manifest_sha256=args.manifest_sha256,
                 algorithm_id=args.algo, out=args.out, split=args.split, timeline_id=args.timeline,
-                step_id=args.step, config_path=args.config)
+                step_id=args.step, config_path=args.config, budget_seconds=args.budget_seconds,
+                half_life_days=args.half_life_days)
     except DatasetValidationError as error:
         print(canonical_json(error.report.to_dict()))
         return 1

@@ -1,0 +1,1 @@
+{"attention_budget_seconds":420,"available_at":"2026-02-01T12:00:00Z","current_goals":["Evaluate a Windows CPU runtime"],"domain_interests":["Agent deployment"],"exploration_preference":"broad_but_ranked","hard_constraints":["Windows CPU only"],"knowledge_known":[],"locale":"zh-CN","persona_id":"rv:developer","persona_origin":"constructed","persona_version_id":"rv:developer:1"}

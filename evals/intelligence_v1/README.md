@@ -1,12 +1,13 @@
-# G1-PR1/PR2/PR3: offline contracts, pilot and replay
+# G1-PR1–PR4: offline contracts, replay and revisit evaluation
 
 This package implements schemas, source/rights checks, manifest integrity, family
 split checks and pure historical selectors. PR2 adds the six-step DEV-01 synthetic
 pilot, observation/relation contracts, annotation preparation and a manual.
 PR3 adds as_of replay, the full shared candidate pool, B0/B1/B2-predicted,
 an explicitly separate B2-oracle, and post-ranking Recall@5/nDCG@5/group diagnostics.
-B3/B4, reading-budget truncation, revisit metrics, real annotation, collection,
-migration and G1-a acceptance are not implemented by PR3.
+PR4 adds B3/B4, fixed common delivery history, reading budgets, reference-separated
+metrics, REVISIT-7D counterfactuals and the report CLI. Real annotation, semantic
+support measurement, collection, migration and G1-a acceptance remain pending.
 
 From D:\agent_project\cfaw-news using the existing virtual environment:
 
@@ -51,7 +52,7 @@ Requirement coverage: T01/T02/T03/T20 and TZ01/TZ02/HASH01 at the contract bound
 T22/T23/T26 basic negative cases; VER01/GOLD01/ISOLATION01 basic guards. T10 covers
 only an empty candidate list and explicit coverage states. PR3 additionally covers
 T06/T07/T15/T18, its portion of T24, GROUP01/ORACLE01 and post-ranking gold integrity.
-Real provenance, semantic lineage, human support and PR4/PR5 gates remain pending.
+Real provenance, semantic lineage, human support and complete PR5/G1 gates remain pending.
 T25 is N/A: no schema migration or business database access.
 
 PR2 sample checks: T04/T05/T08/T09/T16/T17/T19/T21. `pilot.py` has pure helpers for
@@ -77,11 +78,11 @@ ValidationReport.pending. Raw submissions are never rewritten or auto-resolved.
 
 ## Reproduce PR2 preparation from a checkout
 
-Use the externally recorded current Manifest SHA from reports/PR3_ACCEPTANCE.md;
+Use the externally recorded current Manifest SHA from reports/PR4_ACCEPTANCE.md;
 do not derive your trusted pin from the file being checked on each run.
 
 ```powershell
-$PIN = '<SHA256 recorded in PR3_ACCEPTANCE.md>'
+$PIN = '<SHA256 recorded in PR4_ACCEPTANCE.md>'
 .\.venv\Scripts\python.exe -B -m evals.intelligence_v1.replay --manifest evals/intelligence_v1/manifests/dataset_manifest.json --manifest-sha256 $PIN --timeline DEV-01 --dry-run --out .local/g1-pr2-review-all
 .\.venv\Scripts\python.exe -B -m evals.intelligence_v1.replay --manifest evals/intelligence_v1/manifests/dataset_manifest.json --manifest-sha256 $PIN --timeline DEV-01 --dry-run --step D0 --out .local/g1-pr2-review-d0
 ```
@@ -95,9 +96,9 @@ There is no dependency on ignored local scripts. The CLI performs no network/mod
 calls or business imports. --dry-run and --algo are mutually exclusive. Exported
 packets contain no reference event/Claim/Gold answers. They are not human results.
 
-## PR3 replay and separate evaluation
+## Historical PR3 replay and separate evaluation
 
-Current revision: `pr3-replay-v2` (schema unchanged). The v1 split isolation gap
+PR3 revision: `pr3-replay-v2` (superseded by the current PR4 bundle). The v1 split isolation gap
 is fixed by shared metadata checks in `split_metadata.py`, used by both the
 prediction loader and the full validator before ranking. Document family cannot
 change across versions; URL/SHA identity cannot cross splits; upstream derivations
@@ -111,7 +112,7 @@ From the project root, with a trusted pin and new output directories:
 ```powershell
 $PY = '.\.venv\Scripts\python.exe'
 $ROOT = 'evals/intelligence_v1'
-$PIN = '<SHA256 recorded in PR3_SPLIT_REVIEW_FIX.md>'
+$PIN = '<current SHA256 recorded in PR4_ACCEPTANCE.md; old pin requires preserved PR3 package>'
 foreach ($algo in @('b0', 'b1', 'b2-predicted', 'b2-oracle')) {
   & $PY -B -m evals.intelligence_v1.replay --manifest "$ROOT/manifests/dataset_manifest.json" --manifest-sha256 $PIN --split dev --algo $algo --config "$ROOT/manifests/baseline_config.json" --out ".local/evals/g1/pr3/$algo-a"
   & $PY -B -m evals.intelligence_v1.evaluate --manifest "$ROOT/manifests/dataset_manifest.json" --manifest-sha256 $PIN --run ".local/evals/g1/pr3/$algo-a" --out ".local/evals/g1/pr3/$algo-a-evaluation"
@@ -149,7 +150,64 @@ Formula tests use explicitly synthetic temporary labels. Event grouping errors
 use synthetic reference membership only, and include comparable/unmapped counts.
 One displayed representative maps to one reference event; duplicate cards retain
 their positions and earn no repeated gain. There is no @budget or revisit claim.
-Independent review and real A/B annotation remain pending after this technical PR.
+PR3 independent rereview found no P0/P1; its remaining P2 stale-pin documentation
+is corrected by the current PR4 pin instructions. Real A/B annotation remains pending.
+
+## Current PR4 replay, budget and report
+
+Dataset revision `pr4-revisit-v1`, schema `g1-pr4-1`, config `pr4-baselines-v1`.
+The old 22 JSONL files, including gold/annotations/adjudications, stay byte-identical.
+REVISIT-7D adds seven synthetic document versions, six steps and eight explicitly
+authored test expectations. They are not human submissions or gold adjudication.
+Use `--label-source synthetic-fixture` explicitly to measure these technical cases;
+the default `gold` mode keeps absent/pending human gold null. Never combine sources.
+
+```powershell
+$PY = '.\.venv\Scripts\python.exe'
+$ROOT = 'evals/intelligence_v1'
+$PIN = '<SHA256 recorded in reports/PR4_ACCEPTANCE.md>'
+& $PY -B -m evals.intelligence_v1.replay --manifest "$ROOT/manifests/dataset_manifest.json" --manifest-sha256 $PIN --split dev --algo b4 --budget-seconds 420 --half-life-days 7 --out .local/evals/g1/pr4-example/b4-420-a
+& $PY -B -m evals.intelligence_v1.evaluate --manifest "$ROOT/manifests/dataset_manifest.json" --manifest-sha256 $PIN --run .local/evals/g1/pr4-example/b4-420-a --label-source synthetic-fixture --out .local/evals/g1/pr4-example/b4-420-a-fixture
+& $PY -B -m evals.intelligence_v1.report --manifest "$ROOT/manifests/dataset_manifest.json" --manifest-sha256 $PIN --runs .local/evals/g1/pr4-example --out .local/evals/g1/pr4-example-summary
+```
+
+The same CLI accepts b0/b1/b2-predicted/b2-oracle/b3/b4. Keep `oracle` in oracle
+output names. All six algorithms use identical candidates and fixed synthetic
+history, without feeding their own outputs into later steps. B0/B1 keep article
+duplicates and their reading cost. B2–B4 use one main card per predicted group.
+
+B3 normalizes the maximum representative BM25 score within the visible groups;
+zero maximum gives zero normalized BM25. It combines .75 relevance + .25 recency,
+with `recency=2**(-age_days/half_life_days)`. Material-visibility time is the latest
+visible version availability, so a repost/title edit may refresh this weak proxy.
+Seven days is the frozen default; 3/14-day sensitivity is allowed only on dev steps.
+
+B4 associates the most recent related delivery by overlapping document identities,
+not snapshot-local group-ID equality. It compares non-null content hash sets.
+New hashes release old penalties; unknown hashes are not declared no-change.
+Included/rendered/acknowledged add .10/.10/.25 once each when no text is new;
+snapshot membership itself establishes server inclusion. Opened/dismissed are
+logged without extra coefficients. No signal changes knowledge_known or establishes
+comprehension. Signed scores are preserved. Novel text is not semantic novelty.
+
+Full ranked_items remain available. Presentation is a separate ranked prefix:
+first 3 focus cards at 90 seconds, then at most 12 radar at 12 seconds. Stop at
+the first unaffordable card, without skipping or demotion. Step budget is the
+default; --budget-seconds explicitly overrides it with 180/420/900. The card caps
+can make 420/900 results equal. Reading seconds are proxies, not measured savings.
+
+Evaluation recomputes presentation, checks the run fingerprint and never rewrites
+predictions. Report cohorts separate manifest/config/experiment/label source and
+oracle status; repeated runs are deduplicated before macro/micro/family summaries.
+Formal change/correction/withdrawal predictions are not emitted; their metrics
+remain null while new-text proxy measurements are separate. No generated claims
+means citation metrics have no output-claim denominator; semantic support is not_measured.
+Latency is in performance.json, outside canonical deterministic metrics.
+
+Counterfactual tests construct separate frozen bundle copies for the same dev family.
+Run `python -B -m pytest tests/evals/test_revisit_counterfactuals.py -q` with a new
+--basetemp and --junitxml to preserve versions, pins and scenario-evidence.json.
+No product CLI depends on ignored authoring or acceptance scripts.
 
 Run original Ruff, full pytest, seed-sanity, pip check and frontend build separately.
 The old 26-document seed is a smoke check, not G1 gold. Local build/tests do not prove

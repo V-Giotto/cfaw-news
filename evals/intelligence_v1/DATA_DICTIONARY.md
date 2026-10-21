@@ -1,4 +1,4 @@
-# G1-PR1/PR2/PR3 data dictionary (g1-pr3-1)
+# G1-PR1–PR4 data dictionary (g1-pr4-1)
 
 Pydantic frozen models are the source of all 21 JSON Schemas. extra=forbid and
 strict=True reject unknown fields and coercion, including bool as score/budget.
@@ -38,7 +38,8 @@ or production delivery storage. Exposure: exposure_id, delivery_id, exactly one 
 event_prediction_id/reference_event_id_for_fixture, kind, occurred_at, source.
 Kinds are included/rendered/opened/acknowledged/dismissed; occurred_at cannot precede
 delivery generation. Fixture reference events must be synthetic. Prediction IDs
-are opaque identifiers; resolving actual predicted items remains pending PR3/4.
+are opaque identifiers. PR4 resolves safe snapshot targets; old reference-only
+exposures remain explicitly unresolved and are never resolved through gold.
 
 CoverageWindow: coverage_window_id, source_id, start_at/end_at, status, observed_at,
 reason. start <= end <= observed. Status is covered/partial/failed/unknown/
@@ -273,3 +274,72 @@ ORACLE_REQUIRES_EXPLICIT_PATH, ORACLE_OUTPUT_PATH_REQUIRED, ORACLE_MARKER_INVALI
 RUN_INPUT_MISMATCH, TIMELINE_REQUIRED. No validator repairs or rehashes inputs.
 PR3 does not clear the aggregate replay_rankers_metrics pending flag: B3/B4 and
 complete G1 metrics/acceptance still remain outstanding.
+
+## PR4 additions (g1-pr4-1)
+
+Dataset pr4-revisit-v1 supersedes pr3-replay-v2; retain the old bundle and its pin.
+The existing 22 JSONL files, including all human/gold records, remain byte-identical.
+The six new schemas bring the total to 27. Only the four affected prior schema
+files change: config, manifest roles, ranked item and replay context.
+
+DeliveryItemSnapshot has delivery_id, event_prediction_id and unique member
+document_id/doc_version_id/content_sha256 triples. Role=delivery_items is optional
+for old data. Shared pure metadata checks require existing, latest-at-delivery
+versions, exact identity/hash, one referenced timeline, matching family scopes and
+the canonical predicted group-ID hash. No reference-event mapping is consulted.
+Loader projects visible snapshots into delivery_history with delivery timestamps;
+future/unrelated snapshot payloads are not interpreted. Missing predicted targets
+are invalid; old reference-only exposures yield unresolved_exposure_ids.
+
+ScoreComponents adds normalized BM25, age, half-life, recency, latest visible
+material time, base score, penalty, related delivery/targets, explicit signal kinds,
+text_delta and new hashes. text_delta is first_seen/new_text/no_change/unknown;
+it is never a meaningful-update or correction label. B4 scores are signed finite
+numbers; B0/B1/B2 scores and grouping rules keep their existing meanings.
+Coefficients are fixed at .75/.25 and included/rendered/ack=.10/.10/.25;
+opened/dismissed do not add coefficients. Duplicate signals do not accumulate.
+
+BudgetPolicy fixes 3 focus/12 radar cards with 90s/12s proxies. BudgetPresentation
+has effective budget, used seconds, the presented prefix, truncated count and stop
+reason. Full ranked_items remain intact. Step budget defaults can be explicitly
+overridden only by registered 180/420/900-second experiments; persona budget is
+not silently applied as a second cap. Half-lives are 3/7/14, default 7; non-default
+sensitivity requires dev steps. Overrides and seed are preserved in run metadata.
+
+SyntheticExpectation is a distinct reference-only record with basis=
+synthetic_test_expectation, synthetic origin, timeline/step/persona/event, tier,
+grade, material_change and supporting versions. It has no annotator/adjudication
+status and cannot satisfy independent annotation. Prediction ignores this role.
+Full validation checks synthetic provenance, event membership and historical
+support visibility. --label-source gold remains the evaluator default.
+
+Metrics preserve numerators, denominators, finite/null values and reasons.
+@5 uses full ranked positions; @budget uses only the recomputed presented prefix.
+Repeated positions earn no extra gain; merged nonrepresentative events earn none.
+RepeatedNoChangeRate uses reference no_change and prior fixed delivery membership.
+RevisitCoverage@1/3/7d uses the intersection of the frozen visit window with the
+trailing window; an event qualifies when its current focus reference has support
+available in that interval. No such window filters prediction candidates.
+Coverage durations union overlapping gaps per source (unit: source-seconds).
+Unrecorded visible-source windows are listed separately, never assumed covered.
+
+NewTextProxyAgainstReference metrics compare the explicitly emitted text proxy
+against fixed reference changes only for events with comparable proxy signals.
+Formal MaterialChange/Correction/Withdrawal metrics remain prediction_not_emitted;
+semantic support remains not_measured. No output claims means no claim-citation
+denominator; no predicted independent groups means no independence-error denominator.
+No reference labels yields gold_not_available/gold_pending_or_unresolved or the
+separate synthetic_expectation_not_available reason. Reference pair diagnostics
+remain independently available without pretending to have relevance gold.
+
+Aggregation reports macro and pooled-numerator/denominator micro, defined/undefined
+counts and per-family summaries. Repeated identical runs are deduplicated before
+aggregation; oracle and label sources remain separate. Timing is in run metadata
+and performance.json, outside deterministic predictions/metrics/comparison files.
+The legacy replay_rankers_metrics pending flag denotes the still-open full G1
+evaluation/acceptance gate, not a claim that PR4 rankers are absent.
+
+Additional errors: HISTORY_SNAPSHOT_MISMATCH, HISTORY_PREDICTION_ID_MISMATCH,
+FUTURE_OR_STALE_HISTORY_VERSION, DELIVERY_SCOPE_INVALID, HISTORY_TARGET_NOT_FOUND,
+DUPLICATE_EVENT_SLOT, BUDGET_PRESENTATION_MISMATCH, UNREGISTERED_EXPERIMENT,
+SENSITIVITY_REQUIRES_DEV, NONDETERMINISTIC_METRICS and CANDIDATE_POOL_MISMATCH.

@@ -58,3 +58,27 @@ PR2 完整包先保存在 .local/evals/g1/pr3/pr2-dev01-v3/。全部 22 个既�
 DEV-01 Recall/nDCG 缺金标为 null，PR1 pending 标签不当作完成标注。
 本轮只给旧 retrieval.py 添加纯评分函数，旧 search/业务契约不变；没有新依赖或业务迁移。
 B3/B4、预算与七天回访仍待 PR4；人工试标、手册真人试用、独立复审和 G1-a 仍未完成。
+
+## PR4 revision 补充（当前）
+
+当前为 pr4-revisit-v1 / g1-pr4-1 / pr4-baselines-v1；前述 PR3 为历史记录。
+PR3 v2 原包先保存在 .local/evals/g1/pr4/pr3-replay-v2/，其独立复审未发现 P0/P1；
+剩余 P2 旧 pin 说明在 PR4 文档中修正。新 pin 与实际验收见 reports/PR4_ACCEPTANCE.md。
+
+新增 REVISIT-7D：7 份合成文档版本、6 步、8 条 authored technical expectations，
+一份固定 D0 投递条目及明确 inclusion 历史；不新增任何真人记录。
+全部数据合计 18 个 synthetic 文档版本、15 步、3 个 dev family，分别是原契约样例、
+DEV-01 与新回访故事。它们不是五条独立真实轨迹，不满足 PR5/G1-a 数据或人工门槛。
+新故事日期在 2026-02，不改 DEV-01 的 D5 更正；新故事更正在 D6。
+D1–D7 为七个未访问的中间日，D0→D8 实际相隔八天；回访指标明确使用末尾 1/3/7 天窗口。
+
+现有 22 个 JSONL/gold/annotations/adjudications 保持原字节。新 expectations 与 gold
+分类型、分 role、分评测模式、分报告，不以 agreed/adjudicated 伪造人的审阅。
+五类反事实及未来反馈负例在同 family/dev 的隔离副本中运行，各自创建新 revision/pin。
+预期由场景逻辑预先定义；不因算法分数修改期望。保留更正删除、D9 才可见测试、
+来源失败以及曝光状态变化的个案证据。B2 保守漏合并独立测试可能导致重复，必须报告。
+
+B3/B4 只是可解释的固定规则。时间代理可能把转载/轻微改写视为新鲜，新哈希可能解除
+惩罚却没有实质增量；opened 不另计权重，曝光绝不等于理解。
+真实语义支持、正式变化分类、标注、许可复核和泛化测量仍未完成。读时是固定代理，
+不能称实测节约时间；无在线模型调用的 tokens/cost 为 0。无数据库访问或迁移，T25=N/A。

@@ -10,10 +10,11 @@ from test_loader import loaded
 
 from evals.intelligence_v1.hashing import sha256_bytes
 
-FORBIDDEN = {"gold", "events", "claims", "annotations", "adjudications", "event_relations"}
+FORBIDDEN = {"gold", "events", "claims", "annotations", "adjudications", "event_relations",
+             "fixture_expectations"}
 
 
-@pytest.mark.parametrize("algorithm", ["b0", "b1", "b2-predicted"])
+@pytest.mark.parametrize("algorithm", ["b0", "b1", "b2-predicted", "b3", "b4"])
 def test_GROUP01_prediction_does_not_open_reference_files_or_call_network(bundle, tmp_path,
                                                                        monkeypatch, algorithm):
     import json
@@ -71,7 +72,8 @@ def test_ORACLE01_oracle_is_explicit_and_intersects_visible_candidates(bundle):
     assert {g.doc_version_ids for g in unmapped} == {("d01:a:1",), ("unmapped:1",)}
 
 
-def test_ranking_cli_audits_data_reads_writes_network_and_business_imports(bundle, tmp_path):
+@pytest.mark.parametrize("algorithm", ["b2-predicted", "b3", "b4"])
+def test_ranking_cli_audits_data_reads_writes_network_and_business_imports(bundle, tmp_path, algorithm):
     import subprocess
 
     manifest = refresh(bundle)
@@ -85,7 +87,7 @@ runtime = [Path(sys.prefix).resolve(), Path(sys.base_prefix).resolve()]
 code_roots = [*runtime, repo/'evals', repo/'backend/cfaw_news']
 locks = {repo/'requirements.lock', repo/'frontend/package-lock.json'}
 forbidden = {'gold.jsonl', 'events.jsonl', 'event_relations.jsonl', 'claims.jsonl',
-             'annotations.jsonl', 'adjudications.jsonl'}
+             'annotations.jsonl', 'adjudications.jsonl', 'expectations.jsonl'}
 def guard(event, args):
     if event.startswith('socket.'):
         raise AssertionError('network attempted')
@@ -102,7 +104,7 @@ def guard(event, args):
             assert path.is_relative_to(root) or code or path in locks, 'outside data read'
 sys.addaudithook(guard)
 status = main(['--manifest', str(root/'manifests/dataset_manifest.json'),
-              '--manifest-sha256', sys.argv[2], '--algo', 'b2-predicted', '--split', 'dev',
+              '--manifest-sha256', sys.argv[2], '--algo', sys.argv[4], '--split', 'dev',
               '--out', str(out)])
 assert not any(m.startswith('cfaw_news.') and m != 'cfaw_news.retrieval' for m in sys.modules)
 assert 'evals.intelligence_v1.oracle' not in sys.modules
@@ -110,7 +112,7 @@ assert 'evals.intelligence_v1.validate' not in sys.modules
 sys.exit(status)
 '''
     result = subprocess.run([sys.executable, "-B", "-c", script, str(bundle),
-                             sha256_bytes(manifest.read_bytes()), str(tmp_path/"audited")],
+                             sha256_bytes(manifest.read_bytes()), str(tmp_path/"audited"), algorithm],
                             capture_output=True, text=True, timeout=25)
     assert result.returncode == 0, result.stderr + result.stdout
 

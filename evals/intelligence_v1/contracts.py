@@ -19,7 +19,7 @@ from .exceptions import ContractError
 from .hashing import canonical_json, content_sha256
 from .temporal import INSTANT_PATTERN, format_instant, parse_instant, utc_instant
 
-SCHEMA_REVISION = "g1-pr3-1"
+SCHEMA_REVISION = "g1-pr4-1"
 NonEmpty = Annotated[str, Field(min_length=1, pattern=r"\S")]
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 PositiveInt = Annotated[int, Field(gt=0)]
@@ -31,6 +31,8 @@ ContentKind = Literal["publisher_text", "feed_summary", "archive_authored", "quo
                       "synthetic_text"]
 Rights = Literal["permitted", "excerpt_only", "metadata_only", "unknown", "synthetic"]
 Split = Literal["train", "dev", "test"]
+ExposureKind = Literal["included", "rendered", "opened", "acknowledged", "dismissed"]
+Finite = Annotated[float, Field(allow_inf_nan=False)]
 
 
 def _instant(value):
@@ -346,7 +348,7 @@ class FileEntry(StrictModel):
     role: Literal["documents", "personas", "steps", "deliveries", "exposures", "coverage",
                   "events", "claims", "gold", "families", "source_registry", "schema",
                   "code", "support", "baseline_config", "observations", "event_relations",
-                  "annotations", "adjudications"]
+                  "annotations", "adjudications", "delivery_items", "fixture_expectations"]
     sha256: Sha256
     record_count: Annotated[int, Field(ge=0)] | None
 
@@ -397,7 +399,7 @@ class CandidateDocumentVersion(StrictModel):
 
 
 class BaselineConfig(StrictModel):
-    config_revision: Literal["pr3-baselines-v1"] = "pr3-baselines-v1"
+    config_revision: Literal["pr3-baselines-v1", "pr4-baselines-v1"] = "pr4-baselines-v1"
     tokenizer_revision: Literal["bm25-han-bigram-v1"] = "bm25-han-bigram-v1"
     query_revision: Literal["persona-query-v1"] = "persona-query-v1"
     grouping_revision: Literal["conservative-v1"] = "conservative-v1"
@@ -411,6 +413,61 @@ class BaselineConfig(StrictModel):
     metric_k: Literal[5] = 5
     random_seed: Literal[0] = 0
     retrieval_sha256: Sha256 | None = None
+    half_life_days: Literal[7] = 7
+    registered_half_lives: tuple[Literal[3, 7, 14], ...] = (3, 7, 14)
+    registered_budgets: tuple[Literal[180, 420, 900], ...] = (180, 420, 900)
+    bm25_weight: Literal[0.75] = 0.75
+    recency_weight: Literal[0.25] = 0.25
+    included_penalty: Literal[0.1] = 0.1
+    rendered_penalty: Literal[0.1] = 0.1
+    acknowledged_penalty: Literal[0.25] = 0.25
+
+
+class HistoricalDocument(StrictModel):
+    document_id: NonEmpty
+    doc_version_id: NonEmpty
+    content_sha256: Sha256 | None
+
+
+class DeliveryItemSnapshot(StrictModel):
+    delivery_id: NonEmpty
+    event_prediction_id: Annotated[str, Field(pattern=r"^predicted:\S+$")]
+    members: Annotated[tuple[HistoricalDocument, ...], Field(min_length=1)]
+
+    @model_validator(mode="after")
+    def unique(self):
+        for field in ("document_id", "doc_version_id"):
+            values = [getattr(m, field) for m in self.members]
+            if len(values) != len(set(values)):
+                raise ContractError("DUPLICATE_ID", field=field)
+        return self
+
+
+class VisibleDeliveryItem(DeliveryItemSnapshot):
+    delivery_as_of: Instant
+    delivery_generated_at: Instant
+
+    @model_validator(mode="after")
+    def interval(self):
+        if self.delivery_as_of > self.delivery_generated_at:
+            raise ContractError("INVALID_INTERVAL")
+        return self
+
+
+class SyntheticExpectation(StrictModel):
+    """Authored test expectations, never an independent person's annotations."""
+    basis: Literal["synthetic_test_expectation"]
+    record_origin: Literal["synthetic"]
+    provenance_uri: NonEmpty
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    persona_version_id: NonEmpty
+    event_id: NonEmpty
+    tier: Literal["focus", "radar", "archive", "hold"]
+    graded_relevance: Score
+    material_change: Literal["new", "meaningful_update", "no_change", "correction",
+                             "withdrawal", "insufficient"]
+    supporting_doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
 
 
 class VisibleExposure(StrictModel):
@@ -434,6 +491,8 @@ class ReplayContext(StrictModel):
     time_window_end: Instant
     source_coverage: tuple[CoverageWindow, ...]
     exposure_history: tuple[VisibleExposure, ...]
+    delivery_history: tuple[VisibleDeliveryItem, ...] = ()
+    unresolved_exposure_ids: tuple[NonEmpty, ...] = ()
 
     @model_validator(mode="after")
     def historical(self):
@@ -445,6 +504,8 @@ class ReplayContext(StrictModel):
             raise ContractError("FUTURE_COVERAGE")
         if any(e.occurred_at > self.as_of for e in self.exposure_history):
             raise ContractError("FUTURE_EXPOSURE")
+        if any(d.delivery_generated_at > self.as_of for d in self.delivery_history):
+            raise ContractError("FUTURE_DELIVERY")
         if len(set(self.candidate_doc_version_ids)) != len(self.candidate_doc_version_ids):
             raise ContractError("DUPLICATE_ID")
         return self
@@ -471,6 +532,18 @@ class ScoreComponents(StrictModel):
     bm25: Annotated[float, Field(ge=0, allow_inf_nan=False)] | None = None
     available_at: Instant | None = None
     aggregation: Literal["none", "max"] = "none"
+    bm25_norm: Finite | None = None
+    age_days: Finite | None = None
+    half_life_days: int | None = None
+    recency: Finite | None = None
+    latest_visible_material_at: Instant | None = None
+    base_score: Finite | None = None
+    penalty: Annotated[float, Field(ge=0, allow_inf_nan=False)] = 0.0
+    history_delivery_id: NonEmpty | None = None
+    history_event_prediction_ids: tuple[NonEmpty, ...] = ()
+    exposure_signals: tuple[ExposureKind, ...] = ()
+    text_delta: Literal["first_seen", "new_text", "no_change", "unknown"] | None = None
+    new_content_hashes: tuple[Sha256, ...] = ()
 
 
 class RankedItem(StrictModel):
@@ -478,7 +551,7 @@ class RankedItem(StrictModel):
     doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
     representative_doc_version_id: NonEmpty
     representative_source_id: NonEmpty
-    score: Annotated[float, Field(ge=0, allow_inf_nan=False)] | None
+    score: Finite | None
     score_components: ScoreComponents
     predicted_event_id: NonEmpty | None = None
     merge_reasons: tuple[MergeReason, ...] = ()
@@ -492,6 +565,54 @@ class RankedItem(StrictModel):
         return self
 
 
+class BudgetPolicy(StrictModel):
+    max_read_seconds: PositiveInt
+    max_focus: Literal[3] = 3
+    max_radar: Literal[12] = 12
+    focus_seconds: Literal[90] = 90
+    radar_seconds: Literal[12] = 12
+
+
+class PresentedItem(StrictModel):
+    rank: PositiveInt
+    doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    representative_doc_version_id: NonEmpty
+    predicted_event_id: NonEmpty | None
+    tier: Literal["focus", "radar"]
+    estimated_read_seconds: PositiveInt
+
+
+class BudgetPresentation(StrictModel):
+    budget_seconds: PositiveInt
+    used_read_seconds: Annotated[int, Field(ge=0)]
+    presented_items: tuple[PresentedItem, ...]
+    truncated_item_count: Annotated[int, Field(ge=0)]
+    stop_reason: Literal["exhausted_ranking", "reading_budget", "card_limit"]
+
+
+class MetricValue(StrictModel):
+    numerator: Annotated[float, Field(ge=0, allow_inf_nan=False)]
+    denominator: Annotated[float, Field(ge=0, allow_inf_nan=False)]
+    value: Finite | None
+    undefined_reason: NonEmpty | None
+
+    @model_validator(mode="after")
+    def defined(self):
+        if (self.value is None) != (self.undefined_reason is not None):
+            raise ContractError("METRIC_INVALID")
+        return self
+
+
+class MetricReport(StrictModel):
+    algorithm_id: NonEmpty
+    oracle_mode: bool
+    label_source: Literal["gold", "synthetic-fixture"]
+    dataset_manifest_sha256: Sha256
+    predictions_sha256: Sha256
+    metric_k: PositiveInt
+    steps: tuple[dict, ...]
+
+
 SCHEMA_MODELS = {
     "document_version": DocumentVersion, "persona_version": PersonaVersion,
     "replay_step": ReplayStep, "exposure": Exposure, "coverage_window": CoverageWindow,
@@ -502,6 +623,10 @@ SCHEMA_MODELS = {
     "annotation": Annotation, "adjudication": Adjudication,
     "baseline_config": BaselineConfig, "replay_context": ReplayContext,
     "predicted_event_group": PredictedEventGroup, "ranked_item": RankedItem,
+    "delivery_item_snapshot": DeliveryItemSnapshot,
+    "synthetic_expectation": SyntheticExpectation,
+    "budget_policy": BudgetPolicy, "budget_presentation": BudgetPresentation,
+    "metric_value": MetricValue, "metric_report": MetricReport,
 }
 
 

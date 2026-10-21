@@ -16,6 +16,7 @@ from .contracts import (
     Claim,
     CoverageWindow,
     Delivery,
+    DeliveryItemSnapshot,
     DocumentObservation,
     DocumentVersion,
     EventGroup,
@@ -27,10 +28,12 @@ from .contracts import (
     PersonaVersion,
     ReplayStep,
     SourceRegistry,
+    SyntheticExpectation,
     schema_text,
 )
 from .exceptions import ContractError, DatasetValidationError, Issue, ValidationReport
 from .hashing import canonical_json, sha256_bytes
+from .history import validate_snapshot
 from .pilot import annotation_packet, citation_status
 from .provenance import (
     SENSITIVE,
@@ -55,9 +58,11 @@ RECORD_MODELS = {
     "events": EventGroup, "claims": Claim, "gold": GoldLabel, "families": FamilySplit,
     "observations": DocumentObservation, "event_relations": EventRelation,
     "annotations": Annotation, "adjudications": Adjudication,
+    "delivery_items": DeliveryItemSnapshot, "fixture_expectations": SyntheticExpectation,
 }
 REQUIRED_RECORD_ROLES = frozenset(RECORD_MODELS) - {
     "observations", "event_relations", "annotations", "adjudications",
+    "delivery_items", "fixture_expectations",
 }
 ID_FIELDS = {
     "documents": ("doc_version_id",), "personas": ("persona_version_id",),
@@ -69,6 +74,8 @@ ID_FIELDS = {
     "observations": ("observation_id",),
     "event_relations": ("left_doc_version_id", "right_doc_version_id", "evidence_at"),
     "annotations": ("annotation_id",), "adjudications": ("adjudication_id",),
+    "delivery_items": ("delivery_id", "event_prediction_id"),
+    "fixture_expectations": ("timeline_id", "step_id", "persona_version_id", "event_id"),
 }
 REQUIRED_SCHEMAS = {f"schema/{name}.schema.json": model for name, model in SCHEMA_MODELS.items()}
 
@@ -317,7 +324,30 @@ class _Validator:
                         raise ContractError("ORIGIN_MISMATCH")
                     if event.first_observed_at > exposure.occurred_at:
                         raise ContractError("FUTURE_EVIDENCE")
+                elif (exposure.delivery_id, exposure.event_prediction_id) not in {
+                        (i.delivery_id, i.event_prediction_id) for i in r["delivery_items"]}:
+                    raise ContractError("HISTORY_TARGET_NOT_FOUND")
             self.run(check_exposure, exposure)
+        for item in r["delivery_items"]:
+            self.run(lambda: validate_snapshot(item, deliveries, r["documents"], r["steps"],
+                                              "conservative-v1"), item)
+        for expected in r["fixture_expectations"]:
+            def check_expected():
+                step = next((s for s in r["steps"] if (s.timeline_id, s.step_id) == (
+                    expected.timeline_id, expected.step_id)), None)
+                if step is None or step.persona_version_id != expected.persona_version_id:
+                    raise ContractError("REFERENCE_NOT_FOUND")
+                event = _need(events, expected.event_id)
+                if (event.record_origin != "synthetic" or event.family_id not in step.family_scope_ids
+                        or event.first_observed_at > step.as_of):
+                    raise ContractError("ORIGIN_MISMATCH")
+                check_provenance("synthetic", expected.provenance_uri, self.root, controlled)
+                for key in expected.supporting_doc_version_ids:
+                    document = _need(documents, key)
+                    if (document.record_origin != "synthetic" or key not in event.document_version_ids
+                            or document.available_at > step.as_of):
+                        raise ContractError("FUTURE_EVIDENCE")
+            self.run(check_expected, expected)
         for persona in r["personas"]:
             self.run(lambda: visible_persona(r["personas"], persona_id=persona.persona_id,
                                              as_of=persona.available_at), persona)

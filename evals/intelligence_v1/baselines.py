@@ -1,4 +1,4 @@
-"""Pure B0/B1/B2-predicted ranking. No dataset IO or reference-answer imports."""
+"""Pure B0-B4 ranking. No dataset IO or reference-answer imports."""
 
 from dataclasses import dataclass
 from typing import Protocol
@@ -8,6 +8,7 @@ from cfaw_news.retrieval import score_all
 from .contracts import CandidateDocumentVersion, RankedItem, ReplayContext, ScoreComponents
 from .exceptions import ContractError
 from .grouping import group_candidates
+from .history import exposure_adjustment
 from .temporal import require_visible_version
 
 
@@ -59,11 +60,32 @@ def rank_groups(context, candidates, groups):
 class BaselineRanker:
     algorithm_id: str
     config: object
+    half_life_days: int = 7
 
     def rank(self, context, candidates):
-        checked_candidates(context, candidates)
-        if self.algorithm_id == "b2-predicted":
-            return rank_groups(context, candidates, group_candidates(candidates, self.config))
+        by_id = checked_candidates(context, candidates)
+        if self.algorithm_id in {"b2-predicted", "b3", "b4"}:
+            ranked = rank_groups(context, candidates, group_candidates(candidates, self.config))
+            if self.algorithm_id == "b2-predicted":
+                return ranked
+            maximum = max((r.score for r in ranked), default=0)
+            weighted = []
+            for item in ranked:
+                latest = max(by_id[v].available_at for v in item.doc_version_ids)
+                age = max(0, (context.as_of-latest).total_seconds()/86400)
+                norm = item.score/maximum if maximum else 0.0
+                recency = 2**(-age/self.half_life_days)
+                base = self.config.bm25_weight*norm + self.config.recency_weight*recency
+                adjustment = (exposure_adjustment(context, candidates, item, self.config)
+                              if self.algorithm_id == "b4" else {})
+                components = item.score_components.model_copy(update={"bm25_norm": norm,
+                    "age_days": age, "recency": recency, "half_life_days": self.half_life_days,
+                    "latest_visible_material_at": latest, "base_score": base, **adjustment})
+                weighted.append(item.model_copy(update={"score_components": components,
+                    "score": round(base-adjustment.get("penalty", 0), self.config.score_decimals)}))
+            weighted.sort(key=lambda r: (-r.score, r.representative_doc_version_id,
+                                         r.predicted_event_id))
+            return tuple(r.model_copy(update={"rank": i}) for i, r in enumerate(weighted, 1))
         if self.algorithm_id == "b0":
             ordered = sorted(candidates, key=lambda d: d.doc_version_id)
             ordered.sort(key=lambda d: d.available_at, reverse=True)
@@ -79,9 +101,12 @@ class BaselineRanker:
             for i, d in enumerate(ordered, 1))
 
 
-def get_ranker(algorithm_id, config):
+def get_ranker(algorithm_id, config, *, half_life_days=None):
     if algorithm_id == "b2-oracle":
         raise ContractError("ORACLE_REQUIRES_EXPLICIT_PATH")
-    if algorithm_id not in {"b0", "b1", "b2-predicted"}:
+    if algorithm_id not in {"b0", "b1", "b2-predicted", "b3", "b4"}:
         raise ContractError("UNKNOWN_ALGORITHM")
-    return BaselineRanker(algorithm_id, config)
+    half = config.half_life_days if half_life_days is None else half_life_days
+    if type(half) is not int or half not in config.registered_half_lives:
+        raise ContractError("UNREGISTERED_EXPERIMENT")
+    return BaselineRanker(algorithm_id, config, half)

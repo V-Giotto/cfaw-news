@@ -14,7 +14,7 @@ from evals.intelligence_v1.contracts import (
 
 
 def test_derived_schemas_match_exactly():
-    assert len(SCHEMA_MODELS) == 21
+    assert len(SCHEMA_MODELS) == 27
     assert check_schemas()
 
 

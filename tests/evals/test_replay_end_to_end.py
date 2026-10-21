@@ -17,7 +17,7 @@ def run(bundle, out, algorithm="b1", **kwargs):
 
 def test_four_algorithms_share_full_input_snapshot_and_prediction_scale(bundle, tmp_path):
     snapshots = []
-    for algorithm in ("b0", "b1", "b2-predicted", "b2-oracle"):
+    for algorithm in ("b0", "b1", "b2-predicted", "b2-oracle", "b3", "b4"):
         out = tmp_path / algorithm
         metadata = run(bundle, out, algorithm)
         snapshots.append((out/"input_snapshot.json").read_bytes())

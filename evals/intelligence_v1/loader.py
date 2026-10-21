@@ -17,6 +17,7 @@ from .contracts import (
     BaselineConfig,
     CoverageWindow,
     Delivery,
+    DeliveryItemSnapshot,
     DocumentVersion,
     Exposure,
     FamilySplit,
@@ -29,11 +30,13 @@ from .contracts import (
     Sha256,
     SourceRegistry,
     StrictModel,
+    VisibleDeliveryItem,
     VisibleExposure,
     schema_text,
 )
 from .exceptions import ContractError
 from .hashing import canonical_json, sha256_bytes
+from .history import validate_snapshot
 from .provenance import SENSITIVE, check_document, check_source, controlled_path
 from .split_metadata import split_metadata_issues
 from .temporal import (
@@ -46,9 +49,9 @@ from .temporal import (
 
 PREDICTION_ROLES = frozenset({"documents", "personas", "steps", "deliveries", "exposures",
                              "coverage", "families", "source_registry", "baseline_config",
-                             "code", "schema"})
+                              "code", "schema", "delivery_items"})
 RECORD_ROLES = frozenset({"documents", "personas", "steps", "deliveries", "exposures",
-                         "coverage", "families"})
+                          "coverage", "families", "delivery_items"})
 
 
 def _pairs(pairs):
@@ -282,6 +285,17 @@ def load_step(bundle, *, timeline_id, step_id, config):
                           and s.previous_delivery_id is not None} if step.previous_delivery_id else set()
     for delivery_id in sorted(allowed_deliveries):
         previous_delivery(deliveries, delivery_id, as_of=step.as_of)
+    delivery_history = []
+    unique(bundle.rows["delivery_items"], lambda r: (r["delivery_id"], r["event_prediction_id"]))
+    for raw in bundle.rows["delivery_items"]:
+        if raw["delivery_id"] not in allowed_deliveries:
+            continue  # Future/unrelated snapshot payloads are never interpreted.
+        item = parse_model(DeliveryItemSnapshot, raw)
+        validate_snapshot(item, {d.delivery_id: d for d in deliveries}, bundle.documents,
+                          bundle.steps, config.grouping_revision)
+        delivery = previous_delivery(deliveries, item.delivery_id, as_of=step.as_of)
+        delivery_history.append(VisibleDeliveryItem(**item.model_dump(),
+            delivery_as_of=delivery.as_of, delivery_generated_at=delivery.generated_at))
     history = []
     unique(bundle.rows["exposures"], lambda r: r["exposure_id"])
     for raw in bundle.rows["exposures"]:
@@ -295,12 +309,21 @@ def load_step(bundle, *, timeline_id, step_id, config):
             raise ContractError("INVALID_INTERVAL")
         history.append(parse_model(VisibleExposure,
             exposure.model_dump(mode="json", include=set(VisibleExposure.model_fields))))
+    targets = {(i.delivery_id, i.event_prediction_id) for i in delivery_history}
+    for exposure in history:
+        if (exposure.event_prediction_id is not None
+                and (exposure.delivery_id, exposure.event_prediction_id) not in targets):
+            raise ContractError("HISTORY_TARGET_NOT_FOUND")
     context = ReplayContext(timeline_id=step.timeline_id, step_id=step.step_id, as_of=step.as_of,
         persona=persona, candidate_doc_version_ids=ids, previous_delivery_id=step.previous_delivery_id,
         attention_budget_seconds=step.attention_budget_seconds,
         time_window_start=step.time_window_start, time_window_end=step.time_window_end,
         source_coverage=tuple(sorted(coverage, key=lambda c: c.coverage_window_id)),
-        exposure_history=tuple(sorted(history, key=lambda e: (e.occurred_at, e.exposure_id))))
+        exposure_history=tuple(sorted(history, key=lambda e: (e.occurred_at, e.exposure_id))),
+        delivery_history=tuple(sorted(delivery_history, key=lambda i: (
+            i.delivery_generated_at, i.delivery_id, i.event_prediction_id))),
+        unresolved_exposure_ids=tuple(sorted(e.exposure_id for e in history
+                                             if e.event_prediction_id is None)))
     return context, tuple(candidates)
 
 

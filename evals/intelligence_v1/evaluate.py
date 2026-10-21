@@ -1,45 +1,19 @@
-"""Post-prediction Recall@5/nDCG@5 and synthetic reference grouping diagnostics.
-
-Full validation is mandatory here. This module never rewrites prediction files,
-never labels missing relevance gold, and does not implement PR4 budget/revisit metrics.
-"""
+"""Post-prediction evaluation; human gold and authored fixture expectations stay separate."""
 
 import argparse
-import math
 from itertools import combinations
 from pathlib import Path
 
-from .contracts import GoldLabel, RankedItem
+from .budget import apply_budget
+from .contracts import BudgetPolicy, GoldLabel, MetricReport, RankedItem, SyntheticExpectation
 from .exceptions import ContractError, DatasetValidationError
 from .hashing import canonical_json, sha256_bytes
 from .loader import json_value, load_bundle, load_step, parse_model, read_entry, read_records
+from .metrics import aggregate_metrics, coverage_gaps, ratio, step_metrics, unavailable
+from .metrics import ranking_metrics as ranking_metrics
 from .oracle import reference_events, visible_reference_mapping
 from .replay import _output_location, write_payloads
 from .validate import validate_dataset
-
-
-def ratio(numerator, denominator, reason):
-    return {"numerator": numerator, "denominator": denominator,
-            "value": numerator / denominator if denominator else None,
-            "undefined_reason": None if denominator else reason}
-
-
-def ranking_metrics(items, mapping, labels, *, k):
-    visible_labels = {event: label for event, label in labels.items() if event in set(mapping.values())}
-    focus = {event for event, label in visible_labels.items() if label["tier"] == "focus"}
-    seen, dcg = set(), 0.0
-    for position, item in enumerate(items[:k], 1):
-        event = mapping.get(item["representative_doc_version_id"])
-        if event in seen:
-            continue  # The duplicate still consumed its displayed position.
-        seen.add(event)
-        grade = visible_labels.get(event, {}).get("graded_relevance", 0)
-        dcg += (2**grade - 1) / math.log2(position + 1)
-    grades = sorted((label["graded_relevance"] for label in visible_labels.values()), reverse=True)
-    ideal = sum((2**grade - 1) / math.log2(i + 2) for i, grade in enumerate(grades[:k]))
-    return {f"ImportantEventRecall@{k}": ratio(len(seen & focus), len(focus),
-                                               "no_visible_gold_focus_events"),
-            f"EventnDCG@{k}": ratio(dcg, ideal, "no_positive_gold_gain")}
 
 
 def group_errors(items, mapping, candidate_ids):
@@ -63,7 +37,9 @@ def group_errors(items, mapping, candidate_ids):
             "scope": "synthetic_reference_diagnostic_not_independent_human_gold"}
 
 
-def evaluate_run(run, manifest_path, *, manifest_sha256, out):
+def evaluate_run(run, manifest_path, *, manifest_sha256, out, label_source="gold"):
+    if label_source not in {"gold", "synthetic-fixture"}:
+        raise ContractError("UNKNOWN_LABEL_SOURCE")
     data = load_bundle(manifest_path, manifest_sha256=manifest_sha256)
     validation = validate_dataset(manifest_path, strict=True)
     if validation.manifest_sha256 != manifest_sha256.lower():
@@ -73,12 +49,18 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out):
     if output.is_relative_to(run) or run.is_relative_to(output):
         raise ContractError("OUTPUT_PATH_INVALID")
     metadata = json_value((run/"run_metadata.json").read_bytes())
-    if metadata["algorithm_id"] not in {"b0", "b1", "b2-predicted", "b2-oracle"}:
+    if metadata["algorithm_id"] not in {"b0", "b1", "b2-predicted", "b2-oracle", "b3", "b4"}:
         raise ContractError("UNKNOWN_ALGORITHM")
     if metadata["oracle_mode"] and "oracle" not in output.name.casefold():
         raise ContractError("ORACLE_OUTPUT_PATH_REQUIRED")
     if metadata["dataset_manifest_sha256"] != manifest_sha256.lower():
         raise ContractError("RUN_INPUT_MISMATCH")
+    experiment = metadata["experiment"]
+    override, half = experiment["budget_seconds_override"], experiment["half_life_days"]
+    if (type(half) is not int or half not in data.config.registered_half_lives
+            or (override is not None and (type(override) is not int
+                or override not in data.config.registered_budgets))):
+        raise ContractError("UNREGISTERED_EXPERIMENT")
     payloads = {}
     for name, field in (("predictions.jsonl", "predictions_sha256"),
                         ("input_snapshot.json", "input_snapshot_sha256"),
@@ -100,11 +82,16 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out):
         key=lambda s: (s.timeline_id, s.as_of, s.step_id))
     if len(expected_steps) != len(predictions):
         raise ContractError("RUN_INPUT_MISMATCH")
+    if half != data.config.half_life_days and any(s.split != "dev" for s in expected_steps):
+        raise ContractError("SENSITIVITY_REQUIRES_DEV")
     events = reference_events(data)
     gold = []
+    selected_role = "gold" if label_source == "gold" else "fixture_expectations"
+    label_model = GoldLabel if label_source == "gold" else SyntheticExpectation
     for entry in data.manifest.file_hashes:
-        if entry.role == "gold":
-            gold.extend(parse_model(GoldLabel, r) for r in read_records(read_entry(data.root, entry), entry))
+        if entry.role == selected_role:
+            gold.extend(parse_model(label_model, r) for r in read_records(
+                read_entry(data.root, entry), entry))
     results = []
     for row, snapshot, step in zip(predictions, snapshots, expected_steps, strict=True):
         context, candidates = load_step(data, timeline_id=step.timeline_id,
@@ -134,29 +121,76 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out):
         if row["algorithm_id"] in {"b0", "b1"} and any(
                 len(r.doc_version_ids) != 1 or r.predicted_event_id is not None for r in ranked):
             raise ContractError("GROUP_MEMBERS_INVALID")
+        presentation = apply_budget(ranked, BudgetPolicy(max_read_seconds=(
+            context.attention_budget_seconds if override is None else override)))
+        if row["presentation"] != presentation.model_dump(mode="json"):
+            raise ContractError("BUDGET_PRESENTATION_MISMATCH")
+        if row["algorithm_id"] in {"b3", "b4"} and any(
+                r.score_components.half_life_days != half for r in ranked):
+            raise ContractError("RUN_INPUT_MISMATCH")
         mapping = visible_reference_mapping(events, context.candidate_doc_version_ids,
                                              as_of=context.as_of)
         labels = [g for g in gold if (g.timeline_id, g.step_id, g.persona_version_id)
                   == (step.timeline_id, step.step_id, context.persona.persona_version_id)]
-        eligible = {g.event_id: g.model_dump(mode="json") for g in labels
-                    if g.adjudication_status in {"agreed", "adjudicated"}}
-        metrics = ranking_metrics(row["ranked_items"], mapping, eligible, k=data.config.metric_k)
+        eligible = {g.event_id: g.model_dump(mode="json") for g in labels if
+                    label_source == "synthetic-fixture" or g.adjudication_status in {
+                        "agreed", "adjudicated"}}
+        historic = visible_reference_mapping(events, tuple(m.doc_version_id
+            for h in context.delivery_history for m in h.members), as_of=context.as_of)
+        metrics, diagnostics = step_metrics(row, context, mapping, eligible,
+            k=data.config.metric_k, evidence_times={d.doc_version_id: d.available_at
+                                                   for d in data.documents},
+            historical_mapping=historic)
+        errors = group_errors(row["ranked_items"], mapping, context.candidate_doc_version_ids)
+        tp, fp, fn = (errors["true_positive_pairs"], len(errors["false_positive_pairs"]),
+                      len(errors["false_negative_pairs"]))
+        metrics.update({"EventPairPrecision": ratio(tp, tp+fp, "no_predicted_positive_pairs"),
+            "EventPairRecall": ratio(tp, tp+fn, "no_reference_positive_pairs"),
+            "EventPairF1": ratio(2*tp, 2*tp+fp+fn, "no_positive_pairs")})
         if not eligible:
-            reason = "gold_not_available" if not labels else "gold_pending_or_unresolved"
-            for metric in metrics.values():
-                metric.update(numerator=0, denominator=0, value=None, undefined_reason=reason)
+            reason = ("synthetic_expectation_not_available" if label_source == "synthetic-fixture"
+                      else "gold_not_available" if not labels else "gold_pending_or_unresolved")
+            for name in metrics:
+                if (name.startswith(("Important", "EventnDCG", "Revisit", "NewText"))
+                        or name == "RepeatedNoChangeRate"):
+                    metrics[name] = unavailable(reason)
         results.append({"timeline_id": step.timeline_id, "step_id": step.step_id,
             "metrics": metrics, "label_count": len(labels), "eligible_label_count": len(eligible),
+            "family_ids": list(step.family_scope_ids), "candidate_sha256": row["candidate_sha256"],
+            "context_sha256": row["context_sha256"], "candidate_doc_count": len(candidates),
+            "predicted_item_count": len(ranked), "presented_item_count": len(presentation.presented_items),
+            "budget_seconds": presentation.budget_seconds,
+            "estimated_read_seconds": presentation.used_read_seconds,
+            "top_k": row["ranked_items"][:data.config.metric_k],
+            "presented_items": row["presentation"]["presented_items"],
+            "coverage": coverage_gaps(context), "diagnostics": diagnostics,
+            "coverage_scope": "known_source_windows_only",
+            "uncovered_visible_source_ids": sorted({d.source_id for d in candidates}
+                - {w.source_id for w in context.source_coverage}),
             "unlabelled_visible_event_ids": sorted(set(mapping.values()) - eligible.keys()),
-            "group_errors": group_errors(row["ranked_items"], mapping, context.candidate_doc_version_ids)})
+            "group_errors": errors})
     report = {"algorithm_id": metadata["algorithm_id"], "oracle_mode": metadata["oracle_mode"],
         "dataset_manifest_sha256": manifest_sha256.lower(),
         "predictions_sha256": metadata["predictions_sha256"], "metric_k": data.config.metric_k,
+        "input_snapshot_sha256": metadata["input_snapshot_sha256"],
+        "baseline_config_sha256": data.manifest.baseline_config_sha256,
+        "dataset_revision": data.manifest.dataset_revision, "experiment": experiment,
+        "label_source": label_source, "model_tokens": 0, "model_cost": 0,
         "human_annotation": "not_confirmed", "semantic_support": "not_measured",
-        "scope": "PR3_offline_development_diagnostics_no_budget_or_revisit_claim", "steps": results}
-    write_payloads(output, {"metrics.json": (canonical_json(report) + "\n").encode(),
+        "scope": "PR4_offline_technical_evaluation_not_real_world_evidence", "steps": results,
+        "aggregate": {name: aggregate_metrics([s["metrics"][name] for s in results])
+                      for name in sorted({k for s in results for k in s["metrics"]})
+                      if all(name in s["metrics"] for s in results)}}
+    parse_model(MetricReport, {k: report[k] for k in MetricReport.model_fields})
+    payloads = {"metrics.json": (canonical_json(report) + "\n").encode(),
         "diagnostics.jsonl": "".join(canonical_json({"timeline_id": s["timeline_id"],
-            "step_id": s["step_id"], **s["group_errors"]}) + "\n" for s in results).encode()})
+            "step_id": s["step_id"], **s["group_errors"], **s["diagnostics"],
+            "coverage": s["coverage"]}) + "\n" for s in results).encode()}
+    payloads["evaluation_metadata.json"] = (canonical_json({"run_path": str(run),
+        "dataset_manifest_sha256": manifest_sha256.lower(), "label_source": label_source,
+        "metrics_sha256": sha256_bytes(payloads["metrics.json"]),
+        "diagnostics_sha256": sha256_bytes(payloads["diagnostics.jsonl"])})+"\n").encode()
+    write_payloads(output, payloads)
     return report
 
 
@@ -166,9 +200,11 @@ def main(argv=None):
     parser.add_argument("--manifest", type=Path, required=True)
     parser.add_argument("--manifest-sha256", required=True)
     parser.add_argument("--out", type=Path, required=True)
+    parser.add_argument("--label-source", choices=["gold", "synthetic-fixture"], default="gold")
     args = parser.parse_args(argv)
     try:
-        report = evaluate_run(args.run, args.manifest, manifest_sha256=args.manifest_sha256, out=args.out)
+        report = evaluate_run(args.run, args.manifest, manifest_sha256=args.manifest_sha256,
+                              out=args.out, label_source=args.label_source)
     except DatasetValidationError as error:
         print(canonical_json(error.report.to_dict()))
         return 1
