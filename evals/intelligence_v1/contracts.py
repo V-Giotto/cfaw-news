@@ -19,7 +19,7 @@ from .exceptions import ContractError
 from .hashing import canonical_json, content_sha256
 from .temporal import INSTANT_PATTERN, format_instant, parse_instant, utc_instant
 
-SCHEMA_REVISION = "g1-pr4-1"
+SCHEMA_REVISION = "g1-pr5-6"
 NonEmpty = Annotated[str, Field(min_length=1, pattern=r"\S")]
 Sha256 = Annotated[str, Field(pattern=r"^[0-9a-f]{64}$")]
 PositiveInt = Annotated[int, Field(gt=0)]
@@ -291,6 +291,47 @@ class Annotation(StrictModel):
     initial_label: AnnotationJudgment
 
 
+class HumanEvidenceRef(EvidenceRef):
+    direction: Literal["supports", "contradicts", "mentions"]
+
+
+class HumanEventRelation(EventRelation):
+    relation: Literal["correction_of", "superseded_by", "syndicated_republish",
+                      "rewritten_derivative", "press_material_copy", "independent_test_of",
+                      "separate_announcement_no_update"]
+
+
+class HumanClaimReview(ClaimReview):
+    evidence_refs: Annotated[tuple[HumanEvidenceRef, ...], Field(min_length=1)]
+
+
+class HumanAnnotationJudgment(AnnotationJudgment):
+    document_relations: tuple[HumanEventRelation, ...]
+    claim_reviews: tuple[HumanClaimReview, ...]
+
+
+class HumanAnnotation(Annotation):
+    annotation_version: Literal["g1a-annotation-v2"]
+    guide_revision: Literal["g1a-guide-v3"]
+    initial_label: HumanAnnotationJudgment
+
+
+class HumanReviewedClaim(HumanClaimReview):
+    claim_id: NonEmpty
+    derived_from: Annotated[str, Field(pattern=r"^initial_label\.claim_reviews\[[0-9]+\]$")]
+    layer: Literal["occurrence", "capability"]
+    support_note: NonEmpty
+
+
+class HumanReviewLabel(HumanAnnotationJudgment):
+    review_id: NonEmpty
+    reviewer: NonEmpty
+    reviewed_at: Instant
+    guide_revision: Literal["g1a-guide-v3"]
+    annotation_version: Literal["g1a-annotation-v2"]
+    claim_reviews: tuple[HumanReviewedClaim, ...]
+
+
 class Adjudication(StrictModel):
     adjudication_id: NonEmpty
     prior_annotation_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=2)]
@@ -348,9 +389,18 @@ class FileEntry(StrictModel):
     role: Literal["documents", "personas", "steps", "deliveries", "exposures", "coverage",
                   "events", "claims", "gold", "families", "source_registry", "schema",
                   "code", "support", "baseline_config", "observations", "event_relations",
-                  "annotations", "adjudications", "delivery_items", "fixture_expectations"]
+                  "annotations", "adjudications", "delivery_items", "fixture_expectations",
+                  "event_alignments", "support_reviews"]
     sha256: Sha256
     record_count: Annotated[int, Field(ge=0)] | None
+    annotation_version: NonEmpty | None = None
+
+    @model_validator(mode="after")
+    def label_version(self):
+        if self.annotation_version is not None and self.role not in {
+                "gold", "annotations", "adjudications", "event_alignments", "support_reviews"}:
+            raise ContractError("SCHEMA_INVALID", field="annotation_version")
+        return self
 
 
 class Manifest(StrictModel):
@@ -613,6 +663,154 @@ class MetricReport(StrictModel):
     steps: tuple[dict, ...]
 
 
+class ReviewParticipant(StrictModel):
+    annotator_id: NonEmpty
+    real_human_confirmed: bool
+    independent_submission_confirmed: bool
+    submission_sha256: Sha256
+    frozen_at: Instant
+
+
+class PacketReceipt(StrictModel):
+    annotator_id: NonEmpty
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    packet_sha256: Sha256
+    delivered_at: Instant
+
+
+class ReviewSession(StrictModel):
+    revision: Literal["g1a-review-v1"]
+    annotation_version: NonEmpty
+    guide_revision: Literal["g1a-guide-v1", "g1a-guide-v2", "g1a-guide-v3"]
+    guide_sha256: Sha256
+    status: Literal["not_started", "single_annotator_development", "submissions_frozen",
+                    "adjudicated"]
+    confirmed_by: NonEmpty | None
+    confirmed_at: Instant | None
+    participants: tuple[ReviewParticipant, ...]
+    packet_receipts: tuple[PacketReceipt, ...]
+
+
+class EventAlignment(StrictModel):
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    persona_version_id: NonEmpty
+    annotation_version: NonEmpty
+    event_id: NonEmpty
+    prior_annotation_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=2)]
+    doc_version_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    status: Literal["matched", "split_merge_disagreement", "unresolved"]
+    reason: NonEmpty
+    aligned_by: NonEmpty
+    aligned_at: Instant
+
+
+class SupportClaimSource(StrictModel):
+    annotation_id: NonEmpty
+    claim_sha256: Sha256
+
+
+class SupportClaimAlignment(StrictModel):
+    sources: Annotated[tuple[SupportClaimSource, ...], Field(min_length=2)]
+    reason: NonEmpty
+    aligned_by: NonEmpty
+    aligned_at: Instant
+
+
+class SupportReview(StrictModel):
+    support_review_id: NonEmpty
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    persona_version_id: NonEmpty
+    annotation_version: NonEmpty
+    prior_annotation_ids: Annotated[tuple[NonEmpty, ...], Field(min_length=2)]
+    claim_text: NonEmpty
+    evidence_refs: Annotated[tuple[EvidenceRef, ...], Field(min_length=1)]
+    scope: NonEmpty
+    semantic_support: Literal["supported", "unsupported", "uncertain"]
+    reason: NonEmpty
+    reviewed_by: NonEmpty
+    reviewed_at: Instant
+    source_claim_alignment: SupportClaimAlignment | None = None
+
+
+class HumanSupportReview(SupportReview):
+    annotation_version: Literal["g1a-annotation-v2"]
+    evidence_refs: Annotated[tuple[HumanEvidenceRef, ...], Field(min_length=1)]
+
+
+def annotation_input_model(model, value):
+    """Keep V3 human words in audit models; canonical machine contracts stay unchanged."""
+    if not isinstance(value, dict):
+        return model
+    if model is Annotation and (value.get("guide_revision") == "g1a-guide-v3"
+                               or value.get("annotation_version") == "g1a-annotation-v2"):
+        return HumanAnnotation
+    if model is SupportReview and value.get("annotation_version") == "g1a-annotation-v2":
+        return HumanSupportReview
+    return model
+
+
+class AIDevelopmentRecord(StrictModel):
+    record_id: NonEmpty
+    executor_type: Literal["ai"]
+    executor_id: NonEmpty
+    model_id: NonEmpty
+    session_id: NonEmpty
+    generation_mode: Literal["offline_authoring_no_model_api"]
+    guide_revision: Literal["ai-dev-guide-v1"]
+    generated_at: Instant
+    timeline_id: NonEmpty
+    step_id: NonEmpty
+    persona_version_id: NonEmpty
+    event_id: NonEmpty
+    packet_sha256: Sha256
+    material_origin: Literal["synthetic"]
+    phase: Literal["draft", "evidence_review"]
+    judgment: HumanAnnotationJudgment
+    previous_record_sha256: Sha256 | None
+    change_reason: NonEmpty
+    context_disclosure: Annotated[tuple[NonEmpty, ...], Field(min_length=1)]
+    temporal_blind: Literal[False]
+    independent_validation: Literal[False]
+
+
+class AIDevelopmentBatch(StrictModel):
+    revision: Literal["ai-development-batch-v1"]
+    batch_id: NonEmpty
+    acceptance_profile: Literal["ai_development"]
+    source_material_origin: Literal["synthetic"]
+    input_manifest_sha256: Sha256
+    guide_sha256: Sha256
+    created_at: Instant
+    completed_at: Instant
+    draft_path: Literal["labels/ai_development/draft.json"]
+    review_path: Literal["labels/ai_development/review.json"]
+    draft_sha256: Sha256
+    review_sha256: Sha256
+    disagreement_status: Literal["not_applicable_single_ai"]
+    human_evidence: Literal[False]
+    independent_validation: Literal[False]
+
+
+class AcceptanceGate(StrictModel):
+    status: Literal["PASS", "FAIL", "BLOCKED", "N/A"]
+    reason: NonEmpty
+    evidence: tuple[NonEmpty, ...] = ()
+
+
+class AcceptanceResult(StrictModel):
+    acceptance_profile: Literal["ai_development", "human_research"] = "human_research"
+    overall_status: Literal["PASS", "NOT_MET"]
+    technical_gate: Literal["PASS", "FAIL", "BLOCKED"]
+    human_annotation_gate: Literal["PASS", "FAIL", "BLOCKED"]
+    g1a_passed: bool
+    g2_eligible: bool
+    human_research_passed: bool = False
+    gates: dict[str, AcceptanceGate]
+
+
 SCHEMA_MODELS = {
     "document_version": DocumentVersion, "persona_version": PersonaVersion,
     "replay_step": ReplayStep, "exposure": Exposure, "coverage_window": CoverageWindow,
@@ -627,6 +825,11 @@ SCHEMA_MODELS = {
     "synthetic_expectation": SyntheticExpectation,
     "budget_policy": BudgetPolicy, "budget_presentation": BudgetPresentation,
     "metric_value": MetricValue, "metric_report": MetricReport,
+    "review_session": ReviewSession, "event_alignment": EventAlignment,
+    "support_review": SupportReview, "acceptance_result": AcceptanceResult,
+    "human_annotation": HumanAnnotation, "human_support_review": HumanSupportReview,
+    "human_review_label": HumanReviewLabel,
+    "ai_development_record": AIDevelopmentRecord, "ai_development_batch": AIDevelopmentBatch,
 }
 
 

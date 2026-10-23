@@ -1,5 +1,7 @@
 # CFAW News
 
+DEV-01～05 现按 [AI 开发与验收规则](docs/plans/G1_AI_DEVELOPMENT_RULES.md) 执行。五轨迹已重建为明确标记的单 AI 初稿与证据复核批次，真人双标为可选研究路径。当前验收、复现结果与限制见 [AI 批次收尾记录](evals/intelligence_v1/reports/PR5_AI_DEVELOPMENT.md)；旧真人材料退出当前入口，历史冻结报告保留原语境。
+
 CFAW News 面向 AI 开发者，从新闻、官方材料、论文与开源项目发现值得知道的进展，形成重点情报、前沿速览和可检索资料库，在用户主动回访时补齐重要变化。
 
 研发优先级：算法与评测质量 > 关键用户体验 > 扩展功能数量。用户自主阅读、研究和行动，不默认发送应用外提醒。
@@ -14,9 +16,9 @@ CFAW News 面向 AI 开发者，从新闻、官方材料、论文与开源项目
 | [G0 机器记录](audit/G0_BASELINE.json) | G0 当次环境、依赖、验证、数据库恢复及文件指纹；不是每轮自动更新的结果 |
 | [AGENTS.md](AGENTS.md) | 后续 AI 和开发者必须遵守的工程规则 |
 
-**G0、G1-PR1 至 G1-PR4 技术交付已完成；PR4 独立复审、真实人工标注和 G1 整体验收仍待完成。** PR4 的冻结输入、命令、测试与零提升/漏报结果见[验收记录](evals/intelligence_v1/reports/PR4_ACCEPTANCE.md)。当前只推进独立离线的 G1 数据与评测基座；不提前开展训练、复杂 UI 重做、持续自动 Agent 或生产数据库迁移。
+**G0、G1-PR1 至 G1-PR4 技术交付与 PR4 独立复审已完成；PR5 的五条轨迹现已重建为 AI 开发批次。** G1-a 开发验收采用 ai_development，不再等待第二名真人；实际验证和新版本证据见 [AI 批次收尾记录](evals/intelligence_v1/reports/PR5_AI_DEVELOPMENT.md)和 [G1 总验收](evals/intelligence_v1/G1_ACCEPTANCE.md)。[旧人工收尾](evals/intelligence_v1/reports/PR5_HUMAN_READINESS.md)、[v4 修复](evals/intelligence_v1/reports/PR5_REVIEW_FIX.md)与[原 PR5 验收](evals/intelligence_v1/reports/PR5_ACCEPTANCE.md)仅保留历史语境；前序进入证据见 [PR4 独立复审](evals/intelligence_v1/reports/PR4_REREVIEW_GATE.md)。当前不自动开展 G2、训练、复杂 UI 重做、持续自动 Agent 或生产数据库迁移。
 
-G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与家族拆分校验、合成样例和回归测试。PR2 已提供 DEV-01 六时点、七份合成文档版本、Claim/事件关系、标注手册、数据卡和带外部 Manifest pin 的最小 dry-run 导出；[修复与验收记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)明确区分技术通过与人工待完成。PR3 提供共享全候选的 B0/B1/B2-predicted 与单列 B2-oracle；PR4 增加时间/曝光规则、统一预算、独立合成回访故事、反事实和报告 CLI，入口与限制见[离线说明](evals/intelligence_v1/README.md)。真人金标、正式语义变化分类与 PR5/G1-a 验收尚未完成。情报页也属于后续设计。旧目标研究路线、24 周排期、重复交接、过渡归档和旧界面验收文档已删除，不再作为执行依据。
+G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与家族拆分校验、合成样例和回归测试。PR2 已提供 DEV-01 六时点、七份合成文档版本、Claim/事件关系、标注手册、数据卡和带外部 Manifest pin 的最小 dry-run 导出；[修复与验收记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)明确区分技术通过与人工待完成。PR3 提供共享全候选的 B0/B1/B2-predicted 与单列 B2-oracle；PR4 增加时间/曝光规则、统一预算、独立合成回访故事、反事实和报告 CLI，入口与限制见[离线说明](evals/intelligence_v1/README.md)。真人金标及正式语义变化分类未测；AI 开发验收与可选真人研究验收分开报告。情报页也属于后续设计。旧目标研究路线、24 周排期、重复交接、过渡归档和旧界面验收文档已删除，不再作为执行依据。
 
 ## 当前代码的可用能力
 
@@ -27,9 +29,9 @@ G1-PR1 已提供严格 Schema、Manifest、时间/版本门禁、来源许可与
 - 旧 Goal、不可变运行快照、引用定位、用户决定和明确批准后的应用内日程。版本、取消、失效防发布和幂等规则继续保留。
 - 独立的阅读正文与图片缓存。当前阅读内容不会改写历史运行证据，来源标识不冒充文章配图。
 
-当前在线应用尚未接入 V1 文档版本库、事件/主张、情报分层、曝光历史、回访排序或时间回放。离线 PR1–PR4 的契约、合成试点和基线不等于这些业务能力已上线，也不构成独立研究数据集。现有文章库不能还原全部历史；引用 ID 存在不等于语义支持。
+当前在线应用尚未接入 V1 文档版本库、事件/主张、情报分层、曝光历史、回访排序或时间回放。离线 PR1–PR5 的契约、合成数据和基线不等于这些业务能力已上线，也不构成独立研究数据集。现有文章库不能还原全部历史；引用 ID 存在不等于语义支持。
 
-Goal/决定/日程保留兼容，不再是新产品主线。G1 不读取实际业务数据库、不加载 `.env`、不运行联网采集或实时模型，也不修改现有前端。
+Goal/决定/日程保留兼容，不再是新产品主线。G1 离线评测器不读取实际业务数据库、不加载 `.env`、不运行联网采集或实时模型；当前 AI 助手可离线制作开发标签与复核材料。
 
 ## 本地运行现有应用
 
@@ -73,7 +75,7 @@ npm run build
 
 也可运行 `powershell -ExecutionPolicy Bypass -File scripts/verify.ps1`。前端修改源码后构建，`frontend/dist` 是生成物。
 
-旧 `evals/run_baseline.py` 保留为 26 条归档、3 组手选标签的 seed-sanity 烟测，不属于 G1 金标或独立算法成果。PR1 校验、PR2 dry-run、B0–B4 回放和独立评测命令见[离线说明](evals/intelligence_v1/README.md)。当前 PR4 输入 pin、实际回归、复现与限制见[PR4 验收记录](evals/intelligence_v1/reports/PR4_ACCEPTANCE.md)；[PR1 冻结记录](evals/intelligence_v1/G1_BASELINE_LOCK.md)、[PR2 修复记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)、[PR3 v1](evals/intelligence_v1/reports/PR3_ACCEPTANCE.md)及 [PR3 v2 修复](evals/intelligence_v1/reports/PR3_SPLIT_REVIEW_FIX.md)均保留为对应版本的历史证据。PR5/G1-a 和剩余 T01–T26 门槛仍以实施计划为准。
+旧 `evals/run_baseline.py` 保留为 26 条归档、3 组手选标签的 seed-sanity 烟测，不属于 G1 金标或独立算法成果。校验、单步包、B0–B4 回放和独立评测命令见[离线说明](evals/intelligence_v1/README.md)。当前输入 pin、实际回归、复现与限制见 [AI 批次收尾记录](evals/intelligence_v1/reports/PR5_AI_DEVELOPMENT.md)；[PR1 冻结记录](evals/intelligence_v1/G1_BASELINE_LOCK.md)、[PR2 修复记录](evals/intelligence_v1/reports/PR2_REVIEW_FIXES.md)、[PR3 v1](evals/intelligence_v1/reports/PR3_ACCEPTANCE.md)、[PR3 v2 修复](evals/intelligence_v1/reports/PR3_SPLIT_REVIEW_FIX.md)、[PR4 验收记录](evals/intelligence_v1/reports/PR4_ACCEPTANCE.md)和 [AI 规则变更记录](evals/intelligence_v1/reports/AI_DEVELOPMENT_POLICY.md)保留对应版本的历史证据。可选真人研究未测，不阻塞默认 AI 开发验收。
 
 本机检查、mock、真实模型、真实来源、远端 CI 和部署分别报告。仓库中的 Linux/Docker/GitHub Actions 配置不等于本轮已执行或部署。
 

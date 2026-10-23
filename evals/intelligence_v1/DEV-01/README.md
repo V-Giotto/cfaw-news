@@ -1,3 +1,5 @@
+> Current policy (2026-10-23): this story uses the explicit AI development batch in `../labels/ai_development/`. Original/review records and executable references are new AI-authored material; old human submissions and expectations are archived. Earlier human distribution/status statements below describe historical preparation only. Single-AI review is not blinded or independent validation.
+
 # DEV-01 — 合成开发试点
 
 这是 G1-PR2 §11.2 的正式 pilot / developer data，**不是历史新闻或真实实验**。

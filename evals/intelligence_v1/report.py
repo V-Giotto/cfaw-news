@@ -3,6 +3,7 @@
 import argparse
 from pathlib import Path
 
+from .annotations import audit_bundle
 from .exceptions import ContractError, DatasetValidationError
 from .hashing import canonical_json, sha256_bytes
 from .loader import json_value, load_bundle
@@ -26,16 +27,17 @@ def comparison_inputs(cohort):
     ) for step in cohort["steps"]}
 
 
-def build_report(runs, manifest_path, *, manifest_sha256, out):
+def build_report(runs, manifest_path, *, manifest_sha256, out=None):
     data = load_bundle(manifest_path, manifest_sha256=manifest_sha256)
     validation = validate_dataset(manifest_path)
     if validation.manifest_sha256 != manifest_sha256.lower():
         raise ContractError("MANIFEST_SHA_MISMATCH")
     runs = Path(runs).resolve()
-    output = _output_location(out, data.root)
-    if output.is_relative_to(runs) or runs.is_relative_to(output):
+    output = _output_location(out, data.root) if out is not None else None
+    if output is not None and (output.is_relative_to(runs) or runs.is_relative_to(output)):
         raise ContractError("OUTPUT_PATH_INVALID")
     cohorts, input_checks, performance = {}, {}, {}
+    annotation_audit = audit_bundle(data)
     for path in sorted(runs.rglob("evaluation_metadata.json")):
         if not path.resolve().is_relative_to(runs):
             raise ContractError("RUN_INPUT_MISMATCH")
@@ -67,10 +69,12 @@ def build_report(runs, manifest_path, *, manifest_sha256, out):
         key = canonical_json([report["algorithm_id"], report["experiment"], report["label_source"]])
         cohort = cohorts.setdefault(key, {"algorithm_id": report["algorithm_id"],
             "experiment": report["experiment"], "label_source": report["label_source"],
-            "oracle_mode": report["oracle_mode"], "steps": {}, "replicate_count": 0})
-        cohort["replicate_count"] += 1
+            "oracle_mode": report["oracle_mode"], "steps": {}, "replicate_count": 0,
+            "run_count": 0, "replicates_by_step": {}})
+        cohort["run_count"] += 1
         for step in report["steps"]:
             step_key = step["timeline_id"]+"/"+step["step_id"]
+            cohort["replicates_by_step"][step_key] = cohort["replicates_by_step"].get(step_key, 0) + 1
             previous = cohort["steps"].setdefault(step_key, step)
             if previous != step:
                 raise ContractError("NONDETERMINISTIC_METRICS")
@@ -85,6 +89,7 @@ def build_report(runs, manifest_path, *, manifest_sha256, out):
         raise ContractError("REFERENCE_NOT_FOUND", field="evaluation_runs")
     summaries = []
     for _, cohort in sorted(cohorts.items()):
+        cohort["replicate_count"] = min(cohort["replicates_by_step"].values())
         steps = [s for _, s in sorted(cohort["steps"].items())]
         metrics = sorted({name for s in steps for name in s["metrics"]})
         cohort["aggregate"] = {name: aggregate_metrics([s["metrics"][name] for s in steps
@@ -113,7 +118,8 @@ def build_report(runs, manifest_path, *, manifest_sha256, out):
                 "label_source": cohort["label_source"], "experiment": cohort["experiment"],
                 "metric": name, "delta_vs_B1": value-base if value is not None and base is not None else None})
     result = {"dataset_manifest_sha256": manifest_sha256.lower(),
-        "dataset_revision": data.manifest.dataset_revision, "human_annotation": "not_confirmed",
+        "dataset_revision": data.manifest.dataset_revision, "human_annotation": annotation_audit["human_annotation"],
+        "annotation_audit": annotation_audit,
         "semantic_support": "not_measured", "model_tokens": 0, "model_cost": 0,
         "cohorts": summaries, "comparisons": comparisons,
         "limitations": ["Synthetic development data only; no real-world efficacy claim.",
@@ -121,15 +127,18 @@ def build_report(runs, manifest_path, *, manifest_sha256, out):
             "Exposure does not establish comprehension; gaps are unknown.",
             "Repeated runs are deduplicated before aggregation; families remain correlated.",
             "Zero or negative improvement is valid; frozen references must not be tuned."]}
-    lines = ["# G1-PR4 offline technical report", "", f"Manifest: `{manifest_sha256.lower()}`", "",
-        "Human annotation: **not_confirmed**; semantic support: **not_measured**.",
+    lines = ["# G1-PR5 offline development report", "", f"Manifest: `{manifest_sha256.lower()}`", "",
+        f"Human annotation: **{annotation_audit['human_annotation']}**; algorithm semantic support: **not_measured**.",
         "B2-oracle is a separate synthetic reference diagnostic.", "",
-        "| Algorithm | Label source | Budget | Half-life | Step | Cards | Estimated seconds | Gaps | Focus misses |",
-        "|---|---|---:|---:|---|---:|---:|---:|---|"]
+        "| Algorithm | Label source | Budget | Half-life | Step | UTC | Persona | Documents | Sources | Reference events | Focus reference | Cards | Estimated seconds | Gaps | Focus misses |",
+        "|---|---|---:|---:|---|---|---|---:|---:|---:|---:|---:|---:|---:|---|"]
     for cohort in summaries:
         for step in cohort["steps"]:
             lines.append(f"| {cohort['algorithm_id']} | {cohort['label_source']} | {step['budget_seconds']} | "
                 f"{cohort['experiment']['half_life_days']} | {step['timeline_id']}/{step['step_id']} | "
+                f"{step['as_of']} | {step['persona_version_id']} | {step['candidate_doc_count']} | "
+                f"{step['visible_source_count']} | {step['visible_reference_event_count']} | "
+                f"{step['reference_focus_count']} | "
                 f"{step['presented_item_count']} | {step['estimated_read_seconds']} | "
                 f"{step['coverage']['coverage_gap_count']} | {', '.join(step['diagnostics']['missed_focus_event_ids']) or '-'} |")
     lines += ["", "## D8 evidence, repetition and grouping diagnostics", ""]
@@ -171,9 +180,10 @@ def build_report(runs, manifest_path, *, manifest_sha256, out):
     lines += ["- "+line for line in result["limitations"]]
     lines += ["", "Measured latency is in performance.json; it is excluded from deterministic metrics.",
               "Estimated reading seconds are proxies, not measured time savings.", ""]
-    write_payloads(output, {"comparison.json": (canonical_json(result)+"\n").encode(),
-        "report.md": "\n".join(lines).encode(),
-        "performance.json": (canonical_json(performance)+"\n").encode()})
+    if output is not None:
+        write_payloads(output, {"comparison.json": (canonical_json(result)+"\n").encode(),
+            "report.md": "\n".join(lines).encode(),
+            "performance.json": (canonical_json(performance)+"\n").encode()})
     return result
 
 

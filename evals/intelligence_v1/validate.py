@@ -7,6 +7,7 @@ from pathlib import Path
 
 from pydantic import ValidationError
 
+from .build_pr5 import ANNOTATION_VERSION
 from .contracts import (
     SCHEMA_MODELS,
     SCHEMA_REVISION,
@@ -19,6 +20,7 @@ from .contracts import (
     DeliveryItemSnapshot,
     DocumentObservation,
     DocumentVersion,
+    EventAlignment,
     EventGroup,
     EventRelation,
     Exposure,
@@ -28,13 +30,15 @@ from .contracts import (
     PersonaVersion,
     ReplayStep,
     SourceRegistry,
+    SupportReview,
     SyntheticExpectation,
+    annotation_input_model,
     schema_text,
 )
 from .exceptions import ContractError, DatasetValidationError, Issue, ValidationReport
 from .hashing import canonical_json, sha256_bytes
 from .history import validate_snapshot
-from .pilot import annotation_packet, citation_status
+from .pilot import annotation_packet, annotation_packet_v2, citation_status
 from .provenance import (
     SENSITIVE,
     check_document,
@@ -59,10 +63,12 @@ RECORD_MODELS = {
     "observations": DocumentObservation, "event_relations": EventRelation,
     "annotations": Annotation, "adjudications": Adjudication,
     "delivery_items": DeliveryItemSnapshot, "fixture_expectations": SyntheticExpectation,
+    "event_alignments": EventAlignment, "support_reviews": SupportReview,
 }
 REQUIRED_RECORD_ROLES = frozenset(RECORD_MODELS) - {
     "observations", "event_relations", "annotations", "adjudications",
     "delivery_items", "fixture_expectations",
+    "event_alignments", "support_reviews",
 }
 ID_FIELDS = {
     "documents": ("doc_version_id",), "personas": ("persona_version_id",),
@@ -76,6 +82,8 @@ ID_FIELDS = {
     "annotations": ("annotation_id",), "adjudications": ("adjudication_id",),
     "delivery_items": ("delivery_id", "event_prediction_id"),
     "fixture_expectations": ("timeline_id", "step_id", "persona_version_id", "event_id"),
+    "event_alignments": ("timeline_id", "step_id", "persona_version_id", "event_id", "annotation_version"),
+    "support_reviews": ("support_review_id",),
 }
 REQUIRED_SCHEMAS = {f"schema/{name}.schema.json": model for name, model in SCHEMA_MODELS.items()}
 
@@ -98,9 +106,9 @@ def _json(raw: bytes):
 
 
 def _parse(model, raw: bytes):
-    _json(raw)
+    value = _json(raw)
     try:
-        return model.model_validate_json(raw)
+        return annotation_input_model(model, value).model_validate_json(raw)
     except ValidationError as exc:
         error = exc.errors(include_input=False)[0]
         cause = error.get("ctx", {}).get("error")
@@ -125,6 +133,8 @@ class _Validator:
         self.root = root
         self.locations = {}
         self.records = defaultdict(list)
+        self.entry_versions = {}
+        self.prediction_bundle = None
 
     def issue(self, error, *, path="", line=None, record_id=""):
         self.report.errors.append(Issue(error.code, path, line,
@@ -186,6 +196,7 @@ class _Validator:
         return entries, payloads
 
     def decode(self, entries, payloads):
+        self.entry_versions = {path: entry.annotation_version for path, entry in entries.items()}
         registry = None
         seen = defaultdict(dict)
         for relative, entry in sorted(entries.items()):
@@ -414,7 +425,8 @@ class _Validator:
                 if gold.record_origin != event.record_origin:
                     raise ContractError("ORIGIN_MISMATCH")
                 if (gold.persona_version_id != step.persona_version_id
-                        or gold.annotation_version != manifest.annotation_version):
+                        or gold.annotation_version != (self.entry_versions.get(
+                            self.locations[id(gold)][0]) or manifest.annotation_version)):
                     raise ContractError("REFERENCE_NOT_FOUND")
                 if event.family_id not in step.family_scope_ids:
                     raise ContractError("CROSS_FAMILY_SPLIT")
@@ -436,15 +448,28 @@ class _Validator:
             def check_annotation():
                 step = _need(steps, (annotation.timeline_id, annotation.step_id))
                 if (annotation.persona_version_id != step.persona_version_id
-                        or annotation.annotation_version != manifest.annotation_version):
+                        or annotation.annotation_version != (self.entry_versions.get(
+                            self.locations[id(annotation)][0]) or manifest.annotation_version)):
                     raise ContractError("REFERENCE_NOT_FOUND")
-                if annotation.guide_revision != "dev01-guide-v1":
+                if annotation.guide_revision not in {
+                        "dev01-guide-v1", "g1a-guide-v1", "g1a-guide-v2", "g1a-guide-v3"}:
                     raise ContractError("UNSUPPORTED_REVISION", field="guide_revision")
                 if "ANNOTATION_GUIDE.md" not in controlled:
                     raise ContractError("UNLISTED_INPUT", field="guide_revision")
                 if annotation.submitted_at < step.as_of:
                     raise ContractError("INVALID_INTERVAL", field="submitted_at")
-                packet = annotation_packet(r["documents"], r["personas"], r["coverage"], step=step)
+                if annotation.guide_revision == "dev01-guide-v1":
+                    packet = annotation_packet(r["documents"], r["personas"], r["coverage"], step=step)
+                else:
+                    from .loader import load_bundle, load_step
+
+                    if self.prediction_bundle is None:
+                        self.prediction_bundle = load_bundle(self.root/"manifests/dataset_manifest.json",
+                            manifest_sha256=self.report.manifest_sha256)
+                    context, candidates = load_step(self.prediction_bundle,
+                        timeline_id=step.timeline_id, step_id=step.step_id,
+                        config=self.prediction_bundle.config)
+                    packet = annotation_packet_v2(context, candidates)
                 if sha256_bytes(packet) != annotation.packet_sha256:
                     raise ContractError("SHA_MISMATCH", field="packet_sha256")
                 label = annotation.initial_label
@@ -466,9 +491,12 @@ class _Validator:
                     check_provenance(relation.record_origin, relation.provenance_uri,
                                      self.root, controlled)
                     for version_id in (relation.left_doc_version_id, relation.right_doc_version_id):
-                        if version_id not in step.visible_doc_version_ids:
+                        document = _need(documents, version_id)
+                        retained_v3 = (annotation.guide_revision == "g1a-guide-v3"
+                            and document.available_at <= step.as_of and document.family_id in step.family_scope_ids)
+                        if version_id not in step.visible_doc_version_ids and not retained_v3:
                             raise ContractError("FUTURE_EVIDENCE", field="document_relations")
-                        if _need(documents, version_id).record_origin != relation.record_origin:
+                        if document.record_origin != relation.record_origin:
                             raise ContractError("ORIGIN_MISMATCH", field="document_relations")
                     if relation.left_doc_version_id == relation.right_doc_version_id:
                         raise ContractError("SCHEMA_INVALID", field="document_relations")
@@ -510,6 +538,18 @@ class _Validator:
                         and "unresolved_adjudication" not in self.report.pending):
                     self.report.pending += ("unresolved_adjudication",)
             self.run(check_adjudication, adjudication)
+        primary_records = [a for a in r["annotations"] if a.guide_revision in {
+            "g1a-guide-v1", "g1a-guide-v2", "g1a-guide-v3"}]
+        primary_gold = [g for g in r["gold"] if g.annotation_version == ANNOTATION_VERSION]
+        if primary_records or primary_gold or r["event_alignments"] or r["support_reviews"]:
+            def check_human_lineage():
+                from .annotations import audit_annotations
+
+                audit = audit_annotations(self.root/"manifests/dataset_manifest.json",
+                                         manifest_sha256=self.report.manifest_sha256)
+                for issue in audit["errors"]:
+                    self.issue(ContractError(issue["code"], record_id=issue["target"]))
+            self.run(check_human_lineage)
 
 
 def validate_dataset(manifest_path: str | Path, *, strict: bool = True) -> ValidationReport:

@@ -1,4 +1,103 @@
-# G1-PR2 DATA CARD — pilot / developer data
+# G1 DATA CARD — synthetic development data
+
+## Current AI release (2026-10-23)
+
+`pr5-five-trajectories-v10-ai-development-r3` / `g1-pr5-6` uses the same immutable
+35 primary synthetic document versions and 26 steps. New AI draft/review records
+cover all 47 visible event/step targets, 234 claims and 90 relations. Old active
+human batches and authored expectation versions were retired to local backups;
+no old score was silently renamed as a new AI review. Human gold is still empty.
+
+The single AI knew the full trajectories and earlier references. It is not a
+blinded or independent evaluation, and repeated AI review is not human evidence.
+Evidence review corrected 208 vague claim scopes in the first review revision; a later revision corrected unsupported known-state assumptions;
+these are internal revisions, not independent annotator disagreement. Kappa and
+arbitration are N/A. Availability/scope checks are programmatic; semantic claims
+are AI-authored development judgments. Baseline-generated semantic support,
+real-user utility, independent generalization and production behavior remain
+unmeasured. Replay model_tokens=0 refers to offline baselines, not assistant
+authoring cost. Source material stays synthetic, independently of AI execution.
+
+Only the ai_development acceptance profile can pass without humans; optional
+human_research remains separately audited. New labels and code require a new pin
+and actual regression/matrix checks. See reports/PR5_AI_DEVELOPMENT.md for results.
+
+## Historical release notes (not the current gate decision)
+
+> **Current policy (2026-10-23):** DEV-01 through DEV-05 use `ai_development` acceptance. AI may author and review development labels; no second human is required. See [AI development rules](../../docs/plans/G1_AI_DEVELOPMENT_RULES.md). Historical human workflow descriptions below apply only to the optional `human_research` profile and preserved releases. This policy change alone does not pass a new acceptance run.
+
+## PR5 current release
+
+`pr5-five-trajectories-v9-ai-policy-r1` / `g1-pr5-5`. The five DEV primary stories comprise
+26 states, 35 synthetic document versions and five dev-only families. DEV-01 is
+unchanged; DEV-02 compatibility, DEV-03 publicity, DEV-04 security and DEV-05
+cross-domain discovery add seven versions/five states each. Every story has a
+no-change observation, important older material at return and a grouping challenge.
+
+Preserved auxiliary fixtures comprise nine states/11 versions/two families. The
+whole controlled package has 35 states, 46 synthetic versions, seven dev families;
+no real document text was added. Primary reports exclude auxiliary states.
+The metadata-only GitHub source still grants no fulltext redistribution rights.
+All new publishers, claims, methods and dates are explicitly fictional, with
+synthetic:// identifiers and original repository text. No online collection took place.
+
+The controlled package has no admitted original submissions, adjudications or
+primary human gold. Two people were confirmed by the user; received local material
+is being reviewed and is not automatically eligible. g1a-annotation-v2 declares a protocol version, not completed
+annotation. labels/review_session.json remains not_started; human and total G1-a
+human research gates are NOT MET; development acceptance needs fresh evidence. Test doubles under temporary directories never enter this package.
+
+V8 registers the complete g1a-guide-v3 rules and separate human input schemas.
+The guide's opening v7 status paragraph describes its 2026-10-22 preparation;
+current engineering registration is recorded here, without rewriting that guide.
+V3 words remain in original audit models and original claim hashes. Explicit
+machine projections retain source hashes/words/directions and never create a
+second human submission. No received scores, claims, rationales or gold were imported.
+
+The new v2 packet includes historical delivery, exposure and coverage context.
+Receipt chronology and initial-submission hashes can be checked, but real identity,
+independence and distribution still require manual confirmation. Agreement uses
+raw pre-adjudication labels; split/merge/missing mappings remain visible.
+
+The corpus is authored around known difficult cases. Five families, repeated
+steps, Persona versions and counterfactuals are correlated and cannot prove
+generalization or user benefit. No model was called. New-text deltas remain weak
+proxies; formal semantic change classification and algorithm-output claim support
+are unmeasured. Reading seconds remain proxies. T25=N/A; no production DB access.
+V5 provides form/schema/guide exports and family-cluster bootstrap confidence
+intervals. A single-family pilot cannot yield a meaningful family interval;
+five-family intervals remain unstable development diagnostics. Human/AI
+comparisons are explicitly development-only and cannot satisfy the human gate.
+V6 excludes one-sided missing documents from pair denominators and exposes their
+counts separately; missing labels are never treated as negative relationships.
+No scores, authored expectations, original submissions or human gold changed.
+Actual verification and external pins are in reports/PR5_HUMAN_READINESS.md and
+G1_ACCEPTANCE.md. Earlier notes below describe their historical releases.
+
+V1 and its tests/matrix remain preserved locally. Internal review corrected
+three authored reference records (DEV-01/D3 release; DEV-04/D5 release/license)
+from no_change to insufficient because their observation windows overlap a
+coverage gap. Only material_change changed; grades/tiers, document evidence,
+human files and ranking rules did not. Unknown change labels are excluded from
+repeat/proxy metric denominators and explicitly listed in diagnostics. This is
+a correctness correction to the guide, not post-score tuning or human adjudication.
+
+V2 verification was interrupted, not accepted. V3 fixes an audit-only restriction
+that rejected old versions cited alongside their current correction. Initial
+event partitions still use current candidates. Claim/support reviews allow
+same-story evidence available by as_of; gold supporting versions must additionally
+belong to that event. The g1a-guide-v2 instructions preserve earlier packets after
+submission freeze. Future and cross-family citations remain rejected. No prediction
+input, ranking coefficient, real submission or baseline output was changed.
+
+V4 corrects one authored reference: DEV-01 theme is new at its first visible
+step D8, still archive/grade 0. Its importance is unchanged. Four story templates
+now bind g1a-guide-v2. Acceptance requires the frozen complete node/Txx inventory,
+source hashes and explicit narrow skip exemptions. Split/merge adjudication may
+use explicit final members without overwriting raw initial groups/statistics.
+No real annotation/gold files were filled, and human research remains NOT MET; development acceptance is separate.
+
+## Historical PR2–PR4 data notes
 
 日期：2026-10-20。任务是检验历史版本、引用、来源传播与标注协议，不是训练或独立测试集。
 DEV-01：1 个家族、6 个 as_of、7 个文档内容版本（6 个文档身份）、8 次观察、

@@ -42,3 +42,25 @@ def test_macro_micro_and_null_exclusion_are_explicit():
     result = aggregate_metrics([ratio(1, 1, "empty"), ratio(0, 9, "empty"), ratio(0, 0, "empty")])
     assert result["macro"] == .5 and result["micro"] == pytest.approx(.1)
     assert result["defined_count"] == 2 and result["undefined_count"] == 1
+
+
+def test_unknown_material_change_is_not_a_negative_reference_or_denominator():
+    from datetime import datetime, timezone
+    from types import SimpleNamespace
+
+    from evals.intelligence_v1.metrics import step_metrics
+
+    now = datetime(2026, 1, 2, tzinfo=timezone.utc)
+    context = SimpleNamespace(as_of=now, time_window_start=datetime(2026, 1, 1, tzinfo=timezone.utc),
+                              time_window_end=now, source_coverage=())
+    item = dict(representative_doc_version_id='v', doc_version_ids=['v'],
+                score_components={'text_delta': 'new_text'})
+    row = dict(ranked_items=[item], presentation={'presented_items': [item], 'budget_seconds': 420})
+    labels = {'event': dict(tier='radar', graded_relevance=1, material_change='insufficient',
+                            supporting_doc_version_ids=['v'])}
+    metrics, diagnostics = step_metrics(row, context, {'v': 'event'}, labels, k=5,
+        evidence_times={'v': now}, historical_mapping={'old': 'event'})
+    assert metrics['RepeatedNoChangeRate']['value'] is None
+    assert metrics['RepeatedNoChangeRate']['denominator'] == 0
+    assert metrics['NewTextProxyAgainstReference.precision']['value'] is None
+    assert diagnostics['reference_change_insufficient_event_ids'] == ['event']

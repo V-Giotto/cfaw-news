@@ -116,6 +116,7 @@ def write_payloads(output, payloads):
 def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
                 timeline_id=None, step_id=None, config_path=None, budget_seconds=None,
                 half_life_days=None):
+    import os
     import platform
     import subprocess
     from datetime import datetime, timezone
@@ -213,6 +214,7 @@ def run_replay(manifest_path, *, manifest_sha256, algorithm_id, out, split=None,
         "reference_groups_read": oracle, "gold_labels_read": False,
         "network_access": False, "live_model_called": False, "model_tokens": 0,
         "random_seed": data.config.random_seed, "queries": queries, "split": split,
+        "python_hash_seed": os.environ.get("PYTHONHASHSEED"),
         "experiment": {"budget_seconds_override": budget_seconds, "half_life_days": half},
         "step_performance": step_performance, "model_cost": 0,
         "timeline_id": timeline_id, "step_id": step_id,

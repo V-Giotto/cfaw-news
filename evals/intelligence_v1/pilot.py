@@ -84,3 +84,16 @@ open files, export future packets, authorize distribution or certify human revie
         "coverage_interpretation": "observed_sources_only; gaps_are_unknown",
     }
     return (canonical_json(payload) + "\n").encode("utf-8")
+
+
+def annotation_packet_v2(context, candidates):
+    """A single projected historical context, without any reference labels or events."""
+    if tuple(d.doc_version_id for d in candidates) != context.candidate_doc_version_ids:
+        raise ContractError("VISIBLE_SET_MISMATCH")
+    for document in candidates:
+        require_visible_version(document, as_of=context.as_of)
+    payload = {"packet_revision": "g1a-packet-v2", "context": context.model_dump(mode="json"),
+               "documents": [d.model_dump(mode="json") for d in candidates],
+               "coverage_interpretation": "observed_sources_only; gaps_are_unknown",
+               "history_interpretation": "inclusion_or_opening_does_not_establish_comprehension"}
+    return (canonical_json(payload) + "\n").encode("utf-8")

@@ -4,6 +4,7 @@ import argparse
 from itertools import combinations
 from pathlib import Path
 
+from .annotations import audit_bundle, gold_key
 from .budget import apply_budget
 from .contracts import BudgetPolicy, GoldLabel, MetricReport, RankedItem, SyntheticExpectation
 from .exceptions import ContractError, DatasetValidationError
@@ -85,6 +86,8 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out, label_source="gold
     if half != data.config.half_life_days and any(s.split != "dev" for s in expected_steps):
         raise ContractError("SENSITIVITY_REQUIRES_DEV")
     events = reference_events(data)
+    annotation_audit = audit_bundle(data)
+    confirmed_keys = {tuple(k) for k in annotation_audit["eligible_gold_keys"]}
     gold = []
     selected_role = "gold" if label_source == "gold" else "fixture_expectations"
     label_model = GoldLabel if label_source == "gold" else SyntheticExpectation
@@ -133,8 +136,8 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out, label_source="gold
         labels = [g for g in gold if (g.timeline_id, g.step_id, g.persona_version_id)
                   == (step.timeline_id, step.step_id, context.persona.persona_version_id)]
         eligible = {g.event_id: g.model_dump(mode="json") for g in labels if
-                    label_source == "synthetic-fixture" or g.adjudication_status in {
-                        "agreed", "adjudicated"}}
+                    label_source == "synthetic-fixture" or (gold_key(g) in confirmed_keys
+                        and g.adjudication_status in {"agreed", "adjudicated"})}
         historic = visible_reference_mapping(events, tuple(m.doc_version_id
             for h in context.delivery_history for m in h.members), as_of=context.as_of)
         metrics, diagnostics = step_metrics(row, context, mapping, eligible,
@@ -155,7 +158,13 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out, label_source="gold
                         or name == "RepeatedNoChangeRate"):
                     metrics[name] = unavailable(reason)
         results.append({"timeline_id": step.timeline_id, "step_id": step.step_id,
+            "as_of": context.model_dump(mode="json")["as_of"],
+            "persona_version_id": context.persona.persona_version_id,
+            "visible_source_count": len({d.source_id for d in candidates}),
+            "visible_reference_event_count": len(set(mapping.values())),
+            "reference_focus_count": sum(g["tier"] == "focus" for g in eligible.values()) if eligible else None,
             "metrics": metrics, "label_count": len(labels), "eligible_label_count": len(eligible),
+            "label_provenance_uris": sorted({g.provenance_uri or "unknown" for g in labels}),
             "family_ids": list(step.family_scope_ids), "candidate_sha256": row["candidate_sha256"],
             "context_sha256": row["context_sha256"], "candidate_doc_count": len(candidates),
             "predicted_item_count": len(ranked), "presented_item_count": len(presentation.presented_items),
@@ -176,8 +185,9 @@ def evaluate_run(run, manifest_path, *, manifest_sha256, out, label_source="gold
         "baseline_config_sha256": data.manifest.baseline_config_sha256,
         "dataset_revision": data.manifest.dataset_revision, "experiment": experiment,
         "label_source": label_source, "model_tokens": 0, "model_cost": 0,
-        "human_annotation": "not_confirmed", "semantic_support": "not_measured",
-        "scope": "PR4_offline_technical_evaluation_not_real_world_evidence", "steps": results,
+        "human_annotation": annotation_audit["human_annotation"], "semantic_support": "not_measured",
+        "annotation_audit": annotation_audit,
+        "scope": "PR5_offline_development_evaluation_not_real_world_evidence", "steps": results,
         "aggregate": {name: aggregate_metrics([s["metrics"][name] for s in results])
                       for name in sorted({k for s in results for k in s["metrics"]})
                       if all(name in s["metrics"] for s in results)}}

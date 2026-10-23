@@ -35,7 +35,7 @@ def test_T24_cli_canonical_bytes_across_processes_and_hash_seeds(tmp_path, algor
     for name in ("predictions.jsonl", "input_snapshot.json", "baseline_config.json"):
         assert (outputs[0]/name).read_bytes() == (outputs[1]/name).read_bytes()
     rows = [json.loads(x) for x in (outputs[0]/"predictions.jsonl").read_bytes().splitlines()]
-    assert len(rows) == 15
+    assert len(rows) == 35  # 26 primary states and 9 preserved auxiliary states.
     assert all(r["algorithm_id"] == algorithm and r["oracle_mode"] == (algorithm == "b2-oracle")
                for r in rows)
     assert b"execution_ms" not in (outputs[0]/"predictions.jsonl").read_bytes()

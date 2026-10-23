@@ -1,10 +1,47 @@
-# G1-PR1–PR4 data dictionary (g1-pr4-1)
+# G1 data dictionary (g1-pr5-6)
 
-Pydantic frozen models are the source of all 21 JSON Schemas. extra=forbid and
+> **Current policy (2026-10-23):** DEV-01 through DEV-05 default to `ai_development`; AI may annotate, review and adjudicate. Human research is optional. See [AI development rules](../../docs/plans/G1_AI_DEVELOPMENT_RULES.md). Historical human-only requirements below apply to `human_research`.
+
+Pydantic frozen models are the source of JSON Schemas. extra=forbid and
 strict=True reject unknown fields and coercion, including bool as score/budget.
 Nested collections are tuples or frozen models. Whitespace is never silently
 stripped from evidence. NonEmpty requires at least one non-whitespace character.
 Use model_validate_json for JSON input; strict Python tuple fields require tuples.
+
+AIDevelopmentRecord declares executor_type=ai, actual processing time, model/session
+identifier (unknown when unavailable), packet SHA, phase and a full judgment using
+the V3 field vocabulary. The reused judgment shape does not establish human origin.
+Evidence-review records bind the canonical original draft hash; original and review
+are separate JSON arrays. temporal_blind and independent_validation are explicitly
+false. AIDevelopmentBatch binds both file hashes, the input manifest snapshot and
+AI guide, with one real processing interval. No fabricated A/B, arbitration or kappa.
+The ai_development auditor checks full event/step coverage, same-family available
+references and original/review lineage, and exact projection into SyntheticExpectation.
+These three JSON files are support-role inputs, inaccessible to ordinary prediction.
+Evaluation steps list label_provenance_uris; AI references never enter human gold.
+Zero personal novelty in the AI review requires version-anchored knowledge:
+explicit known document-version IDs or an acknowledged matching delivery card
+covering the current versions. included/rendered/opened do not establish this;
+an acknowledgment of an old release does not cover its later correction. Natural
+language knowledge is not silently matched by the validator. World material_change
+and personal knowledge remain distinct; an unread older correction can stay focus.
+
+V3 human inputs use HumanAnnotation/HumanSupportReview, g1a-guide-v3 and
+g1a-annotation-v2. Their three direction words and seven relation words are
+separate from unchanged canonical Annotation/EvidenceRef/EventRelation contracts.
+Audit parsing retains human words so source claim hashes bind the original
+judgments. human_inputs.project_annotation explicitly produces a non-evidentiary
+canonical projection, with source SHA and mapped paths, never a replacement raw.
+record_origin is real/synthetic for material provenance; authored is invalid.
+V3 relationship evidence may reference a retained earlier version in the same
+family available by as_of; event membership and ranking candidates remain latest.
+
+HumanReviewLabel represents a separate post-submission review layer, with
+HumanReviewedClaim carrying claim_id, layer, derived_from and support_note.
+Its explicit source links resolve to original claim indices and SHA; neither
+syntax validation nor a shared reviewer string establishes actual authorship,
+time or independence. extract_review_label never promotes this layer to initial
+annotations. Original annotations and raw pre-adjudication statistics stay intact.
 
 ## Entity contracts
 
@@ -188,6 +225,13 @@ semantic_support=supported/unsupported/uncertain, scope and limitations. Scores,
 timestamps and packet SHA are strict; a blank template is not an Annotation.
 Guide revision is dev01-guide-v1, whose controlled manual is mandatory. Repeated
 submissions for the same annotator/step/local event/version cannot overwrite.
+The current formal protocol is g1a-guide-v2 / g1a-annotation-v1; the dev01-guide-v1
+description above belongs to the preserved pilot fixture. Current packet exports
+include a blank full judgment, field_templates.json, submission.schema.json and
+the exact controlled guide. Null placeholders remain templates, not submissions.
+Agreement reports both category distributions and seeded family-cluster bootstrap
+intervals; fewer than two families or undefined kappas carry null plus a reason.
+Development comparisons with AI never count as independent human annotation.
 Within each initial_label, an unordered document pair plus evidence_at must occur
 only once, including identical or contradictory reversed entries. The same pair
 may be revisited at a different instant or in a different annotator's submission.
@@ -343,3 +387,77 @@ Additional errors: HISTORY_SNAPSHOT_MISMATCH, HISTORY_PREDICTION_ID_MISMATCH,
 FUTURE_OR_STALE_HISTORY_VERSION, DELIVERY_SCOPE_INVALID, HISTORY_TARGET_NOT_FOUND,
 DUPLICATE_EVENT_SLOT, BUDGET_PRESENTATION_MISMATCH, UNREGISTERED_EXPERIMENT,
 SENSITIVITY_REQUIRES_DEV, NONDETERMINISTIC_METRICS and CANDIDATE_POOL_MISMATCH.
+
+## PR5 additive interfaces
+
+FileEntry.annotation_version optionally overrides the Manifest default only for
+gold/annotations/adjudications/event_alignments/support_reviews. Legacy pending
+fixtures keep synthetic-fixture-v1; primary human records use g1a-annotation-v1.
+Existing business schemas, ranker input/output and baseline coefficients are unchanged.
+
+ReviewSession binds guide revision/SHA, actual administrator confirmation,
+anonymous participants, each frozen raw submission hash and chronological packet
+receipts. EventAlignment links initial annotation IDs to an event by the exact
+visible document membership. Splits/merges may remain unresolved; local IDs alone
+do not establish correspondence. SupportReview links a specific cited claim and
+scope back to both original claim reviews, preserving the final reason and time.
+
+These roles are reference-only and never enter PREDICTION_ROLES. Primary eligible
+gold requires a complete independently attested session and full visible-target
+coverage; partial/unconfirmed labels do not become implicit negative examples.
+Accepted legacy structural probes remain unconfirmed and are not primary gold.
+The human semantic-support ratio counts only actually reviewed cited statements;
+algorithm EvidenceSupportPrecision remains unmeasured without algorithm claims.
+
+V2 packets serialize only CandidateDocumentVersion and ReplayContext, including
+known delivery/exposure/coverage, with no reference fields or future steps. The
+v1 packet helper remains available for historical PR2 reproduction.
+
+AcceptanceResult keeps technical, human and total gates separate. Missing human
+data is BLOCKED/NOT_MET even when technical checks pass; g1a_passed/g2_eligible
+remain false. Full regression evidence binds source/test/lock fingerprints and
+hashed command logs/JUnit; matrix verification requires all five primary timelines,
+all registered experiments, both label sources and two distinct hash seeds.
+The CLI writes a failed report and exits 1 rather than treating missing data as pass.
+
+PR5 v2: insufficient material-change references do not enter RepeatedNoChangeRate
+or NewTextProxyAgainstReference denominators as negative cases. If an emitted
+proxy has only unknown references, its metric is null/reference_change_insufficient.
+Diagnostics list reference_change_insufficient_event_ids. A coverage gap cannot
+justify an authored no_change reference; positive visible evidence may still
+justify an observed update without asserting complete world coverage.
+
+PR5 v3 / g1a-guide-v2: document membership partitions contain current candidates,
+whereas claim/support citations may reference earlier same-story versions available
+by as_of. Gold supporting versions must also belong to their reference event.
+Packet chronology, family scope and paragraph/direction checks still apply.
+
+PR5 review fixes (v4): manifests/required_tests.json is a hash-bound support file
+with all collected JUnit node IDs, required T01–T24/T26 mappings, test-source hashes,
+T25=N/A and exact platform/reason skip exemptions. Both full and G1 evidence must
+match the frozen node multiset; missing/duplicate/failed/unexempt skipped cases
+cannot grant temporal/regression PASS. This file is never a prediction role.
+Adjudicated split/merge gold keeps split_merge_disagreement in EventAlignment;
+its final members must match the target and all overlapping raw groups from both
+reviewers must be cited. Frozen raw partitions and pre-adjudication statistics
+remain unchanged; unresolved mappings are not eligible gold.
+
+PR5 v7 / g1-pr5-3: SupportReview optionally carries source_claim_alignment.
+Its sources explicitly name each prior annotation_id and the SHA-256 of its full
+original ClaimReview, serialized as canonical_json(claim.model_dump(mode="json"))
+in UTF-8 with no trailing newline. Original array order, support judgment and
+limitations are included. The hash identifies content, never an array position.
+Each source must resolve uniquely; source annotation IDs must exactly cover the
+review's prior_annotation_ids from both reviewers. Repeated or missing mappings
+are rejected. The alignment records a human reason, aligned_by and aligned_at,
+after both originals freeze and no later than reviewed_at. Final text, scope and
+citations may differ only through this explicit manual alignment. Final citations
+still require same-family, as_of-visible evidence and valid paragraph locations.
+Without source_claim_alignment, the prior exact-text/reference/scope rule stays
+in force. No fuzzy semantic matching or identity inference is performed.
+Existing initial annotation and gold contracts are unchanged; this extension
+does not certify incomplete real submissions or measure algorithm claim quality.
+
+## Acceptance profiles (g1-pr5-5)
+
+AcceptanceResult includes acceptance_profile (ai_development or human_research) and human_research_passed. Older results missing a profile parse as human_research; new CLI runs default to ai_development. Development requires the technical gates plus exact frozen synthetic expectation coverage of all visible primary reference events. Human audit status remains unchanged and informative; it is only a required gate in human_research. g1a_passed and g2_eligible are profile-specific offline development eligibility, not automatic permission to start G2 or a real-user quality result.

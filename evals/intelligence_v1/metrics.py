@@ -96,7 +96,8 @@ def step_metrics(row, context, mapping, labels, *, k, evidence_times, historical
         metrics["DuplicateExposureRate"] = ratio(len(mapped)-len(set(mapped)), len(mapped),
                                                   "no_presented_cards")
     historical_events = set(historical_mapping.values())
-    repeated = [e for e in mapped if e in historical_events and e in labels]
+    repeated = [e for e in mapped if e in historical_events and e in labels
+                and labels[e]["material_change"] != "insufficient"]
     unchanged = [e for e in repeated if labels[e]["material_change"] == "no_change"]
     metrics["RepeatedNoChangeRate"] = ratio(len(unchanged), len(repeated),
                                              "no_comparable_repeated_presentations")
@@ -111,13 +112,21 @@ def step_metrics(row, context, mapping, labels, *, k, evidence_times, historical
     for item in items:
         event = mapping.get(item["representative_doc_version_id"])
         delta = item["score_components"].get("text_delta")
-        if event in labels and delta in {"new_text", "no_change"}:
+        if (event in labels and labels[event]["material_change"] != "insufficient"
+                and delta in {"new_text", "no_change"}):
             comparable.add(event)
             if delta == "new_text":
                 proxy.add(event)
     positive = {e for e, label in labels.items()
                 if label["material_change"] in {"meaningful_update", "correction", "withdrawal"}}
-    for name, result in binary_metrics(proxy if comparable else None, positive, comparable).items():
+    proxy_metrics = binary_metrics(proxy if comparable else None, positive, comparable)
+    insufficient = {e for e, label in labels.items() if label["material_change"] == "insufficient"}
+    if not comparable and any(mapping.get(i["representative_doc_version_id"]) in insufficient
+                              and i["score_components"].get("text_delta") in {"new_text", "no_change"}
+                              for i in items):
+        proxy_metrics = {name: unavailable("reference_change_insufficient")
+                         for name in ("precision", "recall", "f1")}
+    for name, result in proxy_metrics.items():
         metrics[f"NewTextProxyAgainstReference.{name}"] = result
     for kind in ("MaterialChange", "Correction", "Withdrawal"):
         for name, result in binary_metrics(None, positive, set(labels)).items():
@@ -128,6 +137,7 @@ def step_metrics(row, context, mapping, labels, *, k, evidence_times, historical
     return metrics, {"hit_focus_event_ids": sorted(hit), "missed_focus_event_ids": sorted(focus-hit),
         "presented_reference_event_ids": mapped, "repeated_reference_event_ids": repeated,
         "reference_change_positive_count": len(positive),
+        "reference_change_insufficient_event_ids": sorted(insufficient),
         "proxy_comparable_event_ids": sorted(comparable),
         "supporting_evidence_presented": {e: sorted(set(label["supporting_doc_version_ids"]) & {
             key for i in presented for key in i["doc_version_ids"]}) for e, label in labels.items()},

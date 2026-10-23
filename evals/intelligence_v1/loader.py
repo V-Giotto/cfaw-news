@@ -32,6 +32,7 @@ from .contracts import (
     StrictModel,
     VisibleDeliveryItem,
     VisibleExposure,
+    annotation_input_model,
     schema_text,
 )
 from .exceptions import ContractError
@@ -75,7 +76,7 @@ def json_value(raw):
 
 def parse_model(model, value):
     try:
-        return model.model_validate_json(canonical_json(value))
+        return annotation_input_model(model, value).model_validate_json(canonical_json(value))
     except ValidationError as error:
         cause = error.errors(include_input=False)[0].get("ctx", {}).get("error")
         if isinstance(cause, ContractError):

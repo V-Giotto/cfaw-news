@@ -14,7 +14,9 @@ from evals.intelligence_v1.contracts import (
 
 
 def test_derived_schemas_match_exactly():
-    assert len(SCHEMA_MODELS) == 27
+    assert len(SCHEMA_MODELS) == 36
+    assert {"ai_development_record", "ai_development_batch"} <= SCHEMA_MODELS.keys()
+    assert {"human_annotation", "human_support_review", "human_review_label"} <= SCHEMA_MODELS.keys()
     assert check_schemas()
 
 

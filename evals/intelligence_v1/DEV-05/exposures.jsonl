@@ -1,0 +1,2 @@
+{"delivery_id":"d05:delivery:D0","event_prediction_id":"predicted:62ee940ca2093448d1452016a2dff6e03c9231cb37ee999fe726d5e8f6c4ba36","exposure_id":"d05:included","kind":"included","occurred_at":"2026-06-01T12:00:01+00:00","source":"synthetic_history"}
+{"delivery_id":"d05:delivery:D0","event_prediction_id":"predicted:62ee940ca2093448d1452016a2dff6e03c9231cb37ee999fe726d5e8f6c4ba36","exposure_id":"d05:future-ack","kind":"acknowledged","occurred_at":"2026-06-10T12:00:00Z","source":"synthetic_future_negative"}

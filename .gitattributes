@@ -9,3 +9,14 @@ docs/provenance/legacy-NOTICE.txt -text whitespace=cr-at-eol
 # Frozen G0 fingerprints describe these exact bytes, including their line endings.
 audit/G0_BASELINE.json -text whitespace=cr-at-eol
 audit/G0_SCHEMA.sql -text whitespace=cr-at-eol,-blank-at-eof
+# G1 manifests hash exact bundle bytes; Git must not normalize their line endings.
+evals/intelligence_v1/** -text whitespace=cr-at-eol
+# Preserve existing local source/provenance bytes used by frozen fingerprints.
+backend/cfaw_news/media.py -text whitespace=cr-at-eol
+docs/provenance/migration-manifest.json -text whitespace=cr-at-eol
+frontend/src/App.tsx -text whitespace=cr-at-eol
+frontend/src/NewsLibrary.tsx -text whitespace=cr-at-eol
+frontend/src/styles.css -text whitespace=cr-at-eol
+requirements.lock -text whitespace=cr-at-eol
+scripts/start.ps1 -text whitespace=cr-at-eol
+scripts/verify.ps1 -text whitespace=cr-at-eol
