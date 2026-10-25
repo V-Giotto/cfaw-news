@@ -1,0 +1,29 @@
+{
+  "created_at": "2026-10-24T11:37:19.857802+00:00",
+  "current_junit_sha256": "1a7ab997913977adaf30e2691f8efa279cf11a37326dcbdaa1ea244513364cf3",
+  "full_regression": "pending_permission",
+  "implementation_fixes": [
+    {
+      "after": "extract-green: 25 passed",
+      "before": "extract-first: 2 failed/23 passed",
+      "issue": "Datetime in correction transition hash"
+    },
+    {
+      "after": "exact visible body plus copy marker dependency; parent groups unchanged",
+      "before": "core-tests: 1 failed/43 passed",
+      "issue": "Known reprint dependence missed across conservative PR2 groups"
+    },
+    {
+      "after": "explicit model JSON serialization; cli-green: 51 passed",
+      "before": "cli-core: 4 failed/47 passed",
+      "issue": "Tuple model serialization in CLI"
+    },
+    {
+      "after": "explicit ambiguity/zero/ratio abstention tests",
+      "before": "additional adversarial cases authored during review",
+      "issue": "Negation, zero and ratio must not become positive speed evidence"
+    }
+  ],
+  "label_changes": "Initial scenarios/expected.json unchanged; explicit v2 supplements retain original v1 manifest.",
+  "review_origin": "ai_development"
+}

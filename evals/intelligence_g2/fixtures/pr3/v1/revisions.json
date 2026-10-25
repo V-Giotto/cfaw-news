@@ -1,0 +1,40 @@
+{
+  "created_at": "2026-10-24T16:16:42.133963+00:00",
+  "current_junit_sha256": "4e1428fbe9179316b31842727166889a85809c97d9d2166e5f166ff90ce5cc66",
+  "full_regression": "passed",
+  "implementation_fixes": [
+    {
+      "after": "extract-green: 25 passed",
+      "before": "extract-first: 2 failed/23 passed",
+      "issue": "Datetime in correction transition hash"
+    },
+    {
+      "after": "exact visible body plus copy marker dependency; parent groups unchanged",
+      "before": "core-tests: 1 failed/43 passed",
+      "issue": "Known reprint dependence missed across conservative PR2 groups"
+    },
+    {
+      "after": "explicit model JSON serialization; cli-green: 51 passed",
+      "before": "cli-core: 4 failed/47 passed",
+      "issue": "Tuple model serialization in CLI"
+    },
+    {
+      "after": "unparsed report/scope grammar abstains; stage temporal preflights; red-green and final suites retained",
+      "before": "mixed-negation-red: 1 failed; stage-boundary-red: 2 failed; first full suite deliberately interrupted",
+      "issue": "Mixed positive/negative baseline paragraph wrongly refuted, and direct stage API lacked time preflight"
+    },
+    {
+      "after": "explicit ambiguity/zero/ratio abstention tests",
+      "before": "additional adversarial cases authored during review",
+      "issue": "Negation, zero and ratio must not become positive speed evidence"
+    },
+    {
+      "after": "config-hash-green: 2 passed; original raw pin, snapshot artifact SHA and parsed semantic digest each retain their own checks; g2-sealed: 203 passed",
+      "before": "config-hash-red: 2 failed; second full suite deliberately interrupted",
+      "issue": "Raw config-file SHA confused with canonical config snapshot bytes"
+    }
+  ],
+  "label_changes": "Initial scenarios/expected.json unchanged; explicit v2 supplements retain original v1 manifest.",
+  "parent_revisions_sha256": "74c46a55ebf104809022d7d1c426c64ae7f631a9d579afe74e446ce2f5ef5c17",
+  "review_origin": "ai_development"
+}

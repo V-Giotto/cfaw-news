@@ -1,0 +1,7 @@
+{"case_id":"EVIDENCE-continuity","expected":"same","from_doc_version_id":"official:1","from_step_id":"D0","timeline_id":"EVIDENCE","to_doc_version_id":"official:1","to_step_id":"D8"}
+{"case_id":"FUTURE-continuity","expected":"same","from_doc_version_id":"a:1","from_step_id":"D0","timeline_id":"FUTURE","to_doc_version_id":"a:2","to_step_id":"D8"}
+{"case_id":"DEV-01-root-continuity","expected":"same","from_doc_version_id":"d01:a:1","from_step_id":"D0","timeline_id":"DEV-01","to_doc_version_id":"d01:a:2","to_step_id":"D8"}
+{"case_id":"DEV-02-root-continuity","expected":"same","from_doc_version_id":"d02:release:1","from_step_id":"D0","timeline_id":"DEV-02","to_doc_version_id":"d02:release:2","to_step_id":"D8"}
+{"case_id":"DEV-03-root-continuity","expected":"same","from_doc_version_id":"d03:release:1","from_step_id":"D0","timeline_id":"DEV-03","to_doc_version_id":"d03:release:2","to_step_id":"D8"}
+{"case_id":"DEV-04-root-continuity","expected":"same","from_doc_version_id":"d04:release:1","from_step_id":"D0","timeline_id":"DEV-04","to_doc_version_id":"d04:release:2","to_step_id":"D8"}
+{"case_id":"DEV-05-root-continuity","expected":"same","from_doc_version_id":"d05:release:1","from_step_id":"D0","timeline_id":"DEV-05","to_doc_version_id":"d05:release:2","to_step_id":"D8"}

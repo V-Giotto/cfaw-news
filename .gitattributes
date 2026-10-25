@@ -20,3 +20,16 @@ frontend/src/styles.css -text whitespace=cr-at-eol
 requirements.lock -text whitespace=cr-at-eol
 scripts/start.ps1 -text whitespace=cr-at-eol
 scripts/verify.ps1 -text whitespace=cr-at-eol
+# G2 versioned schemas, synthetic fixtures and configuration pins describe exact bytes.
+evals/intelligence_g2/schema/** -text
+evals/intelligence_g2/fixtures/** -text
+evals/intelligence_g2/manifests/** -text
+
+# G2 source/test and report fingerprints are exact-byte release evidence.
+evals/intelligence_g2/*.py -text whitespace=cr-at-eol
+evals/intelligence_g2/pr?/*.py -text whitespace=cr-at-eol
+evals/intelligence_g2/*.md -text whitespace=cr-at-eol
+evals/intelligence_g2/reports/*.md -text whitespace=cr-at-eol
+tests/evals/g2/**/*.py -text whitespace=cr-at-eol
+docs/G2_G3_HANDOFF.md -text whitespace=cr-at-eol
+docs/plans/G2_IMPLEMENTATION_PLAN.md -text whitespace=cr-at-eol,-blank-at-eol

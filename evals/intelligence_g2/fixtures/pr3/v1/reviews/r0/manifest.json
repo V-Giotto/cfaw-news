@@ -1,0 +1,19 @@
+{
+  "file_sha256": {
+    "draft.json": "36db9e2019276c27d6cfb099e7616dc2d75ffdfcc1d9165a5d329d2a2314d93e",
+    "prediction/manifest.json": "22e9935e88387de4cdb0c50ea1a6707ffe98beb7043b52ddaae5797f6acaee19",
+    "prediction/scenarios.json": "c755d891578d1a3e1c3ab3dfe0a063d8a75a5c52f8e7b770e91346df0885d48f",
+    "reference/directions_v2.json": "39c69dbe970890e8f36154c25f4489a47f542370c16f15dee6d35280c1575219",
+    "reference/expected.json": "6cf56fa720c1f8fae7528394ae1525d582e67bc590fdef9fb62ea75076289a1e",
+    "reference/manifest.json": "e2df91513d8702cd1afe8522a493dbb6d5a3b78c8ae681e5c7de8c3968e732a4",
+    "reference/manifest_v2.json": "cae113075d3fd366199e0b92886143e7dc893361b20021b50ffaeae12511bfdf",
+    "reference/quality_v2.json": "ca9047c74e1f28ae2d6287ade91a0214e2e5843d458664952927cdd6efb8dfce",
+    "reference/supplement_provenance.json": "4c3f305e6ad1286d9f8137df515faedcbae1ce868893402515623f4518d02e63",
+    "review.json": "52bd3d79689c3639107d94c48af65e3301863e7e9d75ac5d9da12971f164ad0a",
+    "revisions.json": "74c46a55ebf104809022d7d1c426c64ae7f631a9d579afe74e446ce2f5ef5c17"
+  },
+  "fixture_revision": "g2-pr3-fixtures-v1",
+  "label_origin": "synthetic_fixture",
+  "record_origin": "synthetic",
+  "review_origin": "ai_development"
+}

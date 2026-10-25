@@ -1,0 +1,1 @@
+{"files":[{"path":"expected_v2.json","role":"reference","sha256":"aa01e52382f4f9d2ebda49f760d3f39d010543ecd88a417012261a1c7cd42222"}],"label_origin":"synthetic_fixture","revision":"g2-pr6-references-v1","upstream_reference":{"path":"evals/intelligence_g2/fixtures/pr2/v1/reference/manifest.json","sha256":"3302a030c68c30184b0948456f9a57eaf07472fe3d8b00f2ff29737b93753d3d"}}
