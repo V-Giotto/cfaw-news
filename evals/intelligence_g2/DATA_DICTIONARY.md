@@ -676,3 +676,13 @@ PR6 whole-artifact publication also rejects G2_PR6_SENSITIVE_EXPORT: native upst
 
 
 PR6 路径兼容修复：evaluate/acceptance/checks 的输入目录先转为绝对路径，再走原有边界与 reparse 检查；旧 G1 reproduction.json 中 Windows 相对工件名仅在 legacy 导入边界转换分隔符。PR6 自身 manifest 仍要求严格 POSIX 相对路径，驱动器、UNC、ADS、父路径及 SHA 错误继续拒绝。修复不修改 G1 输出字节、Schema 或预算；需新的源码提交和同提交验收，旧全量通过不冒充新源码结果。
+
+PR6 连续性拒绝语义：已知 R1 continuity reference 未匹配时，`errors[]` 记录
+`kind=continuity_mismatch / stage=identity_continuity / field=event_key`，
+`record_id` 为冻结连续性案例 ID；保留端点 step/document、expected 及固定
+`reason=endpoint_missing|identity_mismatch`。R0 同类缺口只进入
+`baseline_quality[]`，且 `is_success=false`。无参考的 0/0 仍为不可评，不填通过率。
+H02 在错误列表之外另核对每个 R1 cohort 的已知连续性分子/分母；没有 R1 cohort
+不能通过。JUnit 的 REQUIRED_TEST_FAILED/UNEXEMPT_SKIP 保留原错误码和阶段，
+既有字符串 `field` 使用固定 `node_sha256:` 前缀加原 nodeid 的 UTF-8 SHA256。
+公开 JSON 不增加字段，模型/Schema 不变；内部原始节点、精确集合及 skip 豁免不变。

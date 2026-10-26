@@ -34,6 +34,21 @@ def decide(gates, commit):
     )
 
 
+def h02_ready(metrics):
+    """Known R1 identity failures block H02; unavailable references remain unavailable."""
+    r1 = [c for c in metrics["cohorts"] if c["strategy"] == "r1"]
+    return (
+        metrics["ok"]
+        and not metrics["errors"]
+        and bool(r1)
+        and all(
+            c["grouping_counts"].get("fp", 0) == 0
+            and c["continuity"]["numerator"] == c["continuity"]["denominator"]
+            for c in r1
+        )
+    )
+
+
 def verify_review(path, pin, *, prediction_pin, evaluation_pin, commit, cases):
     rows = [read_json(line) for line in pinned(path, pin).splitlines()]
     if {r.get("case_id") for r in rows} != set(cases) or len(rows) != len(cases):
@@ -121,14 +136,11 @@ def accept(
         and sum(c["metrics"]["supports"] for c in metrics["cohorts"]) > 0
         and sum(c["metrics"]["refutes"] for c in metrics["cohorts"]) > 0
     )
-    r1_ok = all(
-        c["grouping_counts"].get("fp", 0) == 0 for c in metrics["cohorts"] if c["strategy"] == "r1"
-    )
     complete = campaign.scope == "full"
     no_errors = metrics["ok"] and not metrics["errors"]
     conditions = {
         "H01": no_errors,
-        "H02": no_errors and r1_ok,
+        "H02": h02_ready(metrics),
         "H03": no_errors,
         "H04": no_errors and controls and positive,
         "H05": no_errors and positive,

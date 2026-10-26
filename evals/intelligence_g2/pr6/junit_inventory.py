@@ -115,7 +115,9 @@ def requirements(inventory):
         auxiliary_h["H06"].append(node)
         if any(
             x in node
-            for x in ("test_boundaries", "test_manifest", "test_matrix", "test_path_compatibility")
+            for x in (
+                "test_boundaries", "test_manifest", "test_matrix", "test_path_compatibility", "test_junit"
+            )
         ):
             auxiliary_h["H01"].append(node)
             auxiliary_h["H09"].append(node)
@@ -172,18 +174,18 @@ def verify_junit(required, path, *, scope="full", platform=None):
             for p in case.findall("properties/property")
             if p.get("name") == "pr6_nodeid"
         ]
-        if len(values) != 1:
+        if len(values) != 1 or values[0] is None:
             fail("G2_PR6_JUNIT_INVALID", "node_property")
         node = values[0]
         nodes.append(node)
         if case.find("failure") is not None or case.find("error") is not None:
-            fail("G2_PR6_REQUIRED_TEST_FAILED", node)
+            fail("G2_PR6_REQUIRED_TEST_FAILED", "node_sha256:" + sha256_bytes(node.encode("utf-8")))
         skipped = case.find("skipped")
         if skipped is not None and not any(
             e == dict(node=node, platform=platform, reason=skipped.get("message"))
             for e in required["skip_exemptions"]
         ):
-            fail("G2_PR6_UNEXEMPT_SKIP", node)
+            fail("G2_PR6_UNEXEMPT_SKIP", "node_sha256:" + sha256_bytes(node.encode("utf-8")))
     if Counter(nodes) != Counter(expected):
         fail("G2_PR6_JUNIT_INVALID", "complete_node_set")
     if any(int(s.get("failures", 0)) or int(s.get("errors", 0)) for s in root.iter("testsuite")):

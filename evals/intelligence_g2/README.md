@@ -343,3 +343,11 @@ keys, production DB, UI, G3 ranking or automatic Git publication is added.
 
 
 PR6 路径兼容修复：evaluate/acceptance/checks 的输入目录先转为绝对路径，再走原有边界与 reparse 检查；旧 G1 reproduction.json 中 Windows 相对工件名仅在 legacy 导入边界转换分隔符。PR6 自身 manifest 仍要求严格 POSIX 相对路径，驱动器、UNC、ADS、父路径及 SHA 错误继续拒绝。修复不修改 G1 输出字节、Schema 或预算；需新的源码提交和同提交验收，旧全量通过不冒充新源码结果。
+
+PR6 验收门禁审查修复：默认 R1 的已知连续性参考若 key 不匹配或端点缺失，
+后评测产生 `continuity_mismatch` 错误并阻断 H02。H02 还直接检查各 R1 cohort
+的连续性分子等于分母，不能仅凭 `ok` 标志或 FP=0 通过。缺参考仍为
+`null/no_applicable_reference`；R0 连续性缺口单列为非成功基线，不混作 R1 错误。
+JUnit 内部仍精确比较原始 nodeid、Counter 和 skip 豁免；拒绝诊断的既有 `field`
+仅含 `node_sha256:<64位摘要>`，不回显参数、失败文本或 skip reason。
+Schema、输入/参考、预算及 PR1–PR5 不变；修复后的正式验收须另绑新提交及新执行证据。

@@ -356,9 +356,32 @@ def compare(executions, results, refs, pairs, continuity):
                 )
 
             left, right = owners(a).get(c.from_doc_version_id), owners(b).get(c.to_doc_version_id)
-            continuity_counts[cohort]["matched"] += bool(
+            matched = bool(
                 left and right and ((left == right) == (c.expected == "same"))
             )
+            continuity_counts[cohort]["matched"] += matched
+            if not matched:
+                issue = dict(
+                    job_id=j.job_id,
+                    case_id=j.case_id,
+                    kind="continuity_mismatch",
+                    stage="identity_continuity",
+                    field="event_key",
+                    record_id=c.case_id,
+                    timeline_id=c.timeline_id,
+                    from_step_id=c.from_step_id,
+                    to_step_id=c.to_step_id,
+                    from_doc_version_id=c.from_doc_version_id,
+                    to_doc_version_id=c.to_doc_version_id,
+                    expected=c.expected,
+                    reason="endpoint_missing" if not left or not right else "identity_mismatch",
+                )
+                if j.strategy == "r1":
+                    errors.append(issue)
+                elif j.strategy == "r0":
+                    baseline_quality.append(
+                        dict(**issue, root_cause="upstream_r0_identity_continuity", is_success=False)
+                    )
     if any(len(values) != 1 for values in variants.values()):
         fail("G2_PR6_NONDETERMINISTIC", "seed_or_order")
     if any(len(values) != 1 for values in pools.values()):
