@@ -90,10 +90,18 @@ def g1_compatibility(required, full_xml):
     )
 
 
+def verify_legacy_artifacts(root, legacy):
+    for name, sha in legacy["artifact_sha256"].items():
+        pinned(
+            root / "legacy-g1" / relative(name.replace("\\", "/")), sha, areas=(root / "legacy-g1",)
+        )
+    return len(legacy["artifact_sha256"])
+
+
 def verify_checks(path, pin):
     from pathlib import Path
 
-    path = Path(path)
+    path = Path(path).absolute()
     root = path.parent
     value = parse(ChecksBundle, read_json(pinned(path, pin)))
     if (
@@ -151,8 +159,7 @@ def verify_checks(path, pin):
         legacy["all_deterministic_equal"],
     ) != (200, 400, True):
         fail("G2_PR6_G1_INCOMPATIBLE", "reproduction")
-    for name, sha in legacy["artifact_sha256"].items():
-        pinned(root / "legacy-g1" / relative(name), sha, areas=(root / "legacy-g1",))
+    verify_legacy_artifacts(root, legacy)
     from evals.intelligence_g2.contracts import G1_PIN
     from evals.intelligence_v1.acceptance import verify_matrix
     from evals.intelligence_v1.loader import load_bundle

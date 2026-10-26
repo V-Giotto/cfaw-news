@@ -477,7 +477,7 @@ def compare(executions, results, refs, pairs, continuity):
 def evaluate(run, *, run_manifest_sha256, reference_manifest, reference_sha256, out):
     from pathlib import Path
 
-    directory = Path(run)
+    directory = Path(run).absolute()
     manifest = sealed(directory, run_manifest_sha256)
     campaign, executions, results = asyncio.run(verify_predictions(directory, manifest))
     refs, pairs, continuity = references(reference_manifest, reference_sha256)

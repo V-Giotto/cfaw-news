@@ -673,3 +673,6 @@ review; H09 capability/privacy; H10 research honesty. Required-test JSON contain
 expanded T01–T46 nodeids, H mappings and auxiliary nodes, not a test-count shortcut.
 
 PR6 whole-artifact publication also rejects G2_PR6_SENSITIVE_EXPORT: native upstream archives cannot bypass the PR4 safe-hold boundary. The controlled rejection contains no credential/quote payload.
+
+
+PR6 路径兼容修复：evaluate/acceptance/checks 的输入目录先转为绝对路径，再走原有边界与 reparse 检查；旧 G1 reproduction.json 中 Windows 相对工件名仅在 legacy 导入边界转换分隔符。PR6 自身 manifest 仍要求严格 POSIX 相对路径，驱动器、UNC、ADS、父路径及 SHA 错误继续拒绝。修复不修改 G1 输出字节、Schema 或预算；需新的源码提交和同提交验收，旧全量通过不冒充新源码结果。

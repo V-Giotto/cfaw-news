@@ -113,7 +113,10 @@ def requirements(inventory):
         if "/pr6/" not in node:
             continue
         auxiliary_h["H06"].append(node)
-        if any(x in node for x in ("test_boundaries", "test_manifest", "test_matrix")):
+        if any(
+            x in node
+            for x in ("test_boundaries", "test_manifest", "test_matrix", "test_path_compatibility")
+        ):
             auxiliary_h["H01"].append(node)
             auxiliary_h["H09"].append(node)
         if any(x in node for x in ("test_contracts", "test_evaluation")):

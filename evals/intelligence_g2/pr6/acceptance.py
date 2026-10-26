@@ -69,7 +69,8 @@ def accept(
     from .evaluate import compare, references, verify_predictions
     from .handoff import views
 
-    pred = sealed(Path(run), run_pin)
+    run, evaluation = Path(run).absolute(), Path(evaluation).absolute()
+    pred = sealed(run, run_pin)
     ev = sealed(Path(evaluation), evaluation_pin)
     checked, coverage = verify_checks(checks, checks_pin)
     commit = checked.source_release.source_commit

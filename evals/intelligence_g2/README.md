@@ -340,3 +340,6 @@ fresh authorization. CI smoke is smaller and is not full campaign acceptance.
 See docs/G2_G3_HANDOFF.md. Optional human research does not block engineering;
 G3 planning and administrator acceptance are separate decisions. No live model,
 keys, production DB, UI, G3 ranking or automatic Git publication is added.
+
+
+PR6 路径兼容修复：evaluate/acceptance/checks 的输入目录先转为绝对路径，再走原有边界与 reparse 检查；旧 G1 reproduction.json 中 Windows 相对工件名仅在 legacy 导入边界转换分隔符。PR6 自身 manifest 仍要求严格 POSIX 相对路径，驱动器、UNC、ADS、父路径及 SHA 错误继续拒绝。修复不修改 G1 输出字节、Schema 或预算；需新的源码提交和同提交验收，旧全量通过不冒充新源码结果。
