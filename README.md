@@ -87,3 +87,10 @@ npm run build
 - [Apache-2.0](LICENSE) 与 [NOTICE](NOTICE)：代码许可、原作品、新闻与第三方资产署名。
 
 `.env`、`.local/`、私人数据库、依赖目录、生成物和 `dev-diaries/` 不进入 Git。开发日记永远本地。公开访问来源不意味着允许公开再分发全文；V1 仍以本地单用户为验收环境，不能声称已经具备生产鉴权、多租户隔离或部署能力。
+
+## G2 开发验收（2026-10-26）
+
+G2-PR1–PR6 已完成离线工程验收，`g2_development=PASS`，管理员验收为 `accepted`。
+当前状态、公开 pin 和研究限制见 [G2 发布说明](docs/G2_PUBLICATION.md)，
+接口边界见 [G2 → G3 交接契约](docs/G2_G3_HANDOFF.md)。
+上方 G1 段落保留前序阶段语境；G3 规划及实现尚未授权，未接入真实模型或生产数据库。
