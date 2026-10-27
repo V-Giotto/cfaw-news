@@ -20,10 +20,10 @@ jobs:
       - run: python -m pip install --no-deps -e .
       - run: python -m ruff check backend tests evals
       - name: Collect exact test inventory
-        run: python -B -m pytest --collect-only -q -p no:cacheprovider -p evals.intelligence_g2.pr6.junit_inventory --pr6-inventory .tmp/evals/g2/ci/node_inventory.json
-      - run: python -B -m evals.intelligence_g2.pr6.junit_inventory --inventory .tmp/evals/g2/ci/node_inventory.json
-      - run: python -B -m pytest -q -p no:cacheprovider -p evals.intelligence_g2.pr6.junit_inventory --junitxml=.tmp/evals/g2/ci/full.xml
-      - run: python -B -m evals.intelligence_g2.pr6.junit_inventory --inventory .tmp/evals/g2/ci/node_inventory.json --junit .tmp/evals/g2/ci/full.xml
+        run: python -B -m pytest --collect-only -q -p no:cacheprovider -p evals.intelligence_g3.junit_inventory --g3-inventory .tmp/evals/g3/ci/node_inventory.json
+      - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json
+      - run: python -B -m pytest -q -p no:cacheprovider -p evals.intelligence_g3.junit_inventory --junitxml=.tmp/evals/g3/ci/full.xml
+      - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json --junit .tmp/evals/g3/ci/full.xml
       - name: Offline prediction smoke (not full campaign acceptance)
         run: |
           pin=$(python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('evals/intelligence_g2/manifests/pr6_ci_campaign.json').read_bytes()).hexdigest())")
@@ -32,7 +32,9 @@ jobs:
         if: always()
         with:
           name: offline-check-evidence
-          path: .tmp/evals/g2/ci/
+          path: |
+            .tmp/evals/g2/ci/
+            .tmp/evals/g3/ci/
       - run: python evals/run_baseline.py
       - run: npm ci --no-audit --no-fund && npm run build
         working-directory: frontend

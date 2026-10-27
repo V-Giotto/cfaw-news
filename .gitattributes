@@ -33,3 +33,7 @@ evals/intelligence_g2/reports/*.md -text whitespace=cr-at-eol
 tests/evals/g2/**/*.py -text whitespace=cr-at-eol
 docs/G2_G3_HANDOFF.md -text whitespace=cr-at-eol
 docs/plans/G2_IMPLEMENTATION_PLAN.md -text whitespace=cr-at-eol,-blank-at-eol
+
+# G3 input/config/schema and test inventory pins bind exact working-tree bytes.
+evals/intelligence_g3/** -text whitespace=cr-at-eol
+tests/evals/g3/** -text whitespace=cr-at-eol
