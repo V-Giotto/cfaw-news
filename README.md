@@ -93,4 +93,6 @@ npm run build
 G2-PR1–PR6 已完成离线工程验收，`g2_development=PASS`，管理员验收为 `accepted`。
 当前状态、公开 pin 和研究限制见 [G2 发布说明](docs/G2_PUBLICATION.md)，
 接口边界见 [G2 → G3 交接契约](docs/G2_G3_HANDOFF.md)。
-上方 G1 段落保留前序阶段语境；G3 规划及实现尚未授权，未接入真实模型或生产数据库。
+上方 G1 段落保留前序阶段语境。G3-PR1/PR2 已通过独立工程审查；PR3/PR4 的独立复审为 PASS WITH CONDITIONS，全量回归继续使用项目内临时目录，并把可评估的预算遗漏保留在分母。PR4 已实现独立阅读预算 planner，支持 180/420/900 秒、版本化 Focus/Radar 比例及完整 Archive。接口与估时限制见 [G3 离线说明](evals/intelligence_g3/README.md)，[PR4 交付](evals/intelligence_g3/reports/PR4_DELIVERY.md)与[诊断修复](evals/intelligence_g3/reports/PR4_DIAGNOSTICS_FIX.md)保留历史版本证据。
+
+所有者批准后已实施 G3-PR5 的复现矩阵、验收门禁、报告和交接。前一轮测试控制面、回访支持规模及 schema 检查修复见 [PR5 审查修复报告](evals/intelligence_g3/reports/PR5_REVIEW_FIXES.md)。比较符号丢失导致实质条件更新被误认为已知重复的 P1 已完成修复、原生反例回归、完整矩阵及本地离线验收，证据见[事实签名修复报告](evals/intelligence_g3/reports/FACT_SIGNATURE_REVIEW_FIX.md)。当前 PR5 仍待独立复审关闭及所有者最终验收；G3 尚未最终验收，G4 未授权。后续入口与条件见 [G3 → G4 交接](docs/G3_G4_HANDOFF.md)。所有结果均为非盲合成 AI 开发检查，不证明生产就绪或真人效果；未接入前端、在线 API、生产数据库、真实模型或新采集。

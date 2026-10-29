@@ -1,10 +1,48 @@
-# G3 offline contracts and event ranking (PR1–PR2)
+# G3 offline contracts, ranking, history, budgets and acceptance (PR1–PR5)
+
+PR5 now adds a pinned reproduction/evaluation/checks/acceptance workflow below.
+The prior PR1–PR4 sections retain their historical scope. PR5 engineering
+acceptance is separate from independent review, owner acceptance and G4 approval.
+
+The current PR5 review remains open for the grounded-fact-signature P1. Its repair
+uses `g3-grounded-fact-signature-v2`: every non-whitespace symbol, number and
+case-sensitive unit is retained, along with native G2 grounded scope/proposition
+values. Claim/document/citation IDs and span offsets are provenance, not content
+identity. Persona declarations use the same content projection with the finite
+G2 field grammar; this does not give a declaration evidence or verification status.
+Only an explicit leading `Reprint:` label is ignored. Arbitrary paraphrases,
+unit conversions and semantic equivalence are not inferred.
+
+The independent fact-extractor version is emitted in ranking diagnostics, bound
+in PR2 comparison fingerprints and PR3/PR4 configuration fingerprints, and sealed
+as `fact_signature_policy.json` by reproduction. Existing score weights and wire
+schema versions remain registered; their v1 strings alone do not identify the
+active feature extractor. Budget validation checks the same complete policy hash.
+Old rankings can remain structurally parseable, but their context fingerprints
+are rejected by the current planner/acceptance; old acceptance pins cannot validate
+against this working-tree release. Frozen schemas, test bodies, original campaigns and reports
+are retained as historical material.
+
+The additive `manifests/pr5_fact_signature_campaign.json` has trusted exact-byte
+SHA256 `48a9f1d2c88a1cd863eefcfb84677e3bb0aab0667f4618cdea1958baf52205b9`.
+It preserves all 26 old cases and labels and adds 13 authored native G2 regressions
+for symbols, quantities, units, Persona/acknowledgment and unchanged reprints.
+There are 39 × 3 × 11 = 1287 jobs per seed, 2574 actual predictions across the two
+registered seeds. Use the PR5 CLI sequence below with this new manifest/pin and
+fresh output directories. The signature cases and labels are synthetic, reused,
+nonblind `ai_development`, with zero independent test families or human gold.
+Do not overwrite or relabel the old campaign. Current repair evidence is in
+[FACT_SIGNATURE_REVIEW_FIX.md](reports/FACT_SIGNATURE_REVIEW_FIX.md); independent
+review and owner final acceptance are pending. G3 is not finally accepted and G4
+is not authorized.
 
 The owner approved PR1 on 2026-10-27 in the implementation chat, including sealed
 G2 parent consumption and an additive CI compatibility checker. This package
-validates and exports inputs. PR2 adds pure event ranking as described below.
-There is no persistent history store, alias inheritance policy, budget planner,
-evaluator, production integration, network client or model call.
+validates and exports inputs. PR2 adds pure event ranking; PR3 adds explicit
+append-only synthetic file history and a separate versioned revisit adapter below.
+PR4 adds an independent budget/display planner. These are offline development
+interfaces; the application has no G3 integration, evaluator, network client or
+model call.
 
 ## Trust and native contracts
 
@@ -296,7 +334,8 @@ configuration and input references permit score reconstruction.
 Only PR1's validated, already supplied deliveries, interactions and original
 candidate observations are used. History matching is **exact event key**; current
 aliases do not rewrite old targets. No merge/split inheritance, persistence,
-feedback learning or general revisit policy is implemented. Those remain PR3.
+feedback learning or general revisit policy is implemented by the PR2 API.
+The separate PR3 API below adds explicit history and migration; PR2 behavior stays versioned.
 Reading-budget selection remains PR4; quality metrics and a complete acceptance
 matrix remain PR5. Neither a high score nor a test PASS is an algorithm-gain claim.
 
@@ -332,5 +371,459 @@ that the frozen isolation audits reject. `PYTHONIOENCODING` alone is insufficien
 The original failed run and complete UTF-8 rerun are separately retained in the
 delivery report; no audit/test rule or dependency was changed.
 
-Stop after PR2 delivery. Use `docs/G3_CODEX_PROMPTS.md`, section “PR2 独立审查提示词
-（只审查，不改代码）”; independent review and owner approval are required before PR3.
+PR2's latest independent re-review returned PASS (2026-10-27, chat “严格审查 G3”,
+turn `01a17d55-7307-7d21-86e9-5355d717e7e8`). The owner's explicit instruction
+to start PR3 provides its implementation approval. Earlier PR1 and PR2 delivery
+reports retain their historical stop conditions.
+
+## PR3 append-only history and revisit API
+
+`history_contracts.py` adds `g3-pr3-history-v1`, `g3-pr3-journal-v1`,
+`g3-pr3-input-v1` and `g3-pr3-ranking-v1` schemas under `schema/v3/`.
+These wrap the unchanged native PR1 replay, including all historical G2 observations.
+The new interaction/mapping contracts accept **synthetic records only**. No production DB, real-user
+data, implicit Persona updates, new dependencies, network or model calls are involved.
+
+`HistoryEvent` is an immutable fact with unique interaction ID, Persona ID,
+delivery ID, exact published event key/revision/item/snapshot, occurrence and
+availability timestamps, constrained source and provenance. Included is a server
+fact, rendered is a client confirmation, and opened/acknowledged/dismissed/feedback
+are explicit user actions. They do not imply any other action. A bound delivery
+also establishes inclusion, even without a redundant included log event.
+Only acknowledgment, `feedback=known`, or the visible Persona's explicit statement
+knowledge can declare current statements known. Opening, rendering, helpful,
+irrelevant and dismissal do not. An unretracted `feedback=not_known` conservatively
+vetoes known inheritance for that history, regardless of occurrence/arrival order.
+Correct that conflict by explicitly retracting the negative feedback. Contradictory
+explicit feedback is not implicit learning.
+
+`retract` references an earlier acknowledged/dismissed/feedback record for the
+same Persona, delivery and snapshot. Passive facts cannot be retracted. Corrections
+use a retraction followed by a new explicit record; the original record remains.
+Journal records have append sequence, prior digest and canonical entry digest.
+Availability is append-monotone; delayed occurrence is allowed. Duplicate IDs,
+backdating, invalid retractions, reordered/truncated records and invalid chains fail.
+
+`history_store.append_interaction(path, event, expected_head=...)` uses an exclusive
+sidecar lock, verifies the caller's expected head, opens JSONL in append mode and
+fsyncs. Paths are restricted to `.tmp/evals/g3/` or `.local/evals/g3/`.
+There is no update/truncate/delete operation. A stale head or busy lock fails;
+the writer does not auto-retry or recover a crashed writer's lock.
+`load_journal(path, expected_sha256=...)` requires an external exact-byte pin.
+The trusted pin/head must be retained outside the journal: a hash chain alone
+cannot prove absence of a rewritten prefix or rollback. This is an offline file
+mechanism, not a production persistence/durability claim.
+
+`HistoryInput` strictly rejects future interactions/mappings and delegates future
+delivery/Persona/evidence checks to the native replay. Its `replay.history` must be
+empty: PR1 history requires a deliberate source-preserving import, never a silent
+second history channel. `select_history(replay, complete_journal, mappings)` selects
+the exact visible prefix by **both** occurrence and availability at `replay.as_of`;
+future rows do not enter the selected input, features or prediction fingerprint.
+`select_deliveries` and `select_persona` support source-side as-of projection;
+ambiguous latest Persona versions fail. Direct explicit replay inputs still reject
+future delivery/Persona records. Every reference, Persona and delivery time is
+revalidated through both JSON and ranking entry points.
+
+Same-key revisions share history only when no intervening native merge/split/complex
+transition occurred. A merge that retains an old event key still requires explicit
+migration. `HistoryMapping` pins exact historical/current published snapshots,
+the ordered G2 transition path, certainty, availability, reason and provenance.
+Paths traverse native transitions, including a merge ancestor omitted from a split
+child's immediate lineage; the terminal transition must bind the target lineage.
+Titles, URL similarity and document overlap never establish history inheritance.
+Unknown, missing and uncertain mappings retain diagnostic statuses. Those records
+do not inherit knowledge or repeat penalties. Exact history for the current snapshot
+and other confirmed mappings remain usable; an uncertain ancestor does not erase
+a current delivery, acknowledgment or explicit feedback. Confirmed mapping means structurally explicit synthetic migration,
+not independently validated semantic equivalence. Every migration is retained in
+the input and referenced by the output; original journal rows remain unchanged.
+
+`revisit.rank_revisit(HistoryInput, algorithm="p1")` and `compare_revisit()` reuse
+the PR2 lexical, recency, evidence gates and weighted components. Algorithms use
+new `g3-{algorithm}-revisit-v1` versions and the registered `g3-revisit-v1` policy
+in `manifests/pr3_history_config.json`. B0/B1/B2/B3 scores and order retain PR2
+semantics; B4/P1 use the new history policy. Every algorithm binds the same input,
+candidate pool, Persona, budget and configuration. All candidates remain present.
+
+The repeat penalty applies only to identical latest delivered cited/attributed
+statement sets. Distinct signals contribute included 0.10, rendered 0.10,
+acknowledged/known 0.25, dismissed 0.20 and irrelevant 0.20; opened adds zero.
+Known feedback and acknowledgment count once. Each additional distinct delivery
+adds 0.05, capped at 0.75 total. Repeated log messages and additional reprint
+documents do not multiply signals or create independent support. Knowledge declarations,
+pending markers and knowledge penalties use the same effective knowledge: an unretracted
+not-known veto clears effective knowledge, so a conflicting positive record cannot
+retire correction/withdrawal protection or contribute an acknowledgment/known penalty.
+
+Pending supported corrections, withdrawals and statement/constraint increments
+clear the ordinary penalty. Earliest delivered statement sets per mapped event
+are the pending-change anchor; merely including/rendering/opening the updated
+item does not retire its protection. Acknowledgment must cover **current** statements
+before it retires the update. Parent acknowledgment covers only its exact cited
+statement set, never additional merged/split content. For B4/P1, eligible protected
+updates precede ordinary eligible rows, then score and stable event identity break
+ties. G2 hold/insufficient/no-cited-attributed-claim gates always precede protection.
+This is a rule proxy for materiality, not semantic truth or a proven ranking gain.
+
+Results include feature/component values, resolving JSON pointers into `HistoryInput`,
+resolved snapshots, migration statuses, distinct delivery count, declared knowledge,
+promotion and decision reasons. Unknown/partial/failed/offline coverage is diagnostic;
+absence of a supported increment is never a claim of no real-world update.
+
+```python
+from evals.intelligence_g3.history import select_history
+from evals.intelligence_g3.revisit import rank_revisit
+
+# replay is a validated native PR1 input with visible deliveries and empty history.
+# journal is the externally pinned complete synthetic append-only journal.
+selected = select_history(replay, journal, mappings=explicit_mappings)
+result = rank_revisit(selected, "p1")
+```
+
+For a saved, pinned `HistoryInput` under `.tmp/evals/g3/`, export one ranking to a
+fresh directory (no planner or final acceptance matrix):
+
+```powershell
+python -B -m evals.intelligence_g3.revisit_cli --input .tmp/evals/g3/example/input.json --input-sha256 <trusted-file-sha256> --out .tmp/evals/g3/example/p1 --algorithm p1
+python -B -m evals.intelligence_g3.revisit_cli --check-schemas
+```
+
+New failures include `G3_HISTORY_INVALID`, `G3_HISTORY_CHAIN_INVALID`,
+`G3_HISTORY_HEAD_MISMATCH`, `G3_HISTORY_CONCURRENT_WRITE`,
+`G3_HISTORY_MAPPING_INVALID` and native `G3_FUTURE_HISTORY`/`G3_FUTURE_PERSONA`.
+Direct Pydantic wire validation raises `ValidationError` containing the specific
+contract code; PR3's `parse_history` and ranking preserve that diagnostic as
+`ContractError` without dumping rejected records.
+
+Synthetic prediction specifications are in `fixtures/pr3/v1/scenarios.json`;
+test expectations stay in `tests/evals/g3/test_history.py` and `test_revisit.py`.
+The 1/3/7-day cases cover passive versus explicit actions, revisions, reprints,
+constraint changes, corrections, withdrawals, unknown coverage and native
+merge/split uncertainty. They are development/adversarial engineering checks,
+not independent human evidence. The inventory checker appends a separately pinned
+PR3 manifest; original PR1/PR2/frozen G2 requirements and skip exemptions remain.
+
+Storage/export tests use independent `g3_tmp_path` fixtures under the allowed G3
+test directory. These G3 tests require no `--basetemp` override under default pytest.
+Explicit outside-directory rejection tests preserve the product path policy.
+The separate unchanged G2 test suite rejects OS-temp manifest paths; CI's complete
+pytest command now explicitly uses `.tmp/evals/g3/ci-pytest-temp` as its basetemp,
+matching the established project-`.tmp` full regression convention. The failed
+original default full run is retained separately. Local checks do not establish
+remote CI success. Its parent is created by test collection, and the CI basetemp
+is outside the uploaded evidence directories.
+The 2026-10-28 review repair adds both orders of known/acknowledged versus not-known
+on the current correction/withdrawal/material version, and exact current feedback
+with missing/uncertain/confirmed merge/split ancestry. See
+`reports/PR3_REVIEW_FIXES.md` for red/green and default-entry regression evidence.
+
+See `reports/PR3_DELIVERY.md` for PR3's original commands, outcomes and limits.
+Its 2026-10-28 independent re-review was PASS WITH CONDITIONS, with no remaining
+code findings: complete regression retains the project-local pytest basetemp
+required by unchanged G2 tests. The owner's explicit instruction to begin PR4
+provides the next-stage approval. The existing uncommitted PR3 files are retained.
+
+## PR4: separate reading-budget and Focus/Radar planner
+
+`budget.plan_briefing(history_input, ranking, config=None)` consumes an **already
+computed** native PR3 `RevisitResult` from any of B0/B1/B2/B3/B4/P1. It never calls
+a ranker, changes scores, removes ranking rows or changes G2 candidate tiers.
+`BriefingPlan.input` retains the entire `HistoryInput` and ranking, including all
+evidence/history and unshown/held candidates. `events` retains original rank order;
+`display_order` is the separate protected/Focus/Radar presentation sequence.
+`archive_snapshot_ids` lists the complete current pool for future Archive/Library
+consumers. Planning does not record an actual included/rendered/opened action.
+
+`BudgetInput` binds the ranking's complete identity set, ranks, context/config/pool
+hashes, as_of, Persona and registered budget to the supplied input. It independently
+checks G2 hold/insufficient/no-cited-attributed-claim gates and PR3 pending-update
+protection. Stage-one numerical scores are consumed as supplied; their computation
+is not rerun or certified by planning. Keep a trusted external pin on saved inputs.
+The output retains a digest of the exact complete ranking. Both direct JSON
+validation and the public planner reject missing/duplicate/unbound rows or forged
+eligibility/protection. Serialized final plans also rederive their decisions and
+diagnostics; deleting an archive row or changing a budget/coverage claim fails.
+
+The versioned `g3-budget-v2` policy supports **180 / 420 / 900 seconds** and three
+registered experiment profiles: `focus60-radar40-v1`, `focus70-radar30-v1` and
+`focus80-radar20-v1`. Their full definitions are in
+`manifests/pr4_budget_configs.json`. The API's 70/30 development default is not an
+accepted product default or a tuned optimum. Focus target seconds are
+`floor(budget * focus_percent / 100)`; Radar receives the remainder.
+V2 changes diagnostics only: allocation, reading rules, profiles, scores and
+candidate retention retain their original definitions. The prior registry is
+preserved byte-for-byte in `manifests/pr4_budget_configs_v1.json`.
+
+Allocation is deterministic:
+
+1. Eligible PR3 protected updates (including pending supported correction,
+   withdrawal and material changes) get first access to the total budget in original
+   rank order. They may borrow the Radar share; borrowed seconds are reported.
+2. Other eligible rows are scanned in original rank order for the remaining Focus
+   share. Rows that cannot fit are deferred, allowing later shorter rows to fit.
+3. Deferred rows are scanned in the same order for the remaining Radar share and
+   total budget. Ordinary rows do not borrow unused time from the other tier.
+
+Every attempt uses estimated seconds, with no item-count cap. Protected updates
+still obey G2 gates and the total budget. If protected mandatory content cannot
+fit, the result explicitly records `protected_budget_unmet` and its event keys;
+it does not claim that every correction was shown. Ordinary exploration scores
+cannot displace protected updates or make a held row eligible. This is a greedy
+registered allocation policy, not an optimal knapsack or utility claim. Its hard
+ordinary shares may leave time unused even when an item fits the combined idle
+time; both failed share attempts and unused seconds remain visible.
+
+### Reading rule and complete-block projections
+
+`unicode-display-units-v1` is an **uncalibrated estimate, not actual reading or
+cognitive time**. It uses fixed Unicode 3.2 category tables across Python versions:
+each Han codepoint in the registered ranges counts once; contiguous other Unicode
+letters/numbers count once per run. Whitespace, punctuation and symbols add no
+units; combining marks do not split a run. The exact ranges and rule are in
+`budget.display_units` and `ReadingRule`.
+
+For each candidate projection:
+
+```text
+estimated seconds = 4 + ceil(display_units / 4) + 2 * distinct evidence_ref_ids
+```
+
+Units include projected statements, attribution, raw scope values, verification
+and lifecycle labels, limitations, risks and uncertainties. Citation IDs are not
+read as prose; the separate two-second term is an estimated checking cost. The
+native G2 coarse 90/12-second values are retained in the input and are not used.
+Longer content therefore costs more without changing scores or candidate count.
+
+Focus references the full rule blocks. Radar omits the explicitly labelled
+`why_it_matters` inference. If the chosen tier's normal projection does not fit,
+the planner may use a minimum projection that also omits the redundant
+`what_happened` block. All projections retain the headline, **every selected claim
+summary with attribution/scope/limitations**, risks, uncertainties and status text.
+There is no quote substring, sentence or required-evidence truncation. Complete
+source items stay available in `input.history_input.replay.candidates`.
+
+Each event records one status: `focus`, `radar`, `truncated` (displayed with whole
+optional blocks omitted), `not_displayed`, or `constraint_excluded`. `tier` and
+`chosen_projection` distinguish the presentation tier from truncation. All three
+estimates, content/omitted JSON pointers, used seconds and structured reasons are
+retained. Unshown/excluded entries use zero presentation seconds, with no false
+display claim. A candidate whose minimum exceeds the total budget remains in the
+full result with `minimum_exceeds_total_budget`.
+
+### Coverage and diagnostic denominators
+
+Source coverage is separate from candidate selection. `windows` preserves every
+native window, source ID, observation time, reason and status unchanged;
+`status_counts` counts all supplied **raw windows**, including old windows outside
+the query period. These raw counts are distinct from effective query coverage.
+
+`requested-interval-conservative-union-v1` computes each known source's effective
+coverage within `time_window_start` / `time_window_end`. Positive-duration queries
+use half-open intervals `[start, end)`: touching endpoints and point observations
+do not fill a duration. A zero-duration query is a point and includes windows
+containing that instant, including a point window at that instant. This convention
+is registered as `half-open-duration-closed-point-v1`.
+
+The source universe is the union of candidate source pointers and all raw window
+source IDs, including when the candidate pool is empty. Windows are clipped to
+the query and partitioned at every boundary. Each segment retains pointers to
+its original windows, observed statuses and structured reasons. No observation
+means `unknown`. Any non-covered observation conservatively vetoes overlapping
+covered claims: one distinct non-covered status is retained; multiple distinct
+non-covered statuses yield `partial`. This policy does not infer that a later
+covered observation has superseded an earlier failure for the same interval.
+
+Adjacent confirmed segments are merged into `confirmed_intervals`; their
+complement is `unconfirmed_intervals`. `unobserved_intervals` separately identifies
+parts with no observation at all. Unioning adjacent/overlapping covered windows
+does not double-count coverage; holes remain explicit. A source with one uniform
+segment status retains it, and a mix of segment statuses is `partial`.
+Top-level `effective_statuses` summarizes those **per-source query statuses**;
+`has_gap` is true unless every known source is covered throughout the query.
+An empty source universe is unknown, not a coverage pass.
+
+`missing_source_ids` retains its raw meaning: candidate sources with no supplied
+window. `unobserved_source_ids` identifies sources with no window applicable to
+this query, so an old `covered` observation cannot hide the current period's gap.
+No synthetic observation is inserted and no native status is rewritten. Even
+complete coverage never confirms absence of updates, and no coverage status
+changes ranking, eligibility, allocation or candidate retention.
+
+Budget diagnostics report used/total seconds, per-tier target/used seconds,
+protected borrowing and unused seconds. `canonical-token-set-with-raw-labels-v2`
+deduplicates interests by `tuple(sorted(set(tokenize(label))))`, using exactly the
+existing lexical matching equivalence, including case, whitespace, punctuation,
+word-order and repeated-token equivalents. The stable `domain_key` is
+`g3:domain-query:` plus the semantic SHA256 of that token list. Each group retains
+every original label occurrence and its input pointer; the first declared label
+is the display label. Persona and ranker inputs remain unchanged.
+
+For each canonical query, **all** tokens must occur in the candidate's headline /
+selected statements. Its ratio is presented matching eligible event keys / all
+matching eligible event keys. Aggregate coverage is canonical queries with a
+presented match / all distinct canonical queries, including unmatched queries.
+For example `local`, `LOCAL` and ` local ` count once; with `unmatched`, coverage
+is 1/2, not 3/4. Labels producing no tokens share one explicit unmatchable empty
+query, with an `empty_interest_query_unmatchable` reason and no matched events.
+No declared interests means denominator zero and aggregate null. This is a
+lexical query diagnostic, not semantic domain understanding.
+
+Event breadth is distinct presented native G2 event keys / all eligible event keys.
+It does not establish independent sources, semantic independence or independent
+research samples. Empty denominators produce null, with counts preserved. Diagnostics
+also list truncated, unshown, constraint-excluded and unmet protected events plus
+structured reason counts. These are PR4 plan diagnostics, not PR5 quality metrics.
+
+```python
+from evals.intelligence_g3.budget import plan_briefing
+from evals.intelligence_g3.budget_contracts import BudgetConfig
+from evals.intelligence_g3.revisit import rank_revisit
+
+ranking = rank_revisit(selected, "p1")  # Stage one, same PR3 semantics.
+plan = plan_briefing(selected, ranking, BudgetConfig(profile="focus70-radar30-v1"))
+```
+
+Save `plan.input` as canonical JSON in `.tmp/evals/g3/`, retaining an external
+exact-byte SHA256. Export a single pinned planning job to a fresh output directory:
+
+```powershell
+python -B -m evals.intelligence_g3.budget_cli --input .tmp/evals/g3/example/budget_input.json --input-sha256 <trusted-file-sha256> --out .tmp/evals/g3/example/plan
+python -B -m evals.intelligence_g3.budget_cli --check-schemas
+python -B -m pytest tests/evals/g3/test_budget.py -q -p no:cacheprovider
+```
+
+The CLI writes the original input bytes and `briefing_plan.json`; wrong pins,
+unbound inputs, existing output directories and paths outside the offline G3
+areas fail. New errors include `G3_PLAN_INPUT_MISMATCH` and `G3_PLAN_INVALID`.
+Current schemas are additive under `schema/v4_1/`; `schema/v4/` remains the unchanged
+v1 snapshot. Current envelopes use `g3-pr4-input-v2` / `g3-pr4-plan-v2`, with
+`g3-budget-v2`. Old v1 envelopes/configurations are rejected rather than silently
+reinterpreted. To replan an old externally trusted input, explicitly validate its
+unchanged `history_input` as `HistoryInput` and its `ranking` as `RevisitResult`,
+then call `plan_briefing` with a current `BudgetConfig` preserving the chosen
+profile. Save a new input and external pin; do not overwrite old artifacts or
+substitute a freshly computed hash for an externally trusted pin.
+The original 72 PR4 tests and their pin are unchanged; the new diagnostic tests
+have their own additive manifest. PR1/PR2/PR3 and frozen G1/G2 requirements remain.
+
+See `reports/PR4_DIAGNOSTICS_FIX.md` for the current repair checks and
+`reports/PR4_DELIVERY.md` for the historical v1 delivery. This remains synthetic,
+nonblind development evidence; reading-time calibration, user value, algorithm
+gains and online behavior are not evaluated. PR4 stops here. PR5 requires separate
+independent review and owner approval.
+
+
+## PR5 full reproducibility and fail-closed development acceptance
+
+PR1/PR2 independently passed. PR3/PR4 passed with conditions: keep the project-local
+full-suite basetemp and include evaluable protected budget misses in PR5 denominators.
+The current owner's PR5 start instruction supplies implementation authorization.
+The 823 PR4-reviewed public files matched their review hashes before PR5 edits.
+No independent PR5 review or G4 authorization is implied.
+
+The frozen `manifests/pr5_campaign.json` has trusted exact-byte SHA256:
+`56f2244812449db5ddb5a8bd2384cb302a3f9d66fb1205be167e9308da530daf`.
+Save this pin outside the input manifest; do not recalculate a substitute from
+untrusted input. The campaign pins 26 native G2/G3 synthetic HistoryInput files and
+separate AI development references. It is reused nonblind development material,
+not independent test data or human gold. The authoring script `build_pr5.py` uses
+prior test builders only to freeze a NEW revision; prediction reads frozen JSON
+and never imports builders, labels or evaluation. Do not rerun the builder over
+an existing revision or rewrite historical fixtures/reports.
+
+858 jobs per seed = 26 cases × 3 budgets × 11 variants; seeds 1 and 719 must have
+identical semantic outputs. B0/B1/B3/B4/P1 share every candidate, Persona, history,
+as_of and budget. B2 is a separate identity-preserving G2 aggregation control.
+The five registered score ablations are no_history, no_material,
+no_novelty_material, no_exploration and no_duplicate. They zero contributions
+without renormalizing and preserve all hard gates and mandatory update protection.
+A separate ScoreProjection/ExperimentInput envelope identifies experimental rows;
+no historical ranker/planner version is changed. The default 70/30 allocation is
+frozen for this campaign; alternate PR4 profiles remain separate registered options.
+
+Use the existing virtual environment. On Windows the checks runner gives each
+child PYTHONUTF8=1 and a project-local --basetemp, with no test/skip weakening.
+All output directories must be fresh and under `.tmp/evals/g3/`.
+
+```powershell
+python -B -m evals.intelligence_g3.reproduce --manifest D:/agent_project/cfaw-news/evals/intelligence_g3/manifests/pr5_campaign.json --manifest-sha256 56f2244812449db5ddb5a8bd2384cb302a3f9d66fb1205be167e9308da530daf --out D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/prediction
+python -B -m evals.intelligence_g3.evaluate --run D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/prediction --run-pin <saved-prediction-pin> --out D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/evaluation
+python -B -m evals.intelligence_g3.checks --out D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/checks
+python -B -m evals.intelligence_g3.acceptance --run D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/prediction --run-pin <saved-prediction-pin> --evaluation D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/evaluation --evaluation-pin <saved-evaluation-pin> --checks D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/checks --checks-pin <saved-checks-pin> --out D:/agent_project/cfaw-news/.tmp/evals/g3/example-pr5/acceptance
+```
+
+The reproduction/evaluation/checks CLIs print their actual sealed output pins;
+retain those outside their manifests and pass them explicitly to the next stage.
+The acceptance CLI exits 1 on missing/wrong pins, files, config or source hashes,
+missing/nonzero commands, incomplete/failed/unexempt-skipped JUnit, incomplete
+matrix, unequal seeds, or mismatching rederived predictions/metrics/failures/report.
+It recomputes all first-seed predictions and reference metrics, checks B2=B1,
+and binds prediction/evaluation/checks to the same exact working-tree release.
+The release records source/test/config/schema/fixture/lock/build-configuration
+hashes and anchor commit; it explicitly identifies uncommitted working-tree bytes.
+Old G1/G2 inventories, pins, schema and historical reports are not regenerated.
+44 original PR5 tests, two JSON wire regressions, 31 test-control/metric/schema
+review regressions and 59 fact-signature regressions have separate additive
+pinned manifests; full inventory is 1754 nodes.
+Prior required-test pins and test bodies are unchanged.
+
+The v2 release also binds the pytest control plane. Collection and both suites
+use `pytest_runner`, explicit pyproject/rootdir/confcutdir, disabled entry-point
+autoload and an allowlist for loaded plugin and hook origins. Root and recursive
+test control files are discovered before pytest imports any conftest. Only the
+exact pinned `pyproject.toml` and fixture-only `tests/evals/conftest.py` are approved;
+new/changed controls fail. A legitimate control change needs separate review and
+an explicit policy revision, followed by new checks and pins. Runtime pytest,
+_pytest and pluggy source/bytecode hashes, installed pytest11 metadata, startup
+path controls and the effective six-variable child environment are fingerprinted.
+Injected pytest/Python options are rejected; PYTEST_CURRENT_TEST is diagnostic,
+and PYTEST_VERSION must equal the separately fingerprinted runtime version.
+Each actual session emits a sealed `*.control.json` binding its exact invocation,
+before/after snapshots and loaded plugins. The full-suite gate verifies these
+records as well as every required JUnit result; ordinary imports do not count as
+schema validation. `ranking_schema --check-schemas` compares the real v2 files,
+rejecting corrupt/missing/extra schemas and unknown CLI arguments.
+
+After fresh prediction/evaluation/checks, run the real fixed-pin regression in a
+quiescent workspace, using the same three externally saved pins:
+
+```powershell
+python -B -m evals.intelligence_g3.control_probe --run <prediction-dir> --run-pin <saved-prediction-pin> --evaluation <evaluation-dir> --evaluation-pin <saved-evaluation-pin> --checks <checks-dir> --checks-pin <saved-checks-pin> --out <fresh-g3-probe-dir>
+```
+
+It first runs positive acceptance, then creates an exclusive temporary root hook
+and requires both same-pin acceptance and the test runner to fail before the hook
+executes. It removes only its own unchanged probe file and verifies source
+restoration. It preserves all positive/negative command logs and output hashes.
+
+Every ratio has numerator, denominator, sample_count, event_family_count,
+data_source, value and undefined_reason. Samples are correlated event×case×budget
+observations, never independent users; horizons share product-family identities.
+nDCG@10 uses eligible rank order and all reference gains for IDCG. Recall and
+miss rates include every evaluable important reference, including budget_unmet.
+Undefined metrics stay null. No bootstrap interval or significance is asserted
+without independent holdout families. B4 stays the baseline; P1 need not win.
+Each RevisitCoverage horizon counts samples and families only from that window;
+outside-window measurements carry zero support and an explicit undefined reason.
+`metric_support` lists the actual families; `dataset_support` separately records
+the whole cell. For the original 26-case P1 subset, each horizon is 9/9 on 18
+correlated states from one family, while that dataset cell has 141 states/16
+families. In the current 39-case campaign, the 3-day P1 window is 39/39 on 252
+correlated states/7 authored families; 1/7-day windows remain 9/9 on 18/1. The
+expanded window uses its actual support, never the old subset's totals.
+
+Machine results are `metrics.json`, `failures.jsonl`, `predictions-*.jsonl`,
+`semantic-*.json`, actual per-job timings and command records/logs. Every sealed
+artifact is hashed; unexpected extra/missing files also fail. Provider calls are
+zero; token count/provider cost are undefined because no model is invoked.
+Reading time, lexical domain coverage and attributed statement-set material-change
+proxies do not establish semantic truth or real user value.
+
+See [PR5 review repair and fresh acceptance report](reports/PR5_REVIEW_FIXES.md) and
+[G3 → G4 handoff](../../docs/G3_G4_HANDOFF.md). Offline PASS is not production
+readiness, online integration, publication, independent human validation or a
+real-user effect. G4 needs separate review and owner approval.
+The original [PR5 acceptance report](reports/PR5_ACCEPTANCE.md) is historical and
+preserved byte for byte. Its former PASS does not close the test-control finding;
+fresh v2 evidence and the fixed-pin refusal must be independently reviewed.

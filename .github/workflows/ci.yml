@@ -20,9 +20,9 @@ jobs:
       - run: python -m pip install --no-deps -e .
       - run: python -m ruff check backend tests evals
       - name: Collect exact test inventory
-        run: python -B -m pytest --collect-only -q -p no:cacheprovider -p evals.intelligence_g3.junit_inventory --g3-inventory .tmp/evals/g3/ci/node_inventory.json
+        run: python -B -m evals.intelligence_g3.pytest_runner --mode collect --inventory .tmp/evals/g3/ci/node_inventory.json --control-record .tmp/evals/g3/ci/collect.control.json
       - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json
-      - run: python -B -m pytest -q -p no:cacheprovider -p evals.intelligence_g3.junit_inventory --junitxml=.tmp/evals/g3/ci/full.xml
+      - run: python -B -m evals.intelligence_g3.pytest_runner --mode full --junit .tmp/evals/g3/ci/full.xml --basetemp .tmp/evals/g3/ci-pytest-temp --control-record .tmp/evals/g3/ci/full.control.json
       - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json --junit .tmp/evals/g3/ci/full.xml
       - name: Offline prediction smoke (not full campaign acceptance)
         run: |

@@ -1,0 +1,1 @@
+{"acknowledged_penalty":0.25,"base_config_revision":"g3-event-ranking-v1","config_revision":"g3-revisit-v1","dismissed_penalty":0.2,"included_penalty":0.1,"irrelevant_penalty":0.2,"penalty_cap":0.75,"policy":"explicit-lineage-statement-sets-protected-change-v1","protection":"eligible-protected-before-ordinary-for-b4-p1","rendered_penalty":0.1,"repeated_delivery_penalty":0.05}

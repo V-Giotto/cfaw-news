@@ -1,0 +1,1 @@
+{"nodes":["tests/evals/g3/test_pr5_wire.py::test_registered_configuration_survives_the_actual_json_wire","tests/evals/g3/test_pr5_wire.py::test_every_prediction_variant_survives_the_actual_json_wire"],"revision":"g3-pr5-wire-required-tests-v1","test_source_sha256":{"tests/evals/g3/test_pr5_wire.py":"76ec47e91ea4e64b917341459f1cb10f269f38458ba72bb071655a660cae8492"}}

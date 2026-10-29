@@ -2,13 +2,13 @@
 
 from types import SimpleNamespace
 
-from cfaw_news.retrieval import tokenize
-
 from evals.intelligence_g2.contracts import data, digest
 from evals.intelligence_v1.baselines import candidate_scores
 
 from .bridge import preflight
 from .contracts import G3ReplayInput, fail, parse
+from .fact_signature import REVISION as FACT_REVISION
+from .fact_signature import persona_content, policy_sha256, signature
 from .ranking_contracts import (
     ALGORITHM_VERSIONS,
     Contribution,
@@ -44,8 +44,8 @@ def _claims(candidate, evidence, prefix):
                 or (assessment.lifecycle != "current" and claim.marker == "none")):
             continue
         # Statement content, not doc/claim IDs: reprints cannot manufacture novelty.
-        signature = (tuple(tokenize(claim.statement)), claim.claim_type, claim.marker)
-        result.setdefault(signature, []).append(f"{prefix}/claims/{index}")
+        fact = signature(claim)
+        result.setdefault(fact, []).append(f"{prefix}/claims/{index}")
     return result
 
 
@@ -107,8 +107,8 @@ def _features(value, candidate, ci, bm25, maximum, config, pool_refs):
         change = bool(set(current) - set(old))
         unchanged = bool(current) and set(current) == set(old)
     # Only explicit, exact statement knowledge. Opening never means knowing.
-    known_statements = {tuple(tokenize(k)) for k in value.persona.persona.knowledge_known}
-    explicit_known = bool(current) and all(sig[0] in known_statements for sig in current)
+    known_statements = {persona_content(k) for k in value.persona.persona.knowledge_known}
+    explicit_known = bool(current) and all(sig.content in known_statements for sig in current)
     known_refs = ["/persona/persona/knowledge_known", *support_refs]
     acknowledged = False
     for hi, h in enumerate(value.history):
@@ -221,12 +221,15 @@ def rank(value: G3ReplayInput, algorithm: str, config=None) -> RankingResult:
     return RankingResult(algorithm_id=algorithm, algorithm_version=ALGORITHM_VERSIONS[algorithm],
         config=config, config_sha256=config_hash, input_sha256=input_hash,
         comparison_sha256=digest(dict(input_sha256=input_hash, config_sha256=config_hash,
-                                     candidate_pool_sha256=pool_hash)),
+                                     candidate_pool_sha256=pool_hash,
+                                     fact_signature_policy_sha256=policy_sha256())),
         candidate_pool_sha256=pool_hash, as_of=value.as_of,
         persona_version_id=value.persona.persona.persona_version_id,
         attention_budget_seconds=value.attention_budget_seconds,
         events=tuple(e.model_copy(update={"rank": i}) for i, e in enumerate(events, 1)),
         diagnostics=("g2_events_not_regrouped", "history_exact_event_only_no_alias_inheritance",
+                     "fact_signature_revision:" + FACT_REVISION,
+                     "fact_signature_policy_sha256:" + policy_sha256(),
                      "coverage_gaps_do_not_mean_no_world_change",
                      "free_text_persona_constraints_are_lexical_query_terms",
                      "no_independent_support_or_semantic_materiality_claim"))
