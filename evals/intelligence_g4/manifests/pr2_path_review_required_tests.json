@@ -1,0 +1,53 @@
+{
+  "nodes": [
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[backup]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[backup_sidecar]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[database_sidecar]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[manifest]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[receipt_staging]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[sidecar_parent]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_backup_manifest_cannot_alias_database",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-journal-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-journal-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-shm-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-shm-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-wal-DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-wal-WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_commit_exception_reports_unknown_outcome",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_direct_backup_helper_cannot_bypass_reserved_guard",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_existing_hardlink_alias_rejected",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_new_database_receipt_alias_rejected_before_create[dotdot]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_new_database_receipt_alias_rejected_before_create[same]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_backup_loss_is_explicit_not_success[change]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_backup_loss_is_explicit_not_success[remove]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_receipt_failure_is_committed_and_prepared_record_survives[replace]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_receipt_failure_is_committed_and_prepared_record_survives[write]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_prepared_receipt_sync_failure_never_starts_database",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_receipt_parent_not_writable_refuses_before_database",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_restore_sidecar_namespace_rejected[source]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_restore_sidecar_namespace_rejected[target]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_valid_backup_survives_commit_and_restores[DELETE]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_valid_backup_survives_commit_and_restores[WAL]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_valid_literal_filenames_and_same_basename_in_other_directory",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_windows_receipt_filename_aliases_are_rejected[ ]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_windows_receipt_filename_aliases_are_rejected[.]",
+    "evals/intelligence_g4/tests/test_maintenance_paths.py::test_windows_receipt_filename_aliases_are_rejected[:stream]"
+  ],
+  "parent_manifests": {
+    "evals/intelligence_g4/manifests/pr1_required_tests.json": "c9fda66cd499fa029ff3c24834c860dd6bd62f2b023fa11311f96280c565528a",
+    "evals/intelligence_g4/manifests/pr1_review_required_tests.json": "d3db697115b4f834c215f10d87815aed5ddee285c571aff00abc0e4c6c137c67",
+    "evals/intelligence_g4/manifests/pr2_required_tests.json": "21eb7c7273a1b8ffa78a0869f7a225b97879b38b3b1bb950a653b78c4bcf85bc"
+  },
+  "revision": "g4-pr2-path-review-required-tests-v1",
+  "test_source_sha256": {
+    "evals/intelligence_g4/tests/test_maintenance_paths.py": "883ff49434424d529a01395247602d7a1394c2b27a27e2ded6b59dba9bbd3d3e"
+  }
+}

@@ -37,3 +37,9 @@ docs/plans/G2_IMPLEMENTATION_PLAN.md -text whitespace=cr-at-eol,-blank-at-eol
 # G3 input/config/schema and test inventory pins bind exact working-tree bytes.
 evals/intelligence_g3/** -text whitespace=cr-at-eol
 tests/evals/g3/** -text whitespace=cr-at-eol
+
+# G4 contracts, schemas and required-test manifests bind exact working-tree bytes.
+evals/intelligence_g4/** -text whitespace=cr-at-eol
+# Existing G4 plans use Markdown hard breaks; preserve their reviewed bytes.
+docs/G4_IMPLEMENTATION_PLAN.md -text whitespace=cr-at-eol,-blank-at-eol
+docs/CODEX_G4_EXECUTION_PROMPT.md -text whitespace=cr-at-eol,-blank-at-eol

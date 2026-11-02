@@ -10,8 +10,11 @@ from urllib.parse import parse_qsl, urlencode, urljoin, urlsplit, urlunsplit
 import feedparser
 import httpx
 from sqlalchemy import select
+from sqlalchemy.exc import SQLAlchemyError
 
 from .database import Article, ArticleReading, SourceState, fingerprint, utcnow
+from .intelligence.contracts import LedgerError
+from .intelligence.document_store import DocumentLedger, enabled
 from .reading import READING_REVISION, reading_document
 from .seed import safe_url
 
@@ -308,6 +311,7 @@ class NewsIngestor:
         self.locks = {source_id: asyncio.Lock() for source_id in self.sources}
         self.semaphore = asyncio.Semaphore(3)
         self.task = None
+        self.ledger = DocumentLedger(root)
 
     def state(self, source_id):
         with self.database.session() as session:
@@ -316,11 +320,14 @@ class NewsIngestor:
 
     def save_state(self, source_id, data):
         with self.database.session.begin() as session:
-            value = session.get(SourceState, source_id)
-            if value:
-                value.data = data
-            else:
-                session.add(SourceState(source_id=source_id, data=data))
+            self.write_state(session, source_id, data)
+
+    def write_state(self, session, source_id, data):
+        value = session.get(SourceState, source_id)
+        if value:
+            value.data = data
+        else:
+            session.add(SourceState(source_id=source_id, data=data))
 
     def list_sources(self):
         with self.database.session() as session:
@@ -394,14 +401,23 @@ class NewsIngestor:
         async with self.locks[source_id], self.semaphore:
             source = self.sources[source_id]
             previous = self.state(source_id)
+            started_at = utcnow()
             self.save_state(
-                source_id, {**previous, "status": "refreshing", "last_attempt_at": utcnow()}
+                source_id, {**previous, "status": "refreshing", "last_attempt_at": started_at}
             )
             try:
-                rows, validators = await asyncio.wait_for(self.read(client, source, previous), 60)
+                read_state = previous
+                with self.database.session() as session:
+                    if enabled(session) and not self.ledger.has_snapshot(session, source):
+                        # A legacy validator cannot establish a new immutable body snapshot.
+                        read_state = {**previous, "validators": {}}
+                rows, validators = await asyncio.wait_for(self.read(client, source, read_state), 60)
                 added = changed = unchanged = 0
                 now = utcnow()
                 with self.database.session.begin() as session:
+                    if enabled(session):
+                        self.ledger.record_poll(session, source, rows, started_at=started_at,
+                                                observed_at=now, available_at=utcnow())
                     for row in rows or []:
                         document = row.pop("_reading", None)
                         existing = session.get(Article, row["id"])
@@ -444,26 +460,27 @@ class NewsIngestor:
                                 cached.data = document
                             else:
                                 session.add(ArticleReading(article_id=row["id"], data=document))
-                count = len(rows) if rows is not None else previous.get("count", 0)
-                state = {
-                    "status": "ok",
-                    "last_attempt_at": now,
-                    "last_success_at": now,
-                    "next_refresh_at": (
-                        datetime.now(timezone.utc)
-                        + timedelta(seconds=source.get("interval_seconds", 900))
-                    ).isoformat(),
-                    "count": count,
-                    "new_count": added,
-                    "updated_count": changed,
-                    "unchanged_count": unchanged if rows is not None else count,
-                    "not_modified": rows is None,
-                    "validators": validators,
-                    "image_metadata_version": 1,
-                    "reading_metadata_version": READING_REVISION,
-                    "error": None,
-                    "error_code": None,
-                }
+                    count = len(rows) if rows is not None else previous.get("count", 0)
+                    state = {
+                        "status": "ok",
+                        "last_attempt_at": now,
+                        "last_success_at": now,
+                        "next_refresh_at": (
+                            datetime.now(timezone.utc)
+                            + timedelta(seconds=source.get("interval_seconds", 900))
+                        ).isoformat(),
+                        "count": count,
+                        "new_count": added,
+                        "updated_count": changed,
+                        "unchanged_count": unchanged if rows is not None else count,
+                        "not_modified": rows is None,
+                        "validators": validators,
+                        "image_metadata_version": 1,
+                        "reading_metadata_version": READING_REVISION,
+                        "error": None,
+                        "error_code": None,
+                    }
+                    self.write_state(session, source_id, state)
             except (
                 ValueError,
                 TypeError,
@@ -471,6 +488,7 @@ class NewsIngestor:
                 httpx.HTTPError,
                 KeyError,
                 OverflowError,
+                SQLAlchemyError,
             ) as exc:
                 code = (
                     "timeout"
@@ -494,7 +512,16 @@ class NewsIngestor:
                     "error_code": code,
                     "error": "来源超时、不可用或无法解析；已保留此前资料。",
                 }
-            self.save_state(source_id, state)
+                try:
+                    with self.database.session.begin() as session:
+                        if enabled(session):
+                            self.ledger.record_poll(session, source, None,
+                                started_at=started_at, observed_at=utcnow(), available_at=utcnow(),
+                                failed=True)
+                        self.write_state(session, source_id, state)
+                except (LedgerError, SQLAlchemyError, ValueError):
+                    # A broken policy/schema/DB cannot create valid evidence or coverage.
+                    self.save_state(source_id, state)
             return {"source_id": source_id, **state}
 
     async def refresh(self, source_ids):
@@ -518,6 +545,10 @@ class NewsIngestor:
         return await self.refresh(due) if due else []
 
     def start(self):
+        with self.database.session.begin() as session:
+            if enabled(session):
+                self.ledger.service_event(session, [s for s in self.sources.values()
+                    if s.get("primary")], "started", utcnow())
         for source_id, source in self.sources.items():
             state = self.state(source_id)
             if state["status"] == "refreshing":
@@ -552,3 +583,7 @@ class NewsIngestor:
         if self.task:
             self.task.cancel()
             await asyncio.gather(self.task, return_exceptions=True)
+            with self.database.session.begin() as session:
+                if enabled(session):
+                    self.ledger.service_event(session, [], "stopped", utcnow())
+            self.task = None
