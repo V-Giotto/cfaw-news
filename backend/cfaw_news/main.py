@@ -48,6 +48,10 @@ def create_app(settings: Settings | None = None, provider=None):
     news = NewsIngestor(database, settings.root)
     media = MediaCache(database, settings.root / ".local/media", enabled=settings.news_media_fetch)
     reading = ReadingCache(database, media, enabled=settings.news_reading_fetch)
+    intelligence = None
+    if settings.intelligence_enabled:
+        from .intelligence.service import IntelligenceService
+        intelligence = IntelligenceService(database, settings)
 
     @asynccontextmanager
     async def lifespan(app):
@@ -59,6 +63,8 @@ def create_app(settings: Settings | None = None, provider=None):
                 run.error = "上次服务进程中断，本轮未完成；请重新检查"
                 run.finished_at = utcnow()
                 add_event(session, run.id, "failed", run.error)
+        if intelligence:
+            await intelligence.start()
         if settings.news_auto_refresh:
             news.start()
         media.start()
@@ -66,6 +72,8 @@ def create_app(settings: Settings | None = None, provider=None):
         try:
             yield
         finally:
+            if intelligence:
+                await intelligence.close()
             await reading.close()
             await media.close()
             await news.close()
@@ -83,12 +91,24 @@ def create_app(settings: Settings | None = None, provider=None):
     app.state.news_ingestor = news
     app.state.media_cache = media
     app.state.reading_cache = reading
+    app.state.intelligence = intelligence
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
         allow_methods=["GET", "POST", "PATCH"],
-        allow_headers=["Content-Type", "Last-Event-ID"],
+        allow_headers=["Content-Type", "Last-Event-ID", "If-None-Match"],
+        expose_headers=["ETag"],
     )
+    from .intelligence.boundary import DisabledStatus, IntelligenceBoundary
+    app.add_middleware(IntelligenceBoundary, origins=settings.intelligence_origins,
+                       max_body=settings.intelligence_max_body_bytes, max_requests=settings.intelligence_max_requests)
+    if intelligence:
+        from .intelligence.routes import install_routes
+        install_routes(app, intelligence)
+    else:
+        @app.get("/api/intelligence/status", response_model=DisabledStatus)
+        def intelligence_disabled():
+            return DisabledStatus()
 
     @app.get("/api/health")
     async def health():
