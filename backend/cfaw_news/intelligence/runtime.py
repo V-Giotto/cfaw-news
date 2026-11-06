@@ -23,7 +23,6 @@ from .contracts import LedgerError
 from .runtime_contracts import (
     RuntimeBudgetInput,
     RuntimeEnvelope,
-    RuntimeHistoryInput,
     RuntimePlan,
     RuntimeResult,
 )
@@ -63,10 +62,19 @@ def coverage(value, root="/input/coverage"):
 @controlled
 def derive(value, input_pin):
     from .g2_adapter import require_persona_prefix, run_native
-    from .g3_adapter import plan_fields, plan_reasons, rank_runtime, replay_fields
+    from .g3_adapter import history_fields, plan_fields, plan_reasons, rank_runtime
     if sha256_bytes(json_bytes(value)) != input_pin:
         raise LedgerError("G4_RUNTIME_INPUT_PIN_MISMATCH")
     checkpoint = current().check
+    if value.schema_revision == "g4-h09-runtime-envelope-v2":
+        from .runtime_history import validate_prefix, visit_window
+        prefix = validate_prefix(value)
+        expected = visit_window(prefix, value.as_of,
+            value.time_window_start if value.visit_window and value.visit_window.basis == "explicit_request" else None,
+            value.visit_window.through_sequence if value.visit_window else None)
+        if (value.visit_window != expected or value.time_window_start != expected.start_at
+                or value.time_window_end != expected.end_at):
+            raise LedgerError("G4_RUNTIME_VISIT_WINDOW_INVALID")
     result = dict(input_sha256=input_pin, state="raw_news_only", reason_codes=[], stages=[], projections=[],
         context=None, ranking=None, plan=None, coverage=data(coverage(value)), archive_snapshot_ids=[],
         publishable=False, semantic_truth="not_evaluated")
@@ -87,8 +95,7 @@ def derive(value, input_pin):
         return result
     result.update(stages=[data(s) for s in stages], projections=[data(p) for p in projections],
                   archive_snapshot_ids=[c.snapshot.snapshot_id for c in observations[-1].candidates])
-    context = RuntimeHistoryInput(envelope=value,
-        replay=replay_fields(value, stages, observations, identities))
+    context = history_fields(value, stages, observations, identities)
     checkpoint("ranking")
     ranking = rank_runtime(context)
     result.update(context=data(context), ranking=data(ranking))
@@ -127,14 +134,15 @@ def _run(raw, *, expected_sha256, control):
         raise LedgerError("G4_RUNTIME_FUTURE_INPUT")
     fields = derive(value, expected_sha256)
     control.check("serialization_validation")
-    result = RuntimeResult.model_validate_json(json_bytes(dict(input=data(value), **fields)),
+    revision = "g4-h09-result-v2" if value.schema_revision == "g4-h09-runtime-envelope-v2" else "g4-pr3-result-v1"
+    result = RuntimeResult.model_validate_json(json_bytes(dict(schema_revision=revision, input=data(value), **fields)),
                                                context={"control": control})
     control.check("return")
     return result
 
 
 def from_ledger(session, *, stream_id, as_of, time_window_start, persona, config,
-                record_origin="real", synthetic_provenance_uri=None):
+                record_origin="real", synthetic_provenance_uri=None, persona_history=(), history_prefix=None, visit_window=None):
     """Read only. Select a complete captured as-of prefix; never query Article/Reading."""
     from .contracts import CoverageWindow, SourcePolicy
     from .contracts import digest as ledger_digest
@@ -166,7 +174,9 @@ def from_ledger(session, *, stream_id, as_of, time_window_start, persona, config
                 or window.coverage_window_id != "g4cov:" + ledger_digest([payload, row.capture_id])):
             raise LedgerError("G4_RUNTIME_LEDGER_COVERAGE_MISMATCH")
         windows.append(window)
-    return RuntimeEnvelope.model_validate_json(json_bytes(dict(record_origin=record_origin, stream_id=stream_id,
+    continuity = dict(schema_revision="g4-h09-runtime-envelope-v2", persona_history=[data(p) for p in persona_history],
+                      history_prefix=data(history_prefix), visit_window=data(visit_window)) if history_prefix is not None else {}
+    return RuntimeEnvelope.model_validate_json(json_bytes(dict(**continuity, record_origin=record_origin, stream_id=stream_id,
         as_of=as_of.isoformat(), time_window_start=time_window_start.isoformat(),
         time_window_end=as_of.isoformat(), persona=data(persona),
         versions=[v.model_dump(mode="json") for v in versions],

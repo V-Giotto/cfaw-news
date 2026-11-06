@@ -94,6 +94,8 @@ class IntelligenceBoundary:
         names = [p[0] for p in pairs]
         relative = path.removeprefix("/api/intelligence")
         allowed = {"/events/detail": {"briefing_id", "event_snapshot_id"},
+                   "/briefings": {"limit", "before_version", "through_version"},
+                   "/visits/latest": {"through_sequence"},
                    "/archive": {"briefing_id"}, "/coverage": {"briefing_id"},
                    "/persona": {"as_of"}, "/persona/versions": {"as_of", "limit", "offset"},
                    "/interactions": {"as_of", "limit", "offset"}}

@@ -94,12 +94,46 @@ def replay_fields(envelope, stages, observations, identities):
         attention_budget_seconds=envelope.config.attention_budget_seconds)
 
 
+def history_fields(envelope, stages, observations, identities):
+    from .runtime_contracts import RuntimeHistoryInput
+    from .runtime_history import project_history
+    replay = replay_fields(envelope, stages, observations, identities)
+    if envelope.schema_revision != "g4-h09-runtime-envelope-v2":
+        return RuntimeHistoryInput(envelope=envelope, replay=replay)
+    deliveries, old, journal = project_history(envelope, current().check)
+    seen, archive = {}, []
+    for observation in (*old, *observations):
+        selected = []
+        for candidate in observation.candidates:
+            identifier = candidate.snapshot.snapshot_id
+            core = data(candidate)
+            core.pop("trace", None)
+            core.pop("trace_pointer", None)
+            core.pop("g2_view_sha256", None)
+            if identifier in seen and seen[identifier] != core:
+                raise LedgerError("G4_RUNTIME_HISTORY_SNAPSHOT_CONFLICT")
+            if identifier not in seen:
+                selected.append(candidate)
+                seen[identifier] = core
+        if selected:
+            archive.append(observation.model_copy(update={"candidates": tuple(selected)}))
+    fields = data(replay)
+    published = {ref.snapshot_id: ref for delivery in deliveries for ref in delivery.items}
+    fields.update(deliveries=[data(d) for d in deliveries], observations=[data(o) for o in archive],
+                  published_refs=[data(ref) for ref in published.values()])
+    value = RuntimeHistoryInput(envelope=envelope, replay=RuntimeReplay.model_validate_json(json_bytes(fields)), journal=journal)
+    from evals.intelligence_g3.history import validate_input
+    validate_input(value)
+    return value
+
+
 @controlled
 def validate_context(value):
     from .g2_adapter import run_native
     stages, observations, identities, _ = run_native(value.envelope,
         sha256_bytes(json_bytes(value.envelope)), current().check)
-    if value.replay != replay_fields(value.envelope, stages, observations, identities):
+    expected = history_fields(value.envelope, stages, observations, identities)
+    if value != expected:
         raise LedgerError("G4_RUNTIME_CONTEXT_MISMATCH")
 
 
@@ -114,7 +148,8 @@ def rank_runtime(value):
                    c.snapshot.snapshot_id, c.g2_view_sha256) for c in value.replay.candidates)
     return RuntimeRanking(algorithm_id=algorithm, input_sha256=digest(value),
         config_sha256=digest(value.envelope.config), candidate_pool_sha256=digest(pool),
-        fact_signature_policy_sha256=FACT_PIN, events=rows(value, algorithm, current().check))
+        fact_signature_policy_sha256=FACT_PIN, events=rows(value, algorithm, current().check),
+        history_status="validated_sqlite_prefix_native_rules_v1" if value.envelope.history_prefix is not None else "not_integrated")
 
 
 def plan_reasons(envelope, evidence):

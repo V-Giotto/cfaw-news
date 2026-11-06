@@ -93,7 +93,8 @@ def test_retire_demo_news_keeps_feed_history_and_user_records(settings):
     with TestClient(create_app(settings)) as client:
         run = check(client)
         client.post(f"/api/runs/{run['id']}/decisions", json={"choice": "watch"})
-        client.post(f"/api/runs/{run['id']}/approve", json=interval(run))
+        approval_payload = interval(run)
+        client.post(f"/api/runs/{run['id']}/approve", json=approval_payload)
         before = client.get(f"/api/runs/{run['id']}").json()
         schedules = client.get("/api/schedules").json()
         goal_ids = [g["id"] for g in client.get("/api/goals").json()]
@@ -123,7 +124,7 @@ def test_retire_demo_news_keeps_feed_history_and_user_records(settings):
             assert client.get("/api/runs").json()[0]["retired_demo_evidence"] is True
             assert client.post(f"/api/runs/{run['id']}/decisions", json={"choice": "handled"}).status_code == 409
             # An exact retry only returns the existing schedule; it creates nothing.
-            retry = client.post(f"/api/runs/{run['id']}/approve", json=interval(run))
+            retry = client.post(f"/api/runs/{run['id']}/approve", json=approval_payload)
             assert retry.status_code == 200 and retry.json()["created"] is False
             assert client.get("/api/schedules").json() == schedules
 

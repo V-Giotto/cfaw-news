@@ -1,5 +1,7 @@
 """Exact native projections and publication qualification; no HTTP or database writes."""
 
+from copy import deepcopy
+from datetime import datetime
 from uuid import uuid4
 
 from sqlalchemy import select
@@ -15,6 +17,41 @@ from .persistence_contracts import BriefingView, HeadView, RunView
 
 def parse(model, value):
     return model.model_validate_json(canonical(value))
+
+
+def latest_assessments(rows, as_of):
+    """Native assessment history is append-only; equal-time appends break ties."""
+    cutoff = datetime.fromisoformat(as_of)
+    latest = {}
+    for ordinal, row in enumerate(rows):
+        timestamp = datetime.fromisoformat(row["as_of"])
+        if timestamp > cutoff:
+            continue
+        key = row["claim_key"]
+        if key not in latest or (timestamp, ordinal) > latest[key][:2]:
+            latest[key] = (timestamp, ordinal, row)
+    return [entry[2] for entry in latest.values()]
+
+
+def read_snapshot(row):
+    """Hydrate old wire views from their own immutable runtime without DB writes."""
+    view = deepcopy(row.data)
+    if any(not d.get("projection") for d in view["deliveries"]):
+        if sha256_bytes(json_bytes(row.runtime)) != row.runtime_sha256:
+            raise PersistenceError("G4_SNAPSHOT_PAYLOAD_MISMATCH", status=503)
+        choices = {p["event_key"]: p for p in (row.runtime.get("plan") or {}).get("events", [])}
+        for delivery in view["deliveries"]:
+            choice = choices.get(delivery["event_key"])
+            if (not choice or choice["snapshot_id"] != delivery["event_snapshot_id"]
+                    or choice["estimated_read_seconds"] != delivery["estimated_reading_seconds"]):
+                raise PersistenceError("G4_DELIVERY_PLAN_INVALID", status=503)
+            delivery.update(projection=choice["chosen_projection"], content_refs=choice["content_refs"],
+                            omitted_refs=choice["omitted_refs"])
+        view["etag"] = '"g4-pr5-' + digest({k: v for k, v in view.items() if k != "etag"}) + '"'
+    if "native_basis_sha256" not in view:
+        view.update(native_basis_sha256=None, history_prefix_sha256=None, visit_window=None)
+        view["etag"] = '"g4-h09-' + digest({k: v for k, v in view.items() if k != "etag"}) + '"'
+    return parse(BriefingView, view)
 
 
 def corpus_basis(session):
@@ -94,7 +131,8 @@ def snapshot_view(result, *, run, version, generated_at, mode):
         deliveries.append(dict(id=digest(["delivery", identifier, row["event_snapshot_id"]]),
             event_snapshot_id=row["event_snapshot_id"], event_key=key, event_revision=row["event_revision"],
             ordinal=ordinal, tier=choice.tier, status=choice.status, reason_codes=[r.code for r in choice.reasons],
-            estimated_reading_seconds=choice.estimated_read_seconds))
+            estimated_reading_seconds=choice.estimated_read_seconds, projection=choice.chosen_projection,
+            content_refs=choice.content_refs, omitted_refs=choice.omitted_refs))
     fields = dict(id=identifier, run_id=run.id, version=version, as_of=result.input.as_of.isoformat(),
         generated_at=generated_at, mode=mode, evidence_status=result.state,
         persona_version_id=run.data["persona_version_id"], runtime_sha256=sha256_bytes(json_bytes(result)),
@@ -103,4 +141,12 @@ def snapshot_view(result, *, run, version, generated_at, mode):
         unmet_protected_event_keys=list(result.plan.diagnostics.unmet_protected_event_keys) if result.plan else [],
         display_order=list(result.plan.display_order) if result.plan else [], deliveries=deliveries, archive=archive,
         budget_diagnostics=data(result.plan.diagnostics) if result.plan else None)
+    if result.input.history_prefix is not None:
+        from .runtime_history import native_basis
+        fields.update(history_scoring="validated_sqlite_prefix_native_rules_v1",
+            native_basis_sha256=digest(native_basis(result.input)),
+            history_prefix_sha256=result.input.history_prefix.sha256,
+            visit_window=data(result.input.visit_window))
+    else:
+        fields.update(native_basis_sha256=None, history_prefix_sha256=None, visit_window=None)
     return parse(BriefingView, {**fields, "etag": '"' + digest(fields) + '"'})

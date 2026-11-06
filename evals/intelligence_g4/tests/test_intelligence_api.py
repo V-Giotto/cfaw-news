@@ -32,7 +32,8 @@ def test_real_raw_snapshot_preserves_material_semantics_and_get_has_no_exposure(
         view = response.json()
         assert view["mode"] == "real" and view["evidence_status"] == "raw_news_only"
         assert view["deliveries"] == [] and view["display_order"] == [] and view["archive"]
-        assert view["coverage"]["has_gap"] and view["history_scoring"] == "not_applied_pr3_v2"
+        assert view["coverage"]["has_gap"] and view["history_scoring"] == "validated_sqlite_prefix_native_rules_v1"
+        assert view["native_basis_sha256"] and view["history_prefix_sha256"]
         assert view["archive"][0]["content_kinds"] == ["feed_summary"]
         assert client.get("/api/intelligence/briefings/latest", headers={"If-None-Match": response.headers["etag"]}).status_code == 304
         item = view["archive"][0]

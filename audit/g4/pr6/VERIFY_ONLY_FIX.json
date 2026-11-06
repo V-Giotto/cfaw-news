@@ -1,0 +1,222 @@
+{
+  "artifact_index": {
+    ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001": {
+      "bytes": 1953,
+      "sha256": "ae5de10decd4419f023446738d53f10e77a6a9b2bb84ccb37db89af250b6b105"
+    }
+  },
+  "base_v2_seal": {
+    "bytes": 157490,
+    "sha256": "a1f406a4c73627919afe231cc52670c624d8ca4d04df52aba75c486f7a5b876b"
+  },
+  "base_v2_seal_unchanged": true,
+  "commands": {
+    "probe-green": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.verify_only_probe"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 4.300566699999763,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T14:41:09.217567+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001/probe-green.log",
+      "log_sha256": "0e7e8b9eebaacac59ab0c364d0fd43a4b44bdc53fcea37716847f2d9e62aee6a",
+      "started_at": "2026-11-05T14:41:04.916501+00:00"
+    },
+    "probe-red": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.verify_only_probe"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 5.3690469000011944,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 1,
+      "finished_at": "2026-11-05T14:39:51.670410+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001/probe-red.log",
+      "log_sha256": "843681dc17fac86c4b190f6bfafcd89bec8e710c67e38d1aca1464f9c28a6174",
+      "started_at": "2026-11-05T14:39:46.301415+00:00"
+    },
+    "regression": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "audit/g4/pr6/test_verify_only.py",
+        "audit/g4/pr6/test_seal.py",
+        "--basetemp",
+        ".tmp/evals/g3/p6-verify-only-tests",
+        "--junitxml",
+        ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001/tests.xml"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 8.894448400000329,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T14:41:13.819678+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001/regression.log",
+      "log_sha256": "2ffc41fccb514def5a920d500598d501eb72e84ed74479043c2fd1babbb9bd55",
+      "started_at": "2026-11-05T14:41:04.924504+00:00"
+    },
+    "ruff": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "backend",
+        "tests",
+        "evals",
+        "audit/g4/pr6"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1.5126350999998976,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T14:41:06.442162+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-verify-only-fix-20261105-001/ruff.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "started_at": "2026-11-05T14:41:04.929324+00:00"
+    }
+  },
+  "g1_g2_g3_changes": 0,
+  "git_mutations": 0,
+  "new_full_acceptance_claim": false,
+  "product_source_changes": 0,
+  "read_only_probe": {
+    "after": {
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\collect-control.json": {
+        "bytes": 45029,
+        "mtime_ns": 1793876204316011100,
+        "sha256": "556129ce9fa6c14b073878ece17ee5781a4b1ab2e53ff42473b7cdcc9d97a878"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\control-verification.json": {
+        "bytes": 14874,
+        "mtime_ns": 1793888498485269000,
+        "sha256": "2d01e33df883e1af3bcbfb095a7556af56490fd304015dc2f3f8f2a3235acc05"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-final-control.json": {
+        "bytes": 45269,
+        "mtime_ns": 1793877398772885100,
+        "sha256": "60a394a4d0efd61f0e39311d54c170d4e33f6638cd729a70f303fc7b81a42d15"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-final.xml": {
+        "bytes": 587597,
+        "mtime_ns": 1793877395671293100,
+        "sha256": "bb75016bc26db8367afff76a081e77688ac789bbaa23b61bf9efc295fe9cfde7"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\inventory.json": {
+        "bytes": 210623,
+        "mtime_ns": 1793876203682064600,
+        "sha256": "78fcb174d1c6e2a3f5b6ca1e6b6bd7bab048aba4c05d2f2ffc6d3ab236338f4a"
+      }
+    },
+    "before": {
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\collect-control.json": {
+        "bytes": 45029,
+        "mtime_ns": 1793876204316011100,
+        "sha256": "556129ce9fa6c14b073878ece17ee5781a4b1ab2e53ff42473b7cdcc9d97a878"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\control-verification.json": {
+        "bytes": 14874,
+        "mtime_ns": 1793888498485269000,
+        "sha256": "2d01e33df883e1af3bcbfb095a7556af56490fd304015dc2f3f8f2a3235acc05"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-final-control.json": {
+        "bytes": 45269,
+        "mtime_ns": 1793877398772885100,
+        "sha256": "60a394a4d0efd61f0e39311d54c170d4e33f6638cd729a70f303fc7b81a42d15"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-final.xml": {
+        "bytes": 587597,
+        "mtime_ns": 1793877395671293100,
+        "sha256": "bb75016bc26db8367afff76a081e77688ac789bbaa23b61bf9efc295fe9cfde7"
+      },
+      ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\inventory.json": {
+        "bytes": 210623,
+        "mtime_ns": 1793876203682064600,
+        "sha256": "78fcb174d1c6e2a3f5b6ca1e6b6bd7bab048aba4c05d2f2ffc6d3ab236338f4a"
+      }
+    },
+    "status": "PASS",
+    "write_attempts": []
+  },
+  "recursive_verification": {
+    "business_manifests": 0,
+    "bytes": 94955,
+    "directories": 5,
+    "files": 16,
+    "status": "PASS_RECURSIVE_ALL_REFERENCES"
+  },
+  "red_write_attempts": [
+    {
+      "event": "os.mkdir",
+      "target": "D:\\agent_project\\cfaw-news\\.tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001"
+    },
+    {
+      "event": "open",
+      "target": "D:\\agent_project\\cfaw-news\\.tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\control-verification.json"
+    }
+  ],
+  "revision": "g4-pr6-verify-only-fix-v1",
+  "source_delta": {
+    "audit/g4/pr6/VERIFY_ONLY_FIX.md": {
+      "after": "a3d56ebcf582cb8dc02fb9935e3245b7784986c335392292debf87751ae588fe",
+      "before": null
+    },
+    "audit/g4/pr6/finalize.py": {
+      "after": "55340602b6ab254678ee3a69eb710fca9bfa4c7fd0bb7c5e646d4e2fc94d0d8b",
+      "before": "11c85a2f8be8016ac8081d2af237c9960ac3bd53d8362fd4439b9be0e4c56c9c"
+    },
+    "audit/g4/pr6/finalize_review.py": {
+      "after": "1c9fda9bdbfe9a50dcb0ac453244b163fc72f198fb217c6881855a60a49c0e29",
+      "before": "13841e11f95c1745fa3de8d49cc122b2e3fb93c5ccfd371fec4cdfd440aa4fef"
+    },
+    "audit/g4/pr6/test_verify_only.py": {
+      "after": "f48978213aae978d250b3f1dad463e98b1f5418d971f8f6c73a9b89d2b705917",
+      "before": null
+    },
+    "audit/g4/pr6/verify_only_probe.py": {
+      "after": "a5d133f0995957fafe7cf02a70daff4e8813b652b98115bd9a33467a91f914e6",
+      "before": null
+    }
+  },
+  "status": "SELF_TESTED_PENDING_REVIEW",
+  "tests": {
+    "failed": 0,
+    "passed": 10
+  }
+}

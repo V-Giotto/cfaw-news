@@ -1,0 +1,13 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><title>PR5 isolated error boundary test</title><div id="root"></div>
+<script type="module">
+import React from 'react';
+import { createRoot } from 'react-dom/client';
+import Boundary from '/src/BriefingBoundary.tsx';
+let shouldFail = true;
+function Fragile() { if (shouldFail) throw new Error('authored render failure'); return React.createElement('p', null, '情报重试成功'); }
+createRoot(document.getElementById('root')).render(React.createElement('main', null,
+  React.createElement('nav', { 'aria-label': '旧导航' }, '资讯资料库 / 我的关注 / 日程'),
+  React.createElement('button', { onClick: () => { shouldFail = false; } }, '修复测试输入'),
+  React.createElement(Boundary, { openLibrary: () => { document.getElementById('library').hidden = false; } }, React.createElement(Fragile)),
+  React.createElement('p', { id: 'library', hidden: true }, '资料库可用')));
+</script></html>

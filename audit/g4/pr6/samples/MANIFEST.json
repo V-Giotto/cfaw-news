@@ -1,0 +1,15 @@
+{
+  "children": {
+    "vite-8.3.4": {
+      "bytes": 795,
+      "sha256": "8c7ed442986f14a403c2830a62bd408be02646a67debea2a74e4b12fc098b96a"
+    }
+  },
+  "directory": "audit/g4/pr6/samples",
+  "excluded": [
+    "MANIFEST.json"
+  ],
+  "files": {},
+  "revision": "g4-pr6-directory-manifest-v1",
+  "self_hash": "excluded; parent or release pins this file"
+}

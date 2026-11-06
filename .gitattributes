@@ -40,6 +40,16 @@ tests/evals/g3/** -text whitespace=cr-at-eol
 
 # G4 contracts, schemas and required-test manifests bind exact working-tree bytes.
 evals/intelligence_g4/** -text whitespace=cr-at-eol
+# G4 QA manifests and source snapshots bind exact audited bytes across checkouts.
+audit/G4_*MANIFEST.json -text whitespace=cr-at-eol
+audit/g4/pr5/** -text whitespace=cr-at-eol
+audit/g4/pr6/** -text whitespace=cr-at-eol
+audit/g4/h09/** -text whitespace=cr-at-eol
+audit/g4/h09_review/** -text whitespace=cr-at-eol
+backend/cfaw_news/intelligence/runtime_schema.py -text whitespace=cr-at-eol
+# Preserve licensed upstream text and the exact reviewed UI snapshot whitespace.
+audit/g4/pr6/samples/** whitespace=-blank-at-eol,-blank-at-eof
+frontend/src/BriefingHome.tsx whitespace=-blank-at-eol
 # Preserve the exact generated SQLAlchemy DDL, including emitted trailing spaces.
 audit/g4/pr4/SCHEMA.sql -text whitespace=-blank-at-eol
 # Existing G4 plans use Markdown hard breaks; preserve their reviewed bytes.

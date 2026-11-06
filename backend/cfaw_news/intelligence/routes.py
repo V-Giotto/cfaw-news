@@ -24,7 +24,10 @@ from .persistence_contracts import (
     PersonaView,
     PersonaWrite,
     RunView,
+    SnapshotPage,
     StatusView,
+    VisitView,
+    VisitWrite,
 )
 
 
@@ -74,6 +77,14 @@ def install_routes(app, service):
     def generate(body: BriefingWrite):
         return service.start_run(body)
 
+    @router.post("/visits", response_model=MutationView, status_code=201, openapi_extra=write_headers)
+    def visit(body: VisitWrite):
+        return service.visit(body)
+
+    @router.get("/visits/latest", response_model=VisitView | None)
+    def last_visit(through_sequence: int | None = Query(default=None, ge=0)):
+        return service.last_visit(through_sequence=through_sequence)
+
     @router.get("/briefings/latest", response_model=BriefingView, responses={304: {"description": "Same immutable ETag"}})
     def latest(request: Request):
         result = service.briefing()
@@ -81,6 +92,12 @@ def install_routes(app, service):
             return Response(status_code=304, headers={"ETag": result.etag, "Cache-Control": "no-cache"})
         return Response(result.model_dump_json(), media_type="application/json",
                         headers={"ETag": result.etag, "Cache-Control": "no-cache"})
+
+    @router.get("/briefings", response_model=SnapshotPage)
+    def briefings(limit: int = Query(default=20, ge=1, le=200),
+                  before_version: int | None = Query(default=None, ge=1),
+                  through_version: int | None = Query(default=None, ge=0)):
+        return service.briefings(limit=limit, before_version=before_version, through_version=through_version)
 
     @router.get("/briefings/{identifier}", response_model=BriefingView)
     def briefing(identifier: str):

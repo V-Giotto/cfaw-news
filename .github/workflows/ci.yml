@@ -19,15 +19,20 @@ jobs:
       - run: python -m pip install -r requirements.lock
       - run: python -m pip install --no-deps -e .
       - run: python -m ruff check backend tests evals
-      - name: Collect exact test inventory
-        run: python -B -m evals.intelligence_g3.pytest_runner --mode collect --inventory .tmp/evals/g3/ci/node_inventory.json --control-record .tmp/evals/g3/ci/collect.control.json
-      - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json
-      - run: python -B -m evals.intelligence_g3.pytest_runner --mode full --junit .tmp/evals/g3/ci/full.xml --basetemp .tmp/evals/g3/ci-pytest-temp --control-record .tmp/evals/g3/ci/full.control.json
-      - run: python -B -m evals.intelligence_g3.junit_inventory --inventory .tmp/evals/g3/ci/node_inventory.json --junit .tmp/evals/g3/ci/full.xml
+      - name: Collect exact inventory with the registered G4 test amendment
+        run: python -B -m audit.g4.h09_review.test_control --mode collect --inventory .tmp/evals/g3/ci/node_inventory.json --control-record .tmp/evals/g3/ci/collect.control.json
+      - run: python -B -m audit.g4.publication.verify_ci --inventory .tmp/evals/g3/ci/node_inventory.json --collect-control .tmp/evals/g3/ci/collect.control.json
+      - run: python -B -m audit.g4.h09_review.test_control --mode full --junit .tmp/evals/g3/ci/full.xml --basetemp .tmp/evals/g3/ci-pytest-temp --control-record .tmp/evals/g3/ci/full.control.json
+      - run: python -B -m audit.g4.publication.verify_ci --inventory .tmp/evals/g3/ci/node_inventory.json --collect-control .tmp/evals/g3/ci/collect.control.json --junit .tmp/evals/g3/ci/full.xml --basetemp .tmp/evals/g3/ci-pytest-temp --full-control .tmp/evals/g3/ci/full.control.json
+      - name: G4 runtime and recovery regressions
+        run: python -B -m pytest -q evals/intelligence_g4 --basetemp .tmp/evals/g3/ci-g4-temp --junitxml .tmp/evals/g3/ci/g4.xml
       - name: Offline prediction smoke (not full campaign acceptance)
         run: |
           pin=$(python -c "import hashlib,pathlib; print(hashlib.sha256(pathlib.Path('evals/intelligence_g2/manifests/pr6_ci_campaign.json').read_bytes()).hexdigest())")
           python -B -m evals.intelligence_g2.pr6.reproduce --source-commit "$GITHUB_SHA" --campaign evals/intelligence_g2/manifests/pr6_ci_campaign.json --campaign-sha256 "$pin" --out .tmp/evals/g2/ci/smoke
+      - run: python evals/run_baseline.py
+      - run: npm ci --no-audit --no-fund && npm test && npm run build
+        working-directory: frontend
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -35,6 +40,3 @@ jobs:
           path: |
             .tmp/evals/g2/ci/
             .tmp/evals/g3/ci/
-      - run: python evals/run_baseline.py
-      - run: npm ci --no-audit --no-fund && npm run build
-        working-directory: frontend

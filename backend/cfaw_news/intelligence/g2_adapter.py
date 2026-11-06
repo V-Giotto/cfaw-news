@@ -136,7 +136,13 @@ def run_native(value, input_pin, checkpoint):
     identities = {key: VersionIdentity(doc_version_id=key, document_id=c.document_id,
         available_at=c.available_at, supersedes_version_id=metadata[key].supersedes_version_id,
         content_sha256=c.content_sha256) for key, c in projected.items()}
-    times = {c.available_at for c in projected.values()}
+    integrated = value.schema_revision == "g4-h09-runtime-envelope-v2"
+    from .runtime_history import native_basis
+    native_pin = digest(native_basis(value)) if integrated else input_pin
+    # No historical user profile is invented before the first actual version. The
+    # ledger retains those observations; native computation starts at availability.
+    first_persona = value.persona_history[0].persona.available_at if integrated else None
+    times = {max(c.available_at, first_persona) if integrated else c.available_at for c in projected.values()}
     times.add(value.as_of)
     if len(times) > 32:
         raise LedgerError("G4_RUNTIME_RESOURCE_LIMIT")
@@ -144,6 +150,8 @@ def run_native(value, input_pin, checkpoint):
     stages, observations = [], []
     for ordinal, when in enumerate(sorted(times)):
         checkpoint("native_step")
+        persona = max((p for p in value.persona_history if p.persona.available_at <= when),
+                      key=lambda p: (p.persona.available_at, value.persona_history.index(p))) if integrated else value.persona
         heads = {}
         for doc in value.versions:
             if projected[doc.doc_version_id].available_at <= when:
@@ -161,13 +169,13 @@ def run_native(value, input_pin, checkpoint):
             "coverage_window_id", "source_id", "start_at", "end_at", "observed_at", "status")},
             reason=w.reason_code) for w in value.coverage if datetime.fromisoformat(w.observed_at) <= when)
         context = ReplayContext(timeline_id=value.stream_id, step_id=f"runtime:{ordinal}", as_of=when,
-            persona=value.persona.persona, candidate_doc_version_ids=tuple(
+            persona=persona.persona, candidate_doc_version_ids=tuple(
                 d.candidate.doc_version_id for d in documents), previous_delivery_id=None,
-            attention_budget_seconds=value.config.attention_budget_seconds,
+            attention_budget_seconds=persona.persona.attention_budget_seconds if integrated else value.config.attention_budget_seconds,
             time_window_start=min(value.time_window_start, when),
             time_window_end=min(value.time_window_end, when), source_coverage=windows, exposure_history=())
         replay = G2ReplayInput(dataset_id="g4:runtime-local:" + value.record_origin,
-            dataset_revision="g4-runtime-native-v1", input_manifest_sha256=input_pin, context=context,
+            dataset_revision="g4-runtime-native-v1", input_manifest_sha256=native_pin, context=context,
             visible_documents=documents, sources=tuple(policies[s] for s in sorted(policies)),
             identity_seeds=tuple(IdentitySeed(document_id=d.candidate.document_id,
                 anchor_doc_version_id=d.visible_lineage[0].doc_version_id,
@@ -231,6 +239,15 @@ def run_native(value, input_pin, checkpoint):
 
 
 def require_persona_prefix(value):
+    if value.schema_revision == "g4-h09-runtime-envelope-v2":
+        versions = value.persona_history
+        if (not versions or versions[-1] != value.persona
+                or len({p.persona.persona_version_id for p in versions}) != len(versions)
+                or any(p.record_origin != value.record_origin or p.persona.persona_id != value.persona.persona.persona_id
+                       or p.persona.available_at > value.as_of for p in versions)
+                or any(a.persona.available_at > b.persona.available_at for a, b in zip(versions, versions[1:]))):
+            raise LedgerError("G4_RUNTIME_PERSONA_HISTORY_REQUIRED")
+        return
     # There is no historical-Persona/state input in v1. Never backdate the current Persona
     # or shift old document observations to its availability; either would invent continuity.
     if value.versions and value.persona.persona.available_at > min(

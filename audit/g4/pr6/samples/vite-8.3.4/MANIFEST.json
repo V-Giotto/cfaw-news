@@ -1,0 +1,27 @@
+{
+  "children": {},
+  "directory": "audit/g4/pr6/samples/vite-8.3.4",
+  "excluded": [
+    "MANIFEST.json"
+  ],
+  "files": {
+    "LICENSE.md": {
+      "bytes": 108786,
+      "sha256": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6"
+    },
+    "PROVENANCE.json": {
+      "bytes": 3184,
+      "sha256": "e2869a734c059c0c45e34ac6f52fe6ba04bf9ce0cef6b6966b013d0e9a4a9859"
+    },
+    "README.md": {
+      "bytes": 1179,
+      "sha256": "01cebf4365cd21396688c4dcb0dc8d360ccbafb3a36735d3849c5d8efd3cd060"
+    },
+    "package.json": {
+      "bytes": 5081,
+      "sha256": "260a0a7a96a35e1b657480014c0f3b592b70061e42099edefc8fe97972f05fd4"
+    }
+  },
+  "revision": "g4-pr6-directory-manifest-v1",
+  "self_hash": "excluded; parent or release pins this file"
+}

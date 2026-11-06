@@ -1,0 +1,15 @@
+{
+  "authorization": "2026-11-06 user requested exact original approval payload reuse and re-registration; no business idempotency change",
+  "changes": {
+    "tests/test_workflow.py": {
+      "after_sha256": "1db1156303208c183b9b1d084eb6cf1c90c8cb2f1c44a0264c53fd2f7949c2a5",
+      "before_sha256": "c7220f28a8f5ba219f3f6c112348ff0ddf775fa0d8fe75ad253aef0dd16a56c9",
+      "reason": "reuse first approval_payload for exact retry, keeping all original nodes and assertions"
+    }
+  },
+  "frozen_g3_registry": "evals/intelligence_g3/junit_inventory.py",
+  "node_inventory_changed": false,
+  "profile": "g4-exact-retry-amendment-v1",
+  "revision": "g4-authorized-test-amendment-v1",
+  "skip_exemptions_changed": false
+}

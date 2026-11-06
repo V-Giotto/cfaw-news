@@ -1,0 +1,105 @@
+{
+  "container": "authored local RSS replay envelope; text is unmodified real material, not synthetic",
+  "external_fetches": 0,
+  "live_network_smoke": "not_evaluated",
+  "local_input_sha256": {
+    "LICENSE.md": "a47172e44a86a7e2cd1c16282341f7726ec60caafe3a6166fe3e0602005b6fa6",
+    "README.md": "01cebf4365cd21396688c4dcb0dc8d360ccbafb3a36735d3849c5d8efd3cd060",
+    "package.json": "260a0a7a96a35e1b657480014c0f3b592b70061e42099edefc8fe97972f05fd4"
+  },
+  "lock_entry": {
+    "bin": {
+      "vite": "bin/vite.js"
+    },
+    "dependencies": {
+      "lightningcss": "^1.33.0",
+      "picomatch": "^4.0.7",
+      "postcss": "^8.5.29",
+      "rolldown": "~1.2.12",
+      "tinyglobby": "^0.2.17"
+    },
+    "dev": true,
+    "engines": {
+      "node": "^20.19.0 || >=22.12.0"
+    },
+    "funding": {
+      "url": "https://github.com/vitejs/vite?sponsor=1"
+    },
+    "integrity": "sha512-IftLE8phJhdNRIGNEV4JCCvfNScoZQVfcXaN8TQropWGJtOHcu+iAB9pHcuGvmEb/kddw0LBe/jS8ztdC6xdiQ==",
+    "license": "MIT",
+    "optionalDependencies": {
+      "fsevents": "~2.3.3"
+    },
+    "peerDependencies": {
+      "@types/node": "^20.19.0 || >=22.12.0",
+      "@vitejs/devtools": "^0.7.1",
+      "esbuild": "^0.27.0 || ^0.28.0",
+      "jiti": ">=1.21.0",
+      "less": "^4.0.0",
+      "sass": "^1.70.0",
+      "sass-embedded": "^1.70.0",
+      "stylus": ">=0.54.8",
+      "sugarss": "^5.0.0",
+      "terser": "^5.16.0",
+      "tsx": "^4.8.1",
+      "yaml": "^2.4.2"
+    },
+    "peerDependenciesMeta": {
+      "@types/node": {
+        "optional": true
+      },
+      "@vitejs/devtools": {
+        "optional": true
+      },
+      "esbuild": {
+        "optional": true
+      },
+      "jiti": {
+        "optional": true
+      },
+      "less": {
+        "optional": true
+      },
+      "sass": {
+        "optional": true
+      },
+      "sass-embedded": {
+        "optional": true
+      },
+      "stylus": {
+        "optional": true
+      },
+      "sugarss": {
+        "optional": true
+      },
+      "terser": {
+        "optional": true
+      },
+      "tsx": {
+        "optional": true
+      },
+      "yaml": {
+        "optional": true
+      }
+    },
+    "resolved": "https://registry.npmjs.org/vite/-/vite-8.3.4.tgz",
+    "version": "8.3.4"
+  },
+  "lock_sha256": "b867e6c2da39e9c56d9cdaeb5b7456bed8751d4355672269a459ac7c515d961f",
+  "material": "unmodified historical installed Vite release README",
+  "observed_locally_at": "2026-11-05T08:11:59.425899+00:00",
+  "package_version": "8.3.4",
+  "publication_time_status": "not_known_not_invented",
+  "published_at": null,
+  "record_origin": "real",
+  "repository": {
+    "directory": "packages/vite",
+    "type": "git",
+    "url": "git+https://github.com/vitejs/vite.git"
+  },
+  "rights": "MIT",
+  "rights_basis": "bundled LICENSE.md core license covers associated documentation",
+  "rights_notice": "complete bundled license retained; no statement of independent legal audit",
+  "source_authenticity": "local installed artifact + lock integrity metadata; remote signature not reverified",
+  "source_url": "https://www.npmjs.com/package/vite/v/8.3.4"
+}

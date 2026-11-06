@@ -3,10 +3,12 @@ import { api, post, type Article, type Config, type Goal, type GoalInput, type R
 import NewsLibrary from './NewsLibrary'
 import ArticleReader from './ArticleReader'
 import GoalWorkspace from './GoalWorkspace'
+import BriefingHome from './BriefingHome'
+import BriefingBoundary from './BriefingBoundary'
 import { CalendarView, HistoryView } from './ActivityPages'
 import Icon from './Icon'
 
-type Page = 'workspace' | 'library' | 'calendar' | 'history'
+type Page = 'intelligence' | 'workspace' | 'library' | 'calendar' | 'history'
 const terminal = new Set(['completed', 'failed', 'cancelled', 'stale'])
 const decisions: Record<string, string> = { watch: '继续观察', handled: '已处理', dismissed: '不采纳' }
 
@@ -94,7 +96,7 @@ function ApprovalModal({ run, close, approved }: { run: Run; close: () => void; 
 }
 
 export default function App() {
-  const [page, setPage] = useState<Page>('library')
+  const [page, setPage] = useState<Page>('intelligence')
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
   const [config, setConfig] = useState<Config | null>(null)
   const [goals, setGoals] = useState<Goal[]>([])
@@ -178,15 +180,15 @@ export default function App() {
     finally { setChangingGoal('') }
   }
   const inspect = (item: Article, paragraphId?: string, snapshot = true) => { setCitationFocus(paragraphId); setCitationSnapshot(snapshot); setArticle(item) }
-  const titles: Record<Page, string> = { workspace: '我的关注', library: '新闻首页', calendar: '行动日程', history: '检查记录' }
+  const titles: Record<Page, string> = { intelligence: '我的情报', workspace: '我的关注', library: '资讯资料库', calendar: '行动日程', history: '检查记录' }
 
   const navigate = (next: Page) => { setPage(next); window.scrollTo({ top: 0, behavior: 'instant' }) }
-  const navigation = ([['library', 'home', '新闻首页'], ['workspace', 'target', '我的关注'], ['calendar', 'calendar', '行动日程'], ['history', 'history', '检查记录']] as [Page, string, string][])
+  const navigation = ([['intelligence', 'home', '我的情报'], ['library', 'library', '资讯资料库'], ['workspace', 'target', '我的关注'], ['calendar', 'calendar', '行动日程'], ['history', 'history', '检查记录']] as [Page, string, string][])
 
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
     <a className="skip-link" href="#main-content">跳到主要内容</a>
     <aside className="sidebar" aria-label="工作空间侧栏">
-      <a className="brand" href="#home" onClick={e => { e.preventDefault(); navigate('library') }} aria-label="CFAW News 首页"><span className="brand-monogram">c.</span><span className="brand-full">cfaw<span>.news</span><small>让新消息，与你的下一步有关。</small></span></a>
+      <a className="brand" href="#home" onClick={e => { e.preventDefault(); navigate('intelligence') }} aria-label="CFAW News 首页"><span className="brand-monogram">c.</span><span className="brand-full">cfaw<span>.news</span><small>让新消息，与你的下一步有关。</small></span></a>
       <div className="sidebar-label">工作空间</div>
       <nav className="side-nav" aria-label="主导航">{navigation.map(([key, icon, label]) => <button key={key} aria-label={label} title={label} aria-current={page === key ? 'page' : undefined} className={page === key ? 'selected' : ''} onClick={() => navigate(key)}><Icon name={icon} size={20}/><span className="nav-label">{label}</span>{key === 'workspace' && following.length > 0 && <span className="nav-count">{following.length}</span>}{key === 'calendar' && schedules.some(s => s.status !== 'completed') && <span className="nav-count">{schedules.filter(s => s.status !== 'completed').length}</span>}</button>)}</nav>
       <button className="sidebar-create button primary" aria-label="添加关注目标" title="添加关注目标" onClick={() => setGoalForm('new')}><Icon name="plus" size={18}/><span className="nav-label">新建关注</span></button>
@@ -199,7 +201,8 @@ export default function App() {
       <section className="content" id="main-content" tabIndex={-1}>
         {error && <div className="alert error" role="alert">{error}<button onClick={() => setError('')} aria-label="关闭错误"><Icon name="close" size={16}/></button></div>}
         {notice && <div className="alert success" role="status">{notice}<button onClick={() => setNotice('')} aria-label="关闭提示"><Icon name="close" size={16}/></button></div>}
-        {loading ? <div className="empty">正在打开工作空间…</div> : <>
+        <div hidden={page !== 'intelligence'}><BriefingBoundary openLibrary={() => navigate('library')}><BriefingHome active={page === 'intelligence'} openLibrary={() => navigate('library')}/></BriefingBoundary></div>
+        {loading ? page !== 'intelligence' && <div className="empty">正在打开工作空间…</div> : <>
           {(page === 'calendar' || page === 'history') && <section className="hero"><div><span className="eyebrow">YOUR NEXT STEP</span><h1>{titles[page]}</h1><p>{page === 'calendar' ? '把确认过的下一步，留在日程里。' : '每一次判断，都有迹可循。'}</p></div></section>}
           {page === 'workspace' && <GoalWorkspace goals={goals} goal={goal} run={run} config={config} active={active} stale={stale} starting={starting} changing={changingGoal === goal?.id} unfollow={() => void changeFollowing(false)} refollow={() => void changeFollowing(true)} events={events} select={id => { setHistoryRunId(null); setSelected(id) }} create={() => setGoalForm('new')} edit={setGoalForm} check={check} cancel={async () => { try { await post('/runs/' + run!.id + '/cancel'); setRun(await api<Run>('/runs/' + run!.id)); await load() } catch (err) { setError((err as Error).message) } }} decide={decide} approve={() => setApproval(true)} inspect={inspect} runDetails={run && <RunDetails run={run}/>}/>}
           {page === 'library' && <NewsLibrary inspect={item => inspect(item, undefined, false)} changed={setConfig} openGoals={() => navigate('workspace')} goalCount={following.length}/>}

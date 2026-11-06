@@ -1,0 +1,2184 @@
+{
+  "browser": {
+    "browser_version": "156.0.4314.58",
+    "contract_groups": 26,
+    "development_focus_checks": 5,
+    "development_focus_cycles": 3,
+    "effective_targets_and_lifecycles": "PASS",
+    "pilot_groups": 10
+  },
+  "commands": {
+    "baseline": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "evals/run_baseline.py"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1.66561200000001,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T10:56:35.795699+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/baseline.log",
+      "log_sha256": "e5d908996265aa179827eb9cfd883ecbe5e9f8faa83252bff1ea287882b3813a",
+      "started_at": "2026-11-05T10:56:34.129535+00:00"
+    },
+    "browser-green": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.browser_acceptance",
+        "--phase",
+        "green"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 61.82624190000024,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:39:44.291645+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-green.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "started_at": "2026-11-05T09:38:42.465090+00:00"
+    },
+    "browser-red": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.browser_acceptance",
+        "--phase",
+        "red"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 14.394334000000526,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 1,
+      "finished_at": "2026-11-05T09:37:16.423509+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-red.log",
+      "log_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "started_at": "2026-11-05T09:37:02.029422+00:00"
+    },
+    "build": {
+      "argv": [
+        "npm.cmd",
+        "run",
+        "build"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news\\frontend",
+      "elapsed_seconds": 2.715182399999321,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:38:26.651379+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/build.log",
+      "log_sha256": "4f1b538da63732f688f9f58b7ca346662c2e8447ae3c2c7acd06e167a60ec5c1",
+      "started_at": "2026-11-05T09:38:23.936662+00:00"
+    },
+    "collect-registered": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "evals.intelligence_g3.pytest_runner",
+        "--mode",
+        "collect",
+        "--inventory",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/inventory.json",
+        "--control-record",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/collect-control.json"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 6.852296600000045,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T10:56:44.782104+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/collect-registered.log",
+      "log_sha256": "d13e27ade2e0294e8e27f0d476ebde9b30a4dfb3e8b6869afec401ddea789612",
+      "started_at": "2026-11-05T10:56:37.930441+00:00"
+    },
+    "contract-fixtures-native": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr5.browser_fixture",
+        "--out",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 24.552045800000997,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:36:45.621418+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/contract-fixtures-native.log",
+      "log_sha256": "a4328da98f9b3e1777b2edab6f0d669719c9c298dcb3c938f9f96472742d5fa5",
+      "started_at": "2026-11-05T09:36:21.069818+00:00"
+    },
+    "control-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.finalize",
+        "--verify-only"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 15.390684399999373,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T14:18:18.503923+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/control-final.log",
+      "log_sha256": "ea64293adc4d32749781ad7797d7944f596a09666d8fbbe912bcc36ec1423118",
+      "started_at": "2026-11-05T14:18:03.112893+00:00"
+    },
+    "frontend-unit": {
+      "argv": [
+        "npm.cmd",
+        "test"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news\\frontend",
+      "elapsed_seconds": 3.2006502999993245,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:38:25.221497+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/frontend-unit.log",
+      "log_sha256": "22a5fcf0dbae7e635961e42e01812697e2cdc66075e24dfc736357f75100afd7",
+      "started_at": "2026-11-05T09:38:22.020570+00:00"
+    },
+    "full-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "evals.intelligence_g3.pytest_runner",
+        "--mode",
+        "full",
+        "--junit",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/full-final.xml",
+        "--basetemp",
+        ".tmp/evals/g3/p6-fix-full-final",
+        "--control-record",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/full-final-control.json"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1336.3234329000002,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:16:41.657380+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/full-final.log",
+      "log_sha256": "c8b14b2d6f9cdba87584f753e4d557678e9922bf0d87e99cdbd5026e83e27eeb",
+      "started_at": "2026-11-05T10:54:25.333839+00:00"
+    },
+    "g4-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "evals/intelligence_g4",
+        "--basetemp",
+        ".tmp/evals/g3/p6-fix-g4-final",
+        "--junitxml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 212.1098599999999,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T10:57:55.851608+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.log",
+      "log_sha256": "9e236f6d3a0350fd3c9bec600724228d0b38b60fc968624a96d0c6e6276cc3a5",
+      "started_at": "2026-11-05T10:54:23.741440+00:00"
+    },
+    "legacy-damage": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.audit_legacy_seal"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 284.44505800000115,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:34:22.978462+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/legacy-damage.log",
+      "log_sha256": "1088e6fd10fb44fceeef9f634d23041371aeb5904a88522181b6c371f4d518b6",
+      "started_at": "2026-11-05T09:29:38.533486+00:00"
+    },
+    "real-pilot-native": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.pilot",
+        "--out",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/pilot-native"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 7.556849099999454,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:36:31.092999+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/real-pilot-native.log",
+      "log_sha256": "fdf7416b917bd037bca2c701bcfde468fdbd1871fbfad2aa838e716f8005ce3d",
+      "started_at": "2026-11-05T09:36:23.536018+00:00"
+    },
+    "restore": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.restore_probe",
+        "--run",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 4.024888900000178,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T10:56:40.817085+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/restore.log",
+      "log_sha256": "7d4ef41234d07a79519fa29f1a40b3137ba8085377a775563f2f6141e27dfac7",
+      "started_at": "2026-11-05T10:56:36.792110+00:00"
+    },
+    "ruff-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "backend",
+        "tests",
+        "evals",
+        "audit/g4/pr6"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1.887206200000037,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 1,
+      "finished_at": "2026-11-05T11:02:25.726972+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/ruff-final.log",
+      "log_sha256": "77599116256eadbf23d159dc1b3a8b196c9cd7c589eb3e883188bb2a77dfd6eb",
+      "started_at": "2026-11-05T11:02:23.840137+00:00"
+    },
+    "ruff-sealed": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "backend",
+        "tests",
+        "evals",
+        "audit/g4/pr6"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1.7947136000000228,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:07:51.822556+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/ruff-sealed.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "started_at": "2026-11-05T11:07:50.027868+00:00"
+    },
+    "ruff-verified": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "ruff",
+        "check",
+        "backend",
+        "tests",
+        "evals",
+        "audit/g4/pr6"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 0.40889149999998153,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:03:24.680419+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/ruff-verified.log",
+      "log_sha256": "82b3e6a6c090a57601d22943bd23fca9218d1031dbe5a7b754092f9a156b4f18",
+      "started_at": "2026-11-05T11:03:24.272398+00:00"
+    },
+    "schema": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "cfaw_news.intelligence.persistence_schema",
+        "--check",
+        "--schema-dir",
+        "evals/intelligence_g4/schema/pr5_review_fix",
+        "--scratch",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/schema-scratch"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 3.428544299999885,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 2,
+      "finished_at": "2026-11-05T11:02:27.264496+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/schema.log",
+      "log_sha256": "0f6e42643ff9c7b8159f114a7a3bfdaf2c31d7da34111fc63987c96325353b02",
+      "started_at": "2026-11-05T11:02:23.835256+00:00"
+    },
+    "schema-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "cfaw_news.intelligence.persistence_schema",
+        "--directory",
+        "evals/intelligence_g4/schema/pr5_review_fix",
+        "--scratch",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/schema-scratch",
+        "--check"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 5.629233699999986,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:03:29.892638+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/schema-final.log",
+      "log_sha256": "5cc0d3056fe5a9d25dc51a99516133417568eb09743cd0fa3aeda6067c6e19aa",
+      "started_at": "2026-11-05T11:03:24.263664+00:00"
+    },
+    "seal-regressions": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "audit/g4/pr6/test_seal.py",
+        "--basetemp",
+        ".tmp/evals/g3/p6-fix-seal-tests",
+        "--junitxml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/seal-tests.xml"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 1.9885496999995667,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T09:34:30.999088+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/seal-regressions.log",
+      "log_sha256": "1937581a11b4667dc651db49df2edac6258761a015f4d3724c85c5da99c207e9",
+      "started_at": "2026-11-05T09:34:29.009954+00:00"
+    },
+    "seal-regressions-final": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "pytest",
+        "-q",
+        "audit/g4/pr6/test_seal.py",
+        "--basetemp",
+        ".tmp/evals/g3/p6-fix-seal-tests-final",
+        "--junitxml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/seal-tests-final.xml"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 2.515927799999872,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:02:26.389606+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/seal-regressions-final.log",
+      "log_sha256": "366c6d7e881781019f8fe29c4e286211cbc27c6df90eb7290c8e8f75ca888981",
+      "started_at": "2026-11-05T11:02:23.874000+00:00"
+    },
+    "source-freeze": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "-m",
+        "audit.g4.pr6.review_freeze",
+        "--create"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 9.469042899999977,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T10:56:00.113258+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/source-freeze.log",
+      "log_sha256": "066e34e91ad44a108bed4dcbf55b3dd69d3cb74f5d427f570fa2dd9815963191",
+      "started_at": "2026-11-05T10:55:50.644574+00:00"
+    },
+    "types": {
+      "argv": [
+        "D:\\agent_project\\cfaw-news\\.venv\\Scripts\\python.exe",
+        "audit/g4/pr5/generate_types.py",
+        "--check"
+      ],
+      "cwd": "D:\\agent_project\\cfaw-news",
+      "elapsed_seconds": 0.38933270000006814,
+      "environment": {
+        "PYTEST_DISABLE_PLUGIN_AUTOLOAD": "1",
+        "PYTHONDONTWRITEBYTECODE": "1",
+        "PYTHONHASHSEED": "1",
+        "PYTHONNOUSERSITE": "1",
+        "PYTHONPATH": "D:\\agent_project\\cfaw-news\\backend",
+        "PYTHONUTF8": "1"
+      },
+      "exit_code": 0,
+      "finished_at": "2026-11-05T11:02:24.214963+00:00",
+      "log": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/types.log",
+      "log_sha256": "e0f4ce5456cc4b81471f34f5273b2863c790e4fe616f4006f83722e7bdfacb18",
+      "started_at": "2026-11-05T11:02:23.824530+00:00"
+    }
+  },
+  "controls": {
+    "collect_execution": "PASS",
+    "full_execution": "PASS",
+    "g3_nodes": 630,
+    "junit": {
+      "gates": {
+        "H01": 129,
+        "H02": 98,
+        "H03": 67,
+        "H04": 95,
+        "H05": 80,
+        "H06": 198,
+        "H07": 1124,
+        "H08": 40,
+        "H09": 123,
+        "H10": 148
+      },
+      "nodes": 1754,
+      "requirements": {
+        "G2-T01": 4,
+        "G2-T02": 3,
+        "G2-T03": 6,
+        "G2-T04": 11,
+        "G2-T05": 6,
+        "G2-T06": 12,
+        "G2-T07": 9,
+        "G2-T08": 4,
+        "G2-T09": 6,
+        "G2-T10": 35,
+        "G2-T11": 1,
+        "G2-T12": 3,
+        "G2-T13": 16,
+        "G2-T14": 5,
+        "G2-T15": 10,
+        "G2-T16": 4,
+        "G2-T17": 6,
+        "G2-T18": 30,
+        "G2-T19": 6,
+        "G2-T20": 2,
+        "G2-T21": 2,
+        "G2-T22": 4,
+        "G2-T23": 2,
+        "G2-T24": 36,
+        "G2-T25": 2,
+        "G2-T26": 4,
+        "G2-T27": 3,
+        "G2-T28": 2,
+        "G2-T29": 2,
+        "G2-T30": 5,
+        "G2-T31": 2,
+        "G2-T32": 1,
+        "G2-T33": 22,
+        "G2-T34": 4,
+        "G2-T35": 1,
+        "G2-T36": 20,
+        "G2-T37": 16,
+        "G2-T38": 2,
+        "G2-T39": 6,
+        "G2-T40": 6,
+        "G2-T41": 23,
+        "G2-T42": 48,
+        "G2-T43": 4,
+        "G2-T44": 4,
+        "G2-T45": 29,
+        "G2-T46": 14
+      },
+      "skipped": 1
+    },
+    "matrix_2574": "not_evaluated; no new ranking experiment or research acceptance",
+    "plugin_count": 40,
+    "record_sha256": {
+      "collect-control.json": "556129ce9fa6c14b073878ece17ee5781a4b1ab2e53ff42473b7cdcc9d97a878",
+      "full-final-control.json": "60a394a4d0efd61f0e39311d54c170d4e33f6638cd729a70f303fc7b81a42d15",
+      "full-final.xml": "bb75016bc26db8367afff76a081e77688ac789bbaa23b61bf9efc295fe9cfde7",
+      "inventory.json": "78fcb174d1c6e2a3f5b6ca1e6b6bd7bab048aba4c05d2f2ffc6d3ab236338f4a"
+    },
+    "required_test_source_sha256": {
+      "tests/evals/conftest.py": "fe2e72aa90b05ea7b01295fc7e9445cd1443b0ca7f077e6ceba7676059e72f5b",
+      "tests/evals/g2/__init__.py": "2b99aea6758ae5d281fb246d131ec75bf69f932f816ea4744e9a47f2aa0d75b6",
+      "tests/evals/g2/pr2/__init__.py": "fff58059749cfdfd2dcaa94599db9328f5d82cc9183fd13b7eaff59d64d4c04d",
+      "tests/evals/g2/pr2/support.py": "8e5259b4fb071e98c98c535839b5847b3c424f6b200ff6af5920aeb9ed8ea9d7",
+      "tests/evals/g2/pr2/test_identity.py": "899adec1fcab4c9f39a922de19480981d807be5b2d12e62c13bb4386448c81c0",
+      "tests/evals/g2/pr2/test_isolation.py": "2f7aefd41f16bebdd9ae8e06aa0dafe50cee6e7e66184bf6e4d296a945806388",
+      "tests/evals/g2/pr2/test_relations.py": "4d5f0760e11298f48d33c131620f81b5dd4e5689386f1669cf7a6ffa8fc45b5c",
+      "tests/evals/g2/pr2/test_replay.py": "f93fd2356336251ec0dbf0ab225f6ded5f03e308a540010e862a0d1715c9db8e",
+      "tests/evals/g2/pr3/__init__.py": "a87309f9445734aebbf92499fa4524cdfa6fc303b655dc2fc4c3d324595d6873",
+      "tests/evals/g2/pr3/support.py": "ea723596c890a7f87fafef977ff732d9cb23f5197b27b4c92df2a1dcac07ec4f",
+      "tests/evals/g2/pr3/test_config_hashes.py": "944bd2d9a689e583a55201d7dc65b0ff16469d640333db3387e8df0e525b1f25",
+      "tests/evals/g2/pr3/test_evaluate.py": "96b25c37df553de4d5e0bcc37ca9220d96c5a70bf0b442c2a47e63aedd94bb2d",
+      "tests/evals/g2/pr3/test_evidence.py": "1ba7198330c6ee1978c7131cc90ef49ec145e06fe1709ab8d51de872384bc48a",
+      "tests/evals/g2/pr3/test_extract.py": "d998afb6871aa64d42b1d11e930f3d9496da79056ed7a7f7285cb2ce67816214",
+      "tests/evals/g2/pr3/test_history.py": "4f68965e3997551ea7ccf954d5f2e1f0327b5d56e7888f7dd4f3663cac5a5e8b",
+      "tests/evals/g2/pr3/test_isolation.py": "d350ef7e627c48331c07302dfc21d1bf1e34fe2a158542960611d4b5b2e3a36a",
+      "tests/evals/g2/pr3/test_lifecycle_target_scope.py": "d6dcbc7baa8411684496c8dda05397beceff008d8b9d414d97a241875bde39b5",
+      "tests/evals/g2/pr3/test_parent_compatibility.py": "77f000823fbdfbae0eee86c5fd9c9b99dcfaba3dea7afcae226a501df6231bf8",
+      "tests/evals/g2/pr3/test_replay.py": "524ceb526dcbc399f25a0c07e3d64d94130d6f65c36e9594634e9919cb107bb1",
+      "tests/evals/g2/pr3/test_review_regressions.py": "76bea4b21104763d60fafebf7bc6fe26784d7cafdc5a754ce2106e62cbdd72b2",
+      "tests/evals/g2/pr3/test_scope.py": "f8c98ff702012f2b6f7beaf2b6d64ca89dabb22739204e5057094634e24ad35e",
+      "tests/evals/g2/pr3/test_stage_boundaries.py": "158d8ed194a5db1e7a646eced3b915893fbfe4e08e91c8d71129e689bddf0d13",
+      "tests/evals/g2/pr4/__init__.py": "3f2676de58209e3570e62fd47314a27d62639fb1073a1a284fb48efbb436adf7",
+      "tests/evals/g2/pr4/support.py": "3695e45cf8c2530ba111710a24903228fc5e7da450b4a7eea92bcfa09ec1a123",
+      "tests/evals/g2/pr4/test_boundaries.py": "1afb68bd2f29348354a150a22c701db31613921a9b8c5fe843014724977a5442",
+      "tests/evals/g2/pr4/test_items.py": "04ef75c8f40afdeb43baea168cd1a7549614d9d2bcfd74bd16463673229e5811",
+      "tests/evals/g2/pr4/test_replay.py": "16840c66903b37703a6b4420d91f111a87902543484bd3e221344d39d16e63f6",
+      "tests/evals/g2/pr4/test_review_credentials.py": "139b3027107e418b71c8486f2180efbb8bef7f972f006bd90172d8304e076a78",
+      "tests/evals/g2/pr5/__init__.py": "3befcdd91fc7a2a24f4208ec0150a52052289cd33ef16d676febb69698bd7a7a",
+      "tests/evals/g2/pr5/support.py": "454dea3da9fddf727cf8b7599f68b768c7bf2f1c6baff22b77921680e58edb6e",
+      "tests/evals/g2/pr5/test_budgets.py": "4e4b8bb09e2c8bae80dc57903f82f19bd700258bf465eff75af5e59481c597ea",
+      "tests/evals/g2/pr5/test_guards.py": "7ad583285e66e54f05ff0c5b71fad520277c1a648cbe916b00dcc4e94456eb7b",
+      "tests/evals/g2/pr5/test_isolation.py": "374b19da0de99411922c054feaa046a40c5e1b71a6c8fb3d2085a53ed385f5d2",
+      "tests/evals/g2/pr5/test_pipeline.py": "49a59f092290dc93b15806eee62e856529b4591b95b0dd86375a0c2e37f96151",
+      "tests/evals/g2/pr5/test_replay.py": "b332f8a1fbb23edaa307b108600dc6562371a78045923acb6e4b8ce9ee3de8f0",
+      "tests/evals/g2/pr5/test_review_regressions.py": "ce36479f6e6d85055ad111ecfbea0c54458abff56c92fa68ffdc4797abd557c5",
+      "tests/evals/g2/pr6/__init__.py": "4c9b357bf167dc2ffe8fc3e89a9e1009321f5d49112a897211716132843ea1ee",
+      "tests/evals/g2/pr6/support.py": "230c3f2b0b962f144213d42afd020e1bffcd5338c3112978027acacc34a247be",
+      "tests/evals/g2/pr6/test_boundaries.py": "b1acc668963aaf696fcafc487f1a201a37adf03c66317bfdaee802b1595c0340",
+      "tests/evals/g2/pr6/test_contracts.py": "0e8149f952fcbeaec8e1823549b1de0aa3638386e5808ca32e0b94dd989d7342",
+      "tests/evals/g2/pr6/test_evaluation.py": "19139de95849db6fb31811d955c0e02cb3d95dd8238e42b7306b013a12fae87c",
+      "tests/evals/g2/pr6/test_junit.py": "3a9eafb47869580ea8bfc71df9e9caba5ae214a054dadd6ce4a4d5092cca3fcc",
+      "tests/evals/g2/pr6/test_manifest.py": "623f179cb14237dfadaf173b17f6f30317601ddd421fe1f21ab8b605a3274ad3",
+      "tests/evals/g2/pr6/test_matrix.py": "049abb293f973a54f105cbd9b3d42eab4a8f2e9d2418d4e496f5d6471d246eaa",
+      "tests/evals/g2/pr6/test_path_compatibility.py": "b532612b11cec90eee5c4610a626bf18d981037ef354fbbe935dc6c705810ada",
+      "tests/evals/g2/pr6/test_pipeline.py": "19fbfeef21f0e49e63c285033b5c7914b07e3947fc38d20ebcc46d3c766fb03e",
+      "tests/evals/g2/support.py": "18b92268a91346983e381fb0488bc190a96f918c01f340045b160429a4670aa6",
+      "tests/evals/g2/test_export_reliability.py": "02213282d9bf235f1895cbefec53993627c0b2604a8d29919fd3c311c99b990b",
+      "tests/evals/g2/test_g2_bridge.py": "aecb4aecf336ad22e7c26151fcf293c0e9a02ff220b88e83d9adce15cf06a24d",
+      "tests/evals/g2/test_g2_cli.py": "734b54919e5fc3da0c7f91a18583517aac4ce897d9ec8e40221b5287882e9f29",
+      "tests/evals/g2/test_g2_contracts.py": "b482b937508758d896a0b38ea28c55a71826b0206bea0aa6c7a88704a566e781",
+      "tests/evals/g2/test_g2_isolation.py": "954c095be2222542c6078eb1a75cc3a25575020748135b08b5689d2b389da104",
+      "tests/evals/g2/test_g2_pipeline.py": "6b61ec063624f5b2f8f9f9c643de314aad32af01810af221aa06f96b9b58989b",
+      "tests/evals/g3/__init__.py": "b17383c2db9ac5c3550b8089ba71792fa5dee8f326072f8f605058535a3345c7",
+      "tests/evals/g3/budget_support.py": "864ba08d05a1789ce7fe10adc41bba898542daa289c4cd73f4a165d2c9d9d47e",
+      "tests/evals/g3/fact_signature_support.py": "ae3fd8a9cd24a3f3432ebd1fb258470e4b38c9b1ad39e3b34c561d679939a432",
+      "tests/evals/g3/history_support.py": "6e49fecd9f9d788ea735aba5a163550340988c721d16a16888d915322791cccd",
+      "tests/evals/g3/ranking_support.py": "0a41e2d5b08ec2aab31725496d3f22f525e2a2d3d38da7651401f5498d9cb020",
+      "tests/evals/g3/support.py": "2a0777b654118d50a52c269cb019e5252ce40f957f1e5123b3d5a1e66949c47e",
+      "tests/evals/g3/test_budget.py": "a30119488efba143e307ca7d8b631ad31cbcc4225bb5a4ae2bc5cec0fcb9e9dd",
+      "tests/evals/g3/test_budget_diagnostics.py": "a52f9ec82284bd43a452ed6b8d7c6dca78148dcb2063fa8797b504cc9e0b4075",
+      "tests/evals/g3/test_config_and_steps.py": "6e2208ed207b53006a221d7785bd7f541e16ee879a3f27477dde43733d04c170",
+      "tests/evals/g3/test_evidence_integrity.py": "67a7f63073427beb254f039b4d439433945fc62f658f8f9028e531b029a57cf6",
+      "tests/evals/g3/test_fact_signature.py": "6acd21a773978f78a82010d36e9d65d300199b02b8c19454c2f380c35d80c21f",
+      "tests/evals/g3/test_history.py": "22549bb754767f36476334b94d75699322541a517895a811b8998708c207ffac",
+      "tests/evals/g3/test_inventory.py": "d914ef6a513ce6d0efdb9c658fee7825d6b89434410ca60b9ede4b856e0f0af9",
+      "tests/evals/g3/test_pr1.py": "483bee91b2054f8b05fe65789b5a73f9ca8384cfadd18a415ade79c4a9ee4144",
+      "tests/evals/g3/test_pr5.py": "08c1dcfa6352018882f5782d75a78c383cdfc5ae60339ec9a0b87826bf8fcd45",
+      "tests/evals/g3/test_pr5_review.py": "53b70d62274b682ece4ea48537c0ea1aed39fe703c7166495e0735a4ca7366b8",
+      "tests/evals/g3/test_pr5_wire.py": "76ec47e91ea4e64b917341459f1cb10f269f38458ba72bb071655a660cae8492",
+      "tests/evals/g3/test_rankers.py": "21962251cd24160afe278c40f1525babe08c3f3e7d4d57c15e20040f95ff6c2a",
+      "tests/evals/g3/test_review_integrity.py": "50ba204a66f61b3571f1e1a114fe85ad7ea3f1dd9ac2770d56d126c1285281e3",
+      "tests/evals/g3/test_revisit.py": "9fa0f9a7f37a8a061d66e0afe92c959cf8efea82d38a9b7fc7d45e0ae54851f9",
+      "tests/evals/pr4_support.py": "6314fabab609120d080831c738fad7a132c89c8edce02cfca0b547b3a1131bc3",
+      "tests/evals/pr5_support.py": "4028507f4b70a4d917a6d9b01f86d04b123ba7302b3bdb9e9d879a93739ae056",
+      "tests/evals/test_ai_development.py": "87a0de638012a4086f76e058a0cf0aa617372775b39b78235c15d13b045bcd67",
+      "tests/evals/test_annotation_agreement.py": "86acf810c06ff0972c756fb6a45e0418f6205e483c1d26e4ecbda9be385599f8",
+      "tests/evals/test_annotation_packets.py": "086071bc53cc4ec31db026ebfa113473f7ef38d889f9d1f9d142af966aaf6989",
+      "tests/evals/test_annotation_readiness.py": "032d6f381eb939abcd4239bf823f80497dcbe863dd9ac254f2dad39dbf19c4f0",
+      "tests/evals/test_annotation_records.py": "90c83bc9ee8b40232f95f139d52aad355607d51cec8acea5a74ed30d053f06e4",
+      "tests/evals/test_baseline_determinism.py": "c7fbc76440f8def2373197ff72d0de81742d671c438fff4b43d95481e26bd968",
+      "tests/evals/test_baseline_scoring.py": "c04604ba4aa280961a09865ddf375841e5f24f68da3ddf1ab55291300d8036e6",
+      "tests/evals/test_contracts.py": "b6b09c2d820efbbd2da7fa84b7b0092a57cb15d369297574a80c5f78bebaf8aa",
+      "tests/evals/test_data_manifest.py": "cc2c203e8e1dc79c555c50d003e3e4249cc5b93e21e38516f6cd7ee3fe72d31a",
+      "tests/evals/test_delivery_history.py": "20440925077f191f8f86393e91b59d8a0df05e2c26a031a759408a365edcf188",
+      "tests/evals/test_dev01_pilot.py": "3b1fa597017693fc2ecd86d97011ed0d564ca4794ba11e8085e3066954de5968",
+      "tests/evals/test_document_versions.py": "9e21dee9aa5eb4d63634b24d2fce61056838fa61b629c967b6078ab84d33c301",
+      "tests/evals/test_event_grouping.py": "56d729c02403094e66e9a4af6be1da026917f2c1b7a57a943d6762e85c52b4d7",
+      "tests/evals/test_five_timelines.py": "b06555831ae42ec9a1a1f3632b0a9ff5a947c290fb4b1ccac1b2a549d1ea4066",
+      "tests/evals/test_gold_lineage.py": "dfec21abbfb9fe20b4d2d46cf3f6d9858fceb5e40ee793502752fa8801749115",
+      "tests/evals/test_hashing.py": "b5e9d7ea43ef8ac13aa140cfb3432fc719de93712e5bc235ab36d5830b44bb59",
+      "tests/evals/test_human_v3_inputs.py": "e6d05179f7c225b60242847f8479361acc32fd1126442022dc1619bedfd2923c",
+      "tests/evals/test_loader.py": "e1b9d8bbacfc95cb76934bd8afe2c12516f6b5f90650cdd24750c2b563410c7c",
+      "tests/evals/test_metrics_denominators.py": "72d0e680a8a8171bd35265ea5ad7364c5e453c59396b890459f7a0af7d7c2d30",
+      "tests/evals/test_offline_isolation.py": "61be4990492665dd798e4e88ba3b192a5fc7533807bbb447ad88d6cf521a619d",
+      "tests/evals/test_pr2_review_fixes.py": "0c4a7a378f2da59133d65974a710bd479e5af3080d988143c446fb0af8e4d0cf",
+      "tests/evals/test_pr3_evaluation.py": "c9989032bb29ebc6abb8833abb7640c8f64c33d2df91eadab3c97a5a8f4e18e4",
+      "tests/evals/test_pr4_evaluation.py": "7956787acd3956189ba5affefb6d11a352cf65e3bed5a5d14c34a8c50978b1c2",
+      "tests/evals/test_pr4_experiment_guardrails.py": "d3ed9f32e3e2d3851ae05416ef4cd0743af3aa0841859d996626f2c451a075e1",
+      "tests/evals/test_pr5_acceptance.py": "968f0f1adffdbe9a1478deb6f361e51faa8cce276965c62887b90be6c228fc67",
+      "tests/evals/test_pr5_reproduction.py": "5077fbb94df56d0181c9de6eb8d93818ad9a94d0b8b6a385c9f258707cc1db8a",
+      "tests/evals/test_prediction_isolation.py": "5571dd6bc7c120e59d532534645d6d7d3b34ce96e4b690a22df388e153136455",
+      "tests/evals/test_prediction_split_isolation.py": "9da840ad4447020cab5bc9c6bfac1e8063f2e68037dabbece220979a3f30e0c9",
+      "tests/evals/test_provenance_and_rights.py": "f28c7fd8bddbdd343b5533c23035b4d030f1a78f488ee33e3b16efaf73e16972",
+      "tests/evals/test_reading_budget.py": "534d09f945863579e51f976df61d0d8824bf9d72b40e5652c3cf68067ceacddc",
+      "tests/evals/test_replay_end_to_end.py": "713a04e8eef51c16a9bf471d4c35b882b2043f5b0c0030cd20dfcc7e773dbf37",
+      "tests/evals/test_revisit_counterfactuals.py": "cbce13254f78c03875042405f581b09c34fe86e82e5da2a804d12ae6bb5d5cab",
+      "tests/evals/test_revisit_policy.py": "e13906d623dd420ebe1b10c3ab1bfc839dff5bd80dbdaebaa919bab8a2a7d947",
+      "tests/evals/test_split_leakage.py": "10105858c4053c8406c15dc98ae8cfc2347486fe773705f68dfc223d087a04a1",
+      "tests/evals/test_support_review_lineage.py": "c6c67051f59992c74d76c227694a929dd7a075bbcdebe1b84e22ae42b69b6d24",
+      "tests/evals/test_temporal_visibility.py": "dd8f28ea0e73feec8ba1e7c6c37f89631528f2c9332153e70fe13c01e7dfd42c",
+      "tests/test_following.py": "a80f9a9ea6fe3ee1e75b5b201a9b36a3e8a07a0c49cf5b37cee60df17f026f3f",
+      "tests/test_ingestion.py": "f519806b12f983a6fb4ef341977c0793096f3a0f822125fe2f0dc5b35a125119",
+      "tests/test_media.py": "bb70044b84a50a981dfe9d9e9a4dccb7cf87b9e51083db08197ef6050e260436",
+      "tests/test_providers.py": "6ee227c1b78ec37c8b34699aa9b4541bc4462a688abf5d4c2238907ca386a024",
+      "tests/test_reading.py": "54e0b1a454b472ad9335e215e7258076689543f7c8f61f86633d12423ae2c0d3",
+      "tests/test_workflow.py": "c7220f28a8f5ba219f3f6c112348ff0ddf775fa0d8fe75ad253aef0dd16a56c9"
+    },
+    "status": "PASS"
+  },
+  "external_network_smoke": "not_evaluated",
+  "fault_matrix": {
+    "concurrent_conflict": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_duplicate_capture_replay_and_conflicting_receipt",
+          "seconds": 0.149,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_concurrent_writers_cannot_fork",
+          "seconds": 0.139,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_legacy_client_terminal_key_conflict_does_not_block_internal_recovery",
+          "seconds": 0.932,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_duplicate_post_joins_one_persisted_run",
+          "seconds": 1.725,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_persisted_cancel_prevents_late_publication_and_preserves_old_snapshot",
+          "seconds": 2.232,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[persona]",
+          "seconds": 3.655,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[document]",
+          "seconds": 3.46,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[source_failed]",
+          "seconds": 3.924,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_timeout_even_if_computation_ignores_request_control_cannot_late_publish",
+          "seconds": 2.34,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_disk_failure_before_publication_commit_leaves_no_partial_delivery",
+          "seconds": 3.2,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_restart_recovers_queued_run_and_keeps_completed_snapshot",
+          "seconds": 1.359,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_old_snapshot_refs_are_exact_and_double_click_does_not_double_count",
+          "seconds": 3.877,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "correction_retraction": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_real_parser_write_path_304_and_correction_with_mocked_response",
+          "seconds": 0.251,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_invalid_feedback_and_retractions_are_rejected[change0]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_invalid_feedback_and_retractions_are_rejected[change1]",
+          "seconds": 0.001,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_invalid_feedback_and_retractions_are_rejected[change2]",
+          "seconds": 0.001,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_intelligence_api.py::test_developer_delivery_confirmations_are_append_only_idempotent_and_retractable",
+          "seconds": 3.429,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr5_review_fixes.py::test_native_detail_history_is_snapshot_relative[superseded]",
+          "seconds": 5.209,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr5_review_fixes.py::test_native_detail_history_is_snapshot_relative[retracted]",
+          "seconds": 4.929,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_equivalence.py::test_frozen_native_ranking_rows_exact_equivalence[b4-correction]",
+          "seconds": 0.454,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_equivalence.py::test_frozen_native_ranking_rows_exact_equivalence[p1-correction]",
+          "seconds": 0.112,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_identity.py::test_source_policy_revision_change_is_explicit_raw_downgrade",
+          "seconds": 0.026,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "damaged_head_prefix": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_sql_fork_and_head_rollback_rejected",
+          "seconds": 0.128,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_append_head_atomic_and_retry_before_cas",
+          "seconds": 0.346,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_two_instances_cannot_commit_same_expected_head",
+          "seconds": 0.216,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_capacity_and_clock_rollback_are_explicit",
+          "seconds": 0.244,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_checkpoint_temp_collision_never_removes_unowned_file",
+          "seconds": 0.014,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-DELETE]",
+          "seconds": 0.039,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-WAL]",
+          "seconds": 0.043,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-DELETE]",
+          "seconds": 0.04,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-WAL]",
+          "seconds": 0.043,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-DELETE]",
+          "seconds": 0.035,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-WAL]",
+          "seconds": 0.047,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-DELETE]",
+          "seconds": 0.044,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-WAL]",
+          "seconds": 0.049,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_upgrade_backup_and_rollback_preserve_legacy_tables_exactly",
+          "seconds": 0.278,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_rollback_then_restore_preserves_exact_versions",
+          "seconds": 0.263,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_boundaries.py::test_corrupted_deferred_evidence_body_never_reaches_detail",
+          "seconds": 1.778,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_legacy_upgrade_backup_rollback_and_restored_epoch",
+          "seconds": 0.575,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_independent_anchor_detects_whole_db_rollback_and_requires_new_epoch",
+          "seconds": 0.604,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_source_only_rollback_cannot_publish_or_be_blessed_by_epoch",
+          "seconds": 2.825,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_source_append_duplicate_observation_and_restart_keep_exact_prefix",
+          "seconds": 0.351,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_old_checkpoint_requires_explicit_adoption_and_new_epoch",
+          "seconds": 1.16,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_entire_captured_chain_is_monotone_on_both_json_entrypoints[rollback-parser]",
+          "seconds": 0.004,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_entire_captured_chain_is_monotone_on_both_json_entrypoints[rollback-direct_json]",
+          "seconds": 0.005,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_entire_captured_chain_is_monotone_on_both_json_entrypoints[rollback-after-absence-parser]",
+          "seconds": 0.003,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_entire_captured_chain_is_monotone_on_both_json_entrypoints[rollback-after-absence-direct_json]",
+          "seconds": 0.003,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_invalid_chains_are_rejected_by_real_cli_without_output[rollback]",
+          "seconds": 1.253,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_ledger.py::test_ledger_column_payload_binding_rejects_corrupt_rows[policy]",
+          "seconds": 0.045,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_ledger.py::test_ledger_column_payload_binding_rejects_corrupt_rows[coverage]",
+          "seconds": 0.039,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_slice.py::test_native_prefix_replay_and_serialized_outputs_are_deterministic",
+          "seconds": 0.296,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "duplicate_rss": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_linear_versions_immutable_idempotent_and_content_return",
+          "seconds": 0.214,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_duplicate_capture_replay_and_conflicting_receipt",
+          "seconds": 0.149,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_real_parser_write_path_304_and_correction_with_mocked_response",
+          "seconds": 0.251,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_hard_gates[duplicate_source-G4_DUPLICATE_ID]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_hard_gates[duplicate_step-G4_DUPLICATE_ID]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_json_duplicates_and_unknown_fields_are_rejected",
+          "seconds": 0.003,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_intelligence_api.py::test_developer_delivery_confirmations_are_append_only_idempotent_and_retractable",
+          "seconds": 3.429,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_intelligence_api.py::test_boundaries_reject_before_mutation[duplicate-422-G4_JSON_INVALID]",
+          "seconds": 0.416,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_backfill_is_current_metadata_only_and_idempotent",
+          "seconds": 0.311,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_source_append_duplicate_observation_and_restart_keep_exact_prefix",
+          "seconds": 0.351,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_legacy_client_receipt_still_deduplicates_without_rewriting_history",
+          "seconds": 0.238,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_duplicate_post_joins_one_persisted_run",
+          "seconds": 1.725,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "failure_offline_restart": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_transaction_failure_leaves_no_partial_evidence",
+          "seconds": 0.116,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_coverage_gaps_failures_and_304_do_not_fill_intervals",
+          "seconds": 0.158,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_ingestor_confirmed_write_and_failure_are_atomic",
+          "seconds": 0.28,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_article_write_failure_rolls_back_capture_and_reading",
+          "seconds": 0.196,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_start_close_and_restart_write_service_offline_gap",
+          "seconds": 0.228,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_runtime_does_not_accept_offline_parent_or_gold_channels[kind]",
+          "seconds": 0.004,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_runtime_does_not_accept_offline_parent_or_gold_channels[gold]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_runtime_does_not_accept_offline_parent_or_gold_channels[acceptance]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_runtime_does_not_accept_offline_parent_or_gold_channels[extra]",
+          "seconds": 0.002,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_disk_failure_does_not_leave_half_record[anchor_prepare-False]",
+          "seconds": 0.178,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_disk_failure_does_not_leave_half_record[before_db_commit-False]",
+          "seconds": 0.215,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_history_db.py::test_disk_failure_does_not_leave_half_record[anchor_finalize-True]",
+          "seconds": 0.223,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_receipt_failure_is_committed_and_prepared_record_survives[write]",
+          "seconds": 0.042,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_receipt_failure_is_committed_and_prepared_record_survives[replace]",
+          "seconds": 0.044,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_prepared_receipt_sync_failure_never_starts_database",
+          "seconds": 0.013,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_ddl_failure_rolls_back_every_created_table",
+          "seconds": 0.12,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_migrated_app_legacy_library_run_approval_schedule_restart",
+          "seconds": 0.282,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_offline_install.py::test_offline_wheels_outside_cwd_and_missing_native_refusal",
+          "seconds": 13.324,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_schema_transaction_rolls_back_failed_upgrade",
+          "seconds": 0.036,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr3_review_fixes.py::test_request_control_scope_does_not_leak_after_failure[cancel]",
+          "seconds": 0.858,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr3_review_fixes.py::test_request_control_scope_does_not_leak_after_failure[timeout]",
+          "seconds": 0.738,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_pr4_review_fixes.py::test_source_append_duplicate_observation_and_restart_keep_exact_prefix",
+          "seconds": 0.351,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[persona]",
+          "seconds": 3.655,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[document]",
+          "seconds": 3.46,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_stale_and_source_failure_preserve_old_snapshot[source_failed]",
+          "seconds": 3.924,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_disk_failure_before_publication_commit_leaves_no_partial_delivery",
+          "seconds": 3.2,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_publication_races.py::test_restart_recovers_queued_run_and_keeps_completed_snapshot",
+          "seconds": 1.359,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_review_fixes.py::test_query_coverage_unions_clips_and_keeps_noncovered_veto[failed-veto]",
+          "seconds": 0.054,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_cli.py::test_cli_stage_file_pins_and_failures[synthetic]",
+          "seconds": 2.472,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_cli.py::test_cli_stage_file_pins_and_failures[real]",
+          "seconds": 1.704,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_cli.py::test_cli_stage_file_pins_and_failures[hold]",
+          "seconds": 2.246,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_cli.py::test_cli_stage_file_pins_and_failures[future]",
+          "seconds": 1.788,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_cli.py::test_cli_stage_file_pins_and_failures[old-config]",
+          "seconds": 1.687,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_ledger.py::test_failure_offline_and_unknown_windows_never_become_covered[failed-source_failed]",
+          "seconds": 0.813,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_ledger.py::test_failure_offline_and_unknown_windows_never_become_covered[unknown-unobserved_between_polls]",
+          "seconds": 0.971,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_ledger.py::test_failure_offline_and_unknown_windows_never_become_covered[service_offline-clean_service_downtime]",
+          "seconds": 0.828,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "long_content": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_bridge.py::test_output_mutation_rejected[quote]",
+          "seconds": 1.118,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_identity.py::test_long_input_rejected_before_execution",
+          "seconds": 0.001,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_slice.py::test_supplied_pin_and_byte_limits_fail_closed[oversize]",
+          "seconds": 0.002,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "migration_backup_restore": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_unmigrated_legacy_db_still_works",
+          "seconds": 0.032,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_intelligence_api.py::test_no_evidence_does_not_publish_and_missing_migration_is_explicit",
+          "seconds": 1.62,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-DELETE]",
+          "seconds": 0.039,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-journal-WAL]",
+          "seconds": 0.043,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-DELETE]",
+          "seconds": 0.04,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-wal-WAL]",
+          "seconds": 0.043,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-DELETE]",
+          "seconds": 0.035,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-shm-WAL]",
+          "seconds": 0.047,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-DELETE]",
+          "seconds": 0.044,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_api_reserved_backup_rejected_before_rollback[-mj123456789-WAL]",
+          "seconds": 0.049,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-journal-DELETE]",
+          "seconds": 1.512,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-journal-WAL]",
+          "seconds": 1.477,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-wal-DELETE]",
+          "seconds": 1.415,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-wal-WAL]",
+          "seconds": 1.403,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-shm-DELETE]",
+          "seconds": 1.422,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_cli_reserved_backup_has_structured_refusal[-shm-WAL]",
+          "seconds": 1.512,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[backup]",
+          "seconds": 1.483,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_all_receipt_artifact_collisions_refuse_before_mutation[backup_sidecar]",
+          "seconds": 1.313,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_backup_manifest_cannot_alias_database",
+          "seconds": 0.037,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_restore_sidecar_namespace_rejected[source]",
+          "seconds": 0.043,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_restore_sidecar_namespace_rejected[target]",
+          "seconds": 0.037,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_direct_backup_helper_cannot_bypass_reserved_guard",
+          "seconds": 0.032,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_valid_backup_survives_commit_and_restores[DELETE]",
+          "seconds": 1.44,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_valid_backup_survives_commit_and_restores[WAL]",
+          "seconds": 1.417,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_backup_loss_is_explicit_not_success[remove]",
+          "seconds": 0.081,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_maintenance_paths.py::test_postcommit_backup_loss_is_explicit_not_success[change]",
+          "seconds": 0.084,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_new_database_migration_then_legacy_creation",
+          "seconds": 0.065,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_upgrade_backup_and_rollback_preserve_legacy_tables_exactly",
+          "seconds": 0.278,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_old_db_requires_explicit_backup_and_never_overwrites_backup",
+          "seconds": 0.124,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_ddl_failure_rolls_back_every_created_table",
+          "seconds": 0.12,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_partial_migration_is_rejected_not_treated_as_disabled",
+          "seconds": 0.065,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_wal_backup_includes_committed_wal_and_restore_is_pin_checked",
+          "seconds": 0.113,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_backfill_is_current_metadata_only_and_idempotent",
+          "seconds": 0.311,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_rollback_then_restore_preserves_exact_versions",
+          "seconds": 0.263,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_rights_policy_change_creates_new_immutable_version",
+          "seconds": 0.174,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_schema_export_and_exact_check",
+          "seconds": 0.061,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_migration_cli_real_receipts_and_nonzero_restore_refusal",
+          "seconds": 2.854,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_separate_g4_metadata_cannot_implicitly_upgrade_legacy",
+          "seconds": 0.001,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_missing_rights_never_reuses_article_reading_as_native_content",
+          "seconds": 0.132,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_removed_immutability_trigger_is_detected",
+          "seconds": 0.12,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_migrated_app_legacy_library_run_approval_schedule_restart",
+          "seconds": 0.282,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_invalid_legacy_metadata_skip_rolls_back_per_document",
+          "seconds": 0.221,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_legacy_upgrade_backup_rollback_and_restored_epoch",
+          "seconds": 0.575,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_independent_anchor_detects_whole_db_rollback_and_requires_new_epoch",
+          "seconds": 0.604,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[backup--journal]",
+          "seconds": 0.009,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[backup--wal]",
+          "seconds": 0.009,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[backup--shm]",
+          "seconds": 0.01,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[anchor--journal]",
+          "seconds": 0.026,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[anchor--wal]",
+          "seconds": 0.025,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[anchor--shm]",
+          "seconds": 0.025,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[receipt--journal]",
+          "seconds": 0.014,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[receipt--wal]",
+          "seconds": 0.014,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_reserved_paths_rejected_before_database_creation[receipt--shm]",
+          "seconds": 0.014,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_cli_receipt_collision_cannot_commit",
+          "seconds": 1.704,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_persistence_migration.py::test_schema_transaction_rolls_back_failed_upgrade",
+          "seconds": 0.036,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "symbols_units": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_identity.py::test_fact_signature_symbols_numbers_units_bound",
+          "seconds": 0.001,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    },
+    "unknown_rights": {
+      "cases": [
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_unknown_rights_stores_only_safe_metadata_and_digest[unknown]",
+          "seconds": 0.136,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_unknown_rights_stores_only_safe_metadata_and_digest[metadata_only]",
+          "seconds": 0.122,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_capture.py::test_policy_never_inferred_from_rss_or_body_flag",
+          "seconds": 0.018,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_contracts.py::test_unknown_rights_with_body_is_rejected_not_relabelled_as_original_text",
+          "seconds": 0.005,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_migration.py::test_backfill_is_current_metadata_only_and_idempotent",
+          "seconds": 0.311,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_runtime_bridge.py::test_real_uncertainty_has_no_focus_or_radar[metadata_only]",
+          "seconds": 0.273,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_slice.py::test_metadata_only_and_hold_remain_archivable_without_fake_briefing[real]",
+          "seconds": 0.04,
+          "status": "PASS"
+        },
+        {
+          "node": "evals/intelligence_g4/tests/test_slice.py::test_metadata_only_and_hold_remain_archivable_without_fake_briefing[synthetic]",
+          "seconds": 0.04,
+          "status": "PASS"
+        }
+      ],
+      "junit": ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+      "status": "PASS_LOCAL_ENGINEERING"
+    }
+  },
+  "frontend_unit_passed": 14,
+  "full_counts": {
+    "passed": 1753,
+    "skipped": 1
+  },
+  "g4_counts": {
+    "passed": 321,
+    "skipped": 0
+  },
+  "gates": {
+    "H00": {
+      "artifacts": [
+        "audit/g4/pr2/UPSTREAM_REVIEW.json",
+        "audit/g4/pr5/REVIEW_FIXES.md",
+        "audit/g4/pr6/REVIEW_FIX_RESULTS.json"
+      ],
+      "failure_or_limit": "PR4 later independent PASS verified; PR5 fixes/PR6 total review and owner Beta decision pending.",
+      "status": "PENDING_REVIEW"
+    },
+    "H01": {
+      "artifacts": [
+        "audit/g4/pr6/samples/vite-8.3.4/PROVENANCE.json",
+        "audit/g4/pr6/samples/vite-8.3.4/LICENSE.md",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/pilot-native/result.json"
+      ],
+      "failure_or_limit": "Local MIT documentation only; no new external fetch or live smoke; original publication date unknown.",
+      "status": "PASS_OFFLINE_SAMPLE"
+    },
+    "H02": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/pilot-native/briefing.json"
+      ],
+      "failure_or_limit": "Real independent-support qualification unresolved; actual real result raw_news_only/hold; qualified real pipeline not evaluated.",
+      "status": "PASS_SAFE_DEGRADATION"
+    },
+    "H03": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native/browser-results.json"
+      ],
+      "failure_or_limit": "Authored adversaries plus real safe rejection; no independent semantic-truth study.",
+      "status": "PASS_ENGINEERING"
+    },
+    "H04": {
+      "artifacts": [
+        "audit/g4/pr6/ENTRY_FREEZE.json",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/full-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native/browser-results.json"
+      ],
+      "failure_or_limit": "B4/frozen policy unchanged; uncalibrated budget, greedy limitations and native history-scoring gap retained.",
+      "status": "PASS_ENGINEERING"
+    },
+    "H05": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/restore-proof-final/result.json"
+      ],
+      "failure_or_limit": "Isolated SQLite backups/restores/migrations only; real user database and hardware power-cut not evaluated.",
+      "status": "PASS_LOCAL_QA"
+    },
+    "H06": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native/browser-results.json",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json"
+      ],
+      "failure_or_limit": "Qualified exposure viewport path uses UI fixtures; real hold Archive has zero rendered and explicit metadata feedback.",
+      "status": "PASS_LOCAL_QA"
+    },
+    "H07": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json"
+      ],
+      "failure_or_limit": "Controlled faults and bounded QA entry delay; cooperative cancellation does not force-stop an uncooperative thread.",
+      "status": "PASS_LOCAL_QA"
+    },
+    "H08": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/g4-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json"
+      ],
+      "failure_or_limit": "Local single-user boundary; no multiuser authentication or cloud security claim.",
+      "status": "PASS_LOCAL_BOUNDARY"
+    },
+    "H09": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native/browser-results.json",
+        "docs/G4_G5_HANDOFF.md"
+      ],
+      "failure_or_limit": "1/3/7-day UI fixtures only; native feedback scoring, late Persona continuity and long-window generation remain unimplemented.",
+      "status": "PARTIAL"
+    },
+    "H10": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/full-final.xml",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/control-verification.json",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json",
+        "audit/g4/pr6/REVIEW_FIX_SOURCE_FREEZE.json"
+      ],
+      "failure_or_limit": "1145 original files preserved, one authorized StrictMode focus fix; G1/G2/G3 unchanged. Actual legacy workflow and recovery pass; lexical baseline is not LLM reasoning.",
+      "status": "PASS"
+    },
+    "H11": {
+      "artifacts": [
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-contracts-native/browser-results.json",
+        ".tmp/evals/g3/g4-pr6-review-fix-20261105-001/browser-pilot/result.json"
+      ],
+      "failure_or_limit": "Actual Windows Edge; no live-network smoke or human-utility validation.",
+      "status": "PASS_OFFLINE_QA"
+    },
+    "H12": {
+      "artifacts": [
+        "docs/G4_ACCEPTANCE.md",
+        "docs/G4_G5_HANDOFF.md",
+        "docs/G4_BETA_USER_GUIDE.md",
+        "audit/G4_RELEASE_MANIFEST.json"
+      ],
+      "failure_or_limit": "Failed QA iterations preserved; conditional/PARTIAL/not_evaluated retained; self hash excluded to avoid circularity.",
+      "status": "PASS_WITH_OPEN_GATES"
+    }
+  },
+  "git_mutations": 0,
+  "independent_review": "PENDING",
+  "interrupted_attempts": {
+    "attempts": [
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-registered.log",
+        "log_created_at": "2026-11-05T09:27:28.197235+00:00",
+        "log_last_written_at": "2026-11-05T09:31:10.072871+00:00",
+        "log_sha256": "e06d2d94cc02efdcb6f7fb153b3f7adbaf5fb9394bca5e25b372db0878011f2d",
+        "name": "full-registered",
+        "reason": "sandbox Windows Proactor initialization hang",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": 1
+      },
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\g4.log",
+        "log_created_at": "2026-11-05T09:27:28.197235+00:00",
+        "log_last_written_at": "2026-11-05T09:27:38.941776+00:00",
+        "log_sha256": "5ed321bce1f0091ed4b438161637abb3bc8b8e8e4e459d07f3a64593ea0e5b2c",
+        "name": "g4",
+        "reason": "sandbox Windows Proactor initialization hang",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": 1
+      },
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\contract-fixtures.log",
+        "log_created_at": "2026-11-05T09:33:37.500730+00:00",
+        "log_last_written_at": "2026-11-05T09:33:44.556710+00:00",
+        "log_sha256": "61f5045f2fbae69af1e7d69dc6a031859ac3ecdfa94c1baab372f9bbe3cac518",
+        "name": "contract-fixtures",
+        "reason": "sandbox Windows Proactor initialization hang",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": 1
+      },
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\real-pilot.log",
+        "log_created_at": "2026-11-05T09:34:29.009955+00:00",
+        "log_last_written_at": "2026-11-05T09:34:33.879548+00:00",
+        "log_sha256": "61f5045f2fbae69af1e7d69dc6a031859ac3ecdfa94c1baab372f9bbe3cac518",
+        "name": "real-pilot",
+        "reason": "sandbox Windows Proactor initialization hang",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": 1
+      },
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\full-native.log",
+        "log_created_at": "2026-11-05T09:36:23.686455+00:00",
+        "log_last_written_at": "2026-11-05T09:40:16.288315+00:00",
+        "log_sha256": "bc92c4abb383247c90a6963bb6bf7caca2071384f892e8476bd4a89b0166d169",
+        "name": "full-native",
+        "reason": "user turn interruption; tests incomplete with F markers; no completion/control receipt",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": null
+      },
+      {
+        "child_exit_code": null,
+        "log": ".tmp\\evals\\g3\\g4-pr6-review-fix-20261105-001\\g4-native.log",
+        "log_created_at": "2026-11-05T09:36:23.318990+00:00",
+        "log_last_written_at": "2026-11-05T09:40:15.218403+00:00",
+        "log_sha256": "903596956c2bc652b7a6e4c26ce3155c79d3df117e33adcc94b55247b14eb807",
+        "name": "g4-native",
+        "reason": "user turn interruption; tests incomplete with F markers; no completion receipt",
+        "status": "INCOMPLETE_NOT_PASS",
+        "timestamp_basis": "filesystem timestamps, not reconstructed child lifecycle",
+        "tool_exit_code": null
+      }
+    ],
+    "observed_at": "2026-11-05T11:00:52.825556+00:00",
+    "process_query": "No matching project QA processes running at 2026-11-05 18:53 Asia/Shanghai"
+  },
+  "invalidated_v1": {
+    "archived_release": "audit/g4/pr6/INVALIDATED_RELEASE_MANIFEST_V1.json",
+    "counts": {
+      "directories": 7239,
+      "files": 56966
+    },
+    "mismatches": [
+      {
+        "actual": {
+          "bytes": 518,
+          "sha256": "c6022e47e6decb76efffe0fca2fa05b88461130a777c4ba8a485a07076e66635"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 518,
+          "sha256": "9551095aa782ae636ed97c95510f1a3e03bc67fdf68e952d163aceadf2534cc7"
+        },
+        "path": ".tmp/evals/g3/p6-full/test_T17_future_fixture_payloa0/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 654,
+          "sha256": "4aa055b4b02cee677ef6d5b4da7b4d5bf6228684ad8eecac6960704ccaa1255b"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 654,
+          "sha256": "973b64c71ba70cd8921ef05e84eb3a4a273c14a356936deec8005b82894ec173"
+        },
+        "path": ".tmp/evals/g3/p6-full/test_T18_reference_conflicts_a0/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 518,
+          "sha256": "83a41671e86bc89b992857e514c81ee0ef38ea1a9c8e8e3d9ad402e5faed7d4a"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 518,
+          "sha256": "c2f9d6fc56e62d049e9c2c3b74d944981e6f266b4d165d9e3e9153e4f3d7f2db"
+        },
+        "path": ".tmp/evals/g3/p6-full/test_review_current_step_futur0/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 518,
+          "sha256": "050920874b78225cd6469a5b55ddf3bf85eaaa5792e112771bdc30b67198828e"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 518,
+          "sha256": "55b1ff449828bf9b78aaa91356727838ab0b6981ceee7585387f8c8d6ed08864"
+        },
+        "path": ".tmp/evals/g3/p6-full/test_review_current_step_futur1/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 795,
+          "sha256": "211747a9ef498b5cac04cf42e33558abd89c8c28614214d140f709a01f6821d1"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 795,
+          "sha256": "4cb86df7a8b1ff8ae4b79b2c5748aee7f687d8ebb27a821e915e802f211bffbf"
+        },
+        "path": ".tmp/evals/g3/p6-g4/test_cli_downgrade_has_explici0/output/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 795,
+          "sha256": "baa54f633572388120689a6d4b1af052181f355b3e66c51f1040cb7d5a65e931"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 795,
+          "sha256": "ae20c94e140544d425aaef4f6dfd88d2c5f158ecde3db3fa97e64d2c54088d7b"
+        },
+        "path": ".tmp/evals/g3/p6-g4/test_cli_downgrade_has_explici1/output/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 934,
+          "sha256": "3f7bae8817fa178599a2df802c2ad53f8b3ff25abadbc58774f926d8584b1130"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 934,
+          "sha256": "ec1a9cdf5b74dec7a90e3599f2bdcad44656bd3e5ec40f0d4b27004a32f29424"
+        },
+        "path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f0/artifacts/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 798,
+          "sha256": "9f5300caa1dea7606635905ec16887aa37b65285913364b2c72d9041770af013"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 798,
+          "sha256": "bed5e758cd024c3c9c736b5586dcd45c47d749e88318009895f7794e82ddb53f"
+        },
+        "path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f1/artifacts/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      },
+      {
+        "actual": {
+          "bytes": 934,
+          "sha256": "66995238a5f496cd07bc7cfb0125ebcfe327e281f36d66f013de1a569d38f957"
+        },
+        "case_alias": true,
+        "expected": {
+          "bytes": 934,
+          "sha256": "68c1a3f18fe617ac174424508c2fff69c42689bc22da5d528867d5293bfacd3c"
+        },
+        "path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f2/artifacts/manifest.json",
+        "revision": "g4-pr6-directory-manifest-v1"
+      }
+    ],
+    "original_damaged_files_untouched": true,
+    "release_sha256": "1e75a22b163247bfd2d3d542ad275277ee3d00a7fd8d24d5cdf7cdc08852aed8",
+    "remedy": "Fresh complete tests in p6-fix-full/p6-fix-g4; no attempt to infer lost bytes from hashes",
+    "status": "INVALID_V1_SEAL_DO_NOT_USE"
+  },
+  "original_files_unchanged": 1145,
+  "original_user_database_used": false,
+  "owner_beta_approval": "PENDING",
+  "recursive_verification": {
+    "business_manifests": 40,
+    "bytes": 821238348,
+    "directories": 7927,
+    "files": 60097,
+    "status": "PASS_RECURSIVE_ALL_REFERENCES"
+  },
+  "regenerated_business_manifests": [
+    {
+      "after_indexing": {
+        "bytes": 192,
+        "sha256": "f97ca764995dc7832c5487885e301437c80cebfb6232d78de3c6337f766de2fb"
+      },
+      "before_indexing": {
+        "bytes": 192,
+        "sha256": "f97ca764995dc7832c5487885e301437c80cebfb6232d78de3c6337f766de2fb"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-full-final/test_T17_future_fixture_payloa0/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-full/test_T17_future_fixture_payloa0/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 587,
+        "sha256": "d77faf98da8774db74f7b353e7fe6c7342392bb5a84d5ea6368b49b5b1b98ef6"
+      },
+      "before_indexing": {
+        "bytes": 587,
+        "sha256": "d77faf98da8774db74f7b353e7fe6c7342392bb5a84d5ea6368b49b5b1b98ef6"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-full-final/test_T18_reference_conflicts_a0/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-full/test_T18_reference_conflicts_a0/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 192,
+        "sha256": "090ccade4641af5abe1ca0cb9f83341ac1b4b573688eea6d983566a4f6d7be85"
+      },
+      "before_indexing": {
+        "bytes": 192,
+        "sha256": "090ccade4641af5abe1ca0cb9f83341ac1b4b573688eea6d983566a4f6d7be85"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-full-final/test_review_current_step_futur0/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-full/test_review_current_step_futur0/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 192,
+        "sha256": "0d92c49430c61ab1063263a81b3ed8f54c735a9055cae3ee8e41610c62904e34"
+      },
+      "before_indexing": {
+        "bytes": 192,
+        "sha256": "0d92c49430c61ab1063263a81b3ed8f54c735a9055cae3ee8e41610c62904e34"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-full-final/test_review_current_step_futur1/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-full/test_review_current_step_futur1/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 434,
+        "sha256": "88f58bbab6729df72ffcae95a6458a45fb9151176b5ac35c02e94cd80617804d"
+      },
+      "before_indexing": {
+        "bytes": 434,
+        "sha256": "88f58bbab6729df72ffcae95a6458a45fb9151176b5ac35c02e94cd80617804d"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-g4-final/test_cli_downgrade_has_explici0/output/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-g4/test_cli_downgrade_has_explici0/output/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 434,
+        "sha256": "addc9f858e1f946dff4afcaafc425cd70dd6a7aa2aeb169162ad615fc0bf8890"
+      },
+      "before_indexing": {
+        "bytes": 434,
+        "sha256": "addc9f858e1f946dff4afcaafc425cd70dd6a7aa2aeb169162ad615fc0bf8890"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-g4-final/test_cli_downgrade_has_explici1/output/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-g4/test_cli_downgrade_has_explici1/output/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 600,
+        "sha256": "63e979fe29b73021657fb24f5b78c5c3b146a057fcce2b3987233cff5d45eb05"
+      },
+      "before_indexing": {
+        "bytes": 600,
+        "sha256": "63e979fe29b73021657fb24f5b78c5c3b146a057fcce2b3987233cff5d45eb05"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-g4-final/test_cli_stage_file_pins_and_f0/artifacts/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f0/artifacts/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 434,
+        "sha256": "88f58bbab6729df72ffcae95a6458a45fb9151176b5ac35c02e94cd80617804d"
+      },
+      "before_indexing": {
+        "bytes": 434,
+        "sha256": "88f58bbab6729df72ffcae95a6458a45fb9151176b5ac35c02e94cd80617804d"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-g4-final/test_cli_stage_file_pins_and_f1/artifacts/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f1/artifacts/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    },
+    {
+      "after_indexing": {
+        "bytes": 600,
+        "sha256": "74032200a57a5a959beecdce843dbb1ec934ab00b011473a76077299ac73e72e"
+      },
+      "before_indexing": {
+        "bytes": 600,
+        "sha256": "74032200a57a5a959beecdce843dbb1ec934ab00b011473a76077299ac73e72e"
+      },
+      "distinct_from_qa_index": true,
+      "fresh_path": ".tmp/evals/g3/p6-fix-g4-final/test_cli_stage_file_pins_and_f2/artifacts/manifest.json",
+      "previous_path": ".tmp/evals/g3/p6-g4/test_cli_stage_file_pins_and_f2/artifacts/manifest.json",
+      "provenance": "Fresh complete test run, not a reconstruction from the lost v1 hash"
+    }
+  ],
+  "revision": "g4-pr6-review-fix-results-v2",
+  "roots": {
+    ".tmp/evals/g3/g4-pr6-review-fix-20261105-001": {
+      "bytes": 10878,
+      "sha256": "e5b5b99945d0b62a34e8cbe8a37082e6bc66ad330fdb37273db18cfe56373ca5"
+    },
+    ".tmp/evals/g3/p6-fix-full": {
+      "bytes": 4425,
+      "sha256": "6fcde12f857ca61609b6de181301cdafca05e1af2c4cd769426514204761c5bc"
+    },
+    ".tmp/evals/g3/p6-fix-full-final": {
+      "bytes": 64425,
+      "sha256": "f73f1750b786508000690d54b62e3c34265da01ff87d9daa2f59a31a66476517"
+    },
+    ".tmp/evals/g3/p6-fix-full-native": {
+      "bytes": 9698,
+      "sha256": "9f7677514086768195776ae25b9a2072831fd0d63105993edf6570440404c154"
+    },
+    ".tmp/evals/g3/p6-fix-g4": {
+      "bytes": 3338,
+      "sha256": "9a7f15e7c89b33e9167831d2b4c4459b0e000680f2ef8a6a626732e05b40c0fc"
+    },
+    ".tmp/evals/g3/p6-fix-g4-final": {
+      "bytes": 28166,
+      "sha256": "a82a7937dd98877a196f897856601842d7b5e85c29fee6cfa22df1fab680b0f6"
+    },
+    ".tmp/evals/g3/p6-fix-g4-native": {
+      "bytes": 27235,
+      "sha256": "707f47899cb84050efd0d4d69bd91a7fe96f83a5c2a0e1343789f6776c11ec07"
+    }
+  },
+  "seal_regression_tests": 7,
+  "source_delta": {
+    "frontend/src/BriefingEvidence.tsx": {
+      "after": "d654345221a4fe60043d6f9be2da047f782df812a2d36e2340f2361d9eb09809",
+      "before": "5f473c5a81dd6b38ed1d68df2f33b520434ec8126c6d81eab099b023ea80a136",
+      "reason": "Explicit review fix: preserve first opener and restore focus only after real unmount under StrictMode"
+    }
+  },
+  "source_files": 1146,
+  "status": "SELF_TESTED_PENDING_INDEPENDENT_REVIEW",
+  "tracks": {
+    "g4_beta_utility": "OFFLINE_REJECTION_PILOT_PASSED_BETA_PENDING",
+    "g4_development": "CONDITIONAL_PENDING_REVIEW",
+    "g4_research_optional": "NOT_EVALUATED"
+  },
+  "upstream_review": {
+    "distinction": "Old PR4 fix report and entry freeze still say pending. This later independent evidence closes PR4 historically; PR5 integration and PR6 review remain pending.",
+    "evidence": {
+      ".tmp/evals/g3/g4-pr4-final-rereview-20261103-001/actual-process-handoff-proof.json": {
+        "bytes": 410,
+        "sha256": "164481889e3ef2067a132cac02646b3198e916240b5c2e461601f9fe82816b9a"
+      },
+      ".tmp/evals/g3/g4-pr4-final-rereview-20261103-001/independent-shutdown-replay.json": {
+        "bytes": 1254,
+        "sha256": "d8901adf102ba85344a42f7e07d5be96c0bc31339eabf24aff613d54b8eb5103"
+      },
+      ".tmp/evals/g3/g4-pr4-final-rereview-20261103-001/review-summary.json": {
+        "bytes": 1776,
+        "sha256": "5a91c71199e31b34817b4e886fa2593250e37269a6bc26759b21d3a104cd1fdf"
+      }
+    },
+    "reviewed_head": "783f5428671457ea3f1f654b160152f653d2e9e0",
+    "status": "PR4_HISTORICALLY_CLOSED_INDEPENDENT_AI_LOCAL_SCOPE"
+  }
+}

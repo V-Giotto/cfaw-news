@@ -2,7 +2,7 @@
 
 from typing import Annotated, Literal
 
-from pydantic import Field, ValidationInfo, model_validator
+from pydantic import Field, ValidationInfo, model_serializer, model_validator
 
 from .native import ENGINE_PIN, verify
 from .runtime_control import model_control
@@ -21,7 +21,13 @@ from evals.intelligence_g3.budget_contracts import (  # noqa: E402
     PlannedEvent,
     Profile,
 )
-from evals.intelligence_g3.contracts import G3Candidate, PersonaSnapshot, ReplayObservation  # noqa: E402
+from evals.intelligence_g3.contracts import (  # noqa: E402
+    DeliverySnapshot,
+    G3Candidate,
+    PersonaSnapshot,
+    PublishedItemRef,
+    ReplayObservation,
+)
 from evals.intelligence_g3.fact_signature import policy_sha256  # noqa: E402
 from evals.intelligence_g3.history_contracts import HistoryConfig  # noqa: E402
 from evals.intelligence_g3.ranking_contracts import RankingConfig  # noqa: E402
@@ -36,12 +42,17 @@ from .contracts import (  # noqa: E402
     LedgerError,
     SourcePolicy,
 )
+from .runtime_history import RuntimeJournal, RuntimePrefix, VisitWindow  # noqa: E402
 
 FACT_PIN = "70565148fe436fa823ef6a4063cbba7abb4c994cc34f19dc44bdc2451e367450"
 RANK_PIN = digest(dict(revision="g4-runtime-ranking-policy-v2", native_engine=ENGINE_PIN,
     material_projection="preserve-original-kind-v1", persona_replay="historical-prefix-required-v1",
     validation_control="request-scoped-cooperative-v1",
     base=data(RankingConfig()), history=data(HistoryConfig()), fact_signature_policy_sha256=FACT_PIN))
+HISTORY_RANK_PIN = digest(dict(revision="g4-runtime-ranking-policy-v3", previous=RANK_PIN,
+    persona_replay="actual-persona-chain-first-available-cold-start-v1",
+    history="verified-sqlite-prefix-native-g3-protocol-v1", archive_feedback="metadata-only-not-delivery",
+    window="confirmed-viewport-visits-and-session-sequence-boundary-v2"))
 
 
 class ExplicitBudget(BudgetConfig):
@@ -49,7 +60,7 @@ class ExplicitBudget(BudgetConfig):
 
 
 class RuntimeConfig(StrictModel):
-    schema_revision: Literal["g4-pr3-config-v1"] = "g4-pr3-config-v1"
+    schema_revision: Literal["g4-pr3-config-v1", "g4-h09-config-v2"] = "g4-pr3-config-v1"
     algorithm: Literal["b4", "p1"] = "b4"
     experiment: Literal["p1-explicit-development-v1"] | None = None
     native_engine_sha256: Hash = ENGINE_PIN
@@ -63,7 +74,8 @@ class RuntimeConfig(StrictModel):
 
     @model_validator(mode="after")
     def registered(self):
-        if (self.native_engine_sha256 != ENGINE_PIN or self.ranking_policy_sha256 != RANK_PIN
+        expected = HISTORY_RANK_PIN if self.schema_revision == "g4-h09-config-v2" else RANK_PIN
+        if (self.native_engine_sha256 != ENGINE_PIN or self.ranking_policy_sha256 != expected
                 or self.fact_signature_policy_sha256 != FACT_PIN or policy_sha256() != FACT_PIN):
             raise LedgerError("G4_RUNTIME_CONFIG_PIN_MISMATCH")
         if (self.algorithm == "p1") != (self.experiment is not None):
@@ -74,7 +86,7 @@ class RuntimeConfig(StrictModel):
 
 
 class RuntimeEnvelope(StrictModel):
-    schema_revision: Literal["g4-pr3-runtime-envelope-v1"] = "g4-pr3-runtime-envelope-v1"
+    schema_revision: Literal["g4-pr3-runtime-envelope-v1", "g4-h09-runtime-envelope-v2"] = "g4-pr3-runtime-envelope-v1"
     kind: Literal["runtime_local_v1"] = "runtime_local_v1"
     record_origin: Literal["real", "synthetic"]
     stream_id: NonEmpty
@@ -87,11 +99,28 @@ class RuntimeEnvelope(StrictModel):
     coverage: Annotated[tuple[CoverageWindow, ...], Field(max_length=512)]
     synthetic_provenance_uri: NonEmpty | None = None
     config: RuntimeConfig
+    persona_history: Annotated[tuple[PersonaSnapshot, ...], Field(max_length=128)] = ()
+    history_prefix: RuntimePrefix | None = None
+    visit_window: VisitWindow | None = None
+
+    @model_serializer(mode="wrap")
+    def legacy_wire(self, handler):
+        result = handler(self)
+        if self.schema_revision == "g4-pr3-runtime-envelope-v1":
+            for name in ("persona_history", "history_prefix", "visit_window"):
+                result.pop(name, None)
+        return result
 
     @model_validator(mode="after")
     def bound(self):
         from .g2_adapter import validate_ledger
         validate_ledger(self)
+        if self.schema_revision == "g4-pr3-runtime-envelope-v1":
+            if self.persona_history or self.history_prefix is not None or self.visit_window is not None:
+                raise LedgerError("G4_RUNTIME_HISTORY_VERSION_REQUIRED")
+        elif (self.config.schema_revision != "g4-h09-config-v2" or not self.persona_history
+                or self.persona_history[-1] != self.persona):
+            raise LedgerError("G4_RUNTIME_PERSONA_HISTORY_REQUIRED")
         return self
 
 
@@ -112,18 +141,26 @@ class RuntimeReplay(StrictModel):
     observations: tuple[ReplayObservation, ...]
     document_archive: tuple[VersionIdentity, ...]
     source_coverage: tuple[NativeCoverageWindow, ...]
-    deliveries: tuple[()] = ()
+    deliveries: tuple[DeliverySnapshot, ...] = ()
     history: tuple[()] = ()
+    published_refs: tuple[PublishedItemRef, ...] = ()
     time_window_start: Instant
     time_window_end: Instant
     attention_budget_seconds: Literal[180, 420, 900]
+
+    @model_serializer(mode="wrap")
+    def legacy_wire(self, handler):
+        result = handler(self)
+        if not self.published_refs:
+            result.pop("published_refs", None)
+        return result
 
 
 class RuntimeHistoryInput(StrictModel):
     schema_revision: Literal["g4-runtime-history-context-v1"] = "g4-runtime-history-context-v1"
     envelope: RuntimeEnvelope
     replay: RuntimeReplay
-    journal: EmptyRuntimeJournal = EmptyRuntimeJournal()
+    journal: EmptyRuntimeJournal | RuntimeJournal = EmptyRuntimeJournal()
     mappings: tuple[()] = ()
 
 
@@ -152,7 +189,7 @@ class RuntimeRanking(StrictModel):
     candidate_pool_sha256: Hash
     fact_signature_policy_sha256: Hash
     events: tuple[RevisitEvent, ...]
-    history_status: Literal["not_integrated"] = "not_integrated"
+    history_status: Literal["not_integrated", "validated_sqlite_prefix_native_rules_v1"] = "not_integrated"
 
 
 class RuntimeBudgetInput(StrictModel):
@@ -190,7 +227,7 @@ class RuntimePlan(StrictModel):
 
 
 class RuntimeResult(StrictModel):
-    schema_revision: Literal["g4-pr3-result-v1"] = "g4-pr3-result-v1"
+    schema_revision: Literal["g4-pr3-result-v1", "g4-h09-result-v2"] = "g4-pr3-result-v1"
     input: RuntimeEnvelope
     input_sha256: Hash
     state: Literal["plan_ready", "raw_news_only", "evidence_not_ready"]

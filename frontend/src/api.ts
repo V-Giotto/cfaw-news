@@ -65,15 +65,24 @@ export interface Schedule { id: string; run_id: string; title: string; content: 
 export interface Config { version: string; mode: string; model: string | null; news_auto_refresh: boolean; counts: { articles: number; goals: number; runs: number } }
 export interface TaskEvent { id: number; kind: string; message: string; created_at: string }
 
+export class ApiError extends Error {
+  constructor(public status: number, public code: string, public databaseState = 'unknown', message?: string) {
+    super(message || code)
+  }
+}
+
 export async function api<T>(path: string, options: RequestInit = {}): Promise<T> {
   const response = await fetch('/api' + path, {
     ...options, headers: { 'Content-Type': 'application/json', ...options.headers },
   })
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}))
-    throw new Error(typeof payload.detail === 'string' ? payload.detail : `请求未通过校验（${response.status}）`)
+    throw new ApiError(response.status, payload.code || 'HTTP_' + response.status, payload.database_state,
+      typeof payload.detail === 'string' ? payload.detail : payload.code || `请求未通过校验（${response.status}）`)
   }
   return response.json()
 }
 
 export const post = <T>(path: string, body: unknown = {}) => api<T>(path, { method: 'POST', body: JSON.stringify(body) })
+
+export type * from './intelligence.generated'

@@ -30,7 +30,7 @@ def main():
         args.directory.mkdir(parents=True, exist_ok=False)
         for name, body in expected.items():
             (args.directory / name).write_bytes(body)
-    print("g4-pr3-runtime-envelope-v1: 5 schemas PASS")
+    print("g4-h09-runtime-envelope-v2 (legacy v1 retained): 5 schemas PASS")
 
 
 if __name__ == "__main__":

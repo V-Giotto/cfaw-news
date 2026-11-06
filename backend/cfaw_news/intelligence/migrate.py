@@ -31,6 +31,7 @@ from .maintenance_io import (
     write_synced,
 )
 from .models import G4Base, G4Document
+from .sqlite_input import isolated_sqlite_input
 
 MIGRATION = importlib.import_module(".migrations.001_g4_documents", __package__)
 
@@ -216,18 +217,20 @@ def restore(backup, database, *, expected_sha256):
     if sha(source) != expected_sha256:
         raise MaintenanceFailure("G4_BACKUP_PIN_MISMATCH")
     target.parent.mkdir(parents=True, exist_ok=True)
-    with closing(sqlite3.connect(source.as_uri() + "?mode=ro", uri=True)) as src:
-        if src.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
-            raise LedgerError("G4_BACKUP_INTEGRITY_FAILED")
-        with target.open("xb"):
-            pass
-        with closing(sqlite3.connect(target)) as dst:
-            src.backup(dst)
-            if dst.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
-                raise LedgerError("G4_RESTORE_INTEGRITY_FAILED")
+    with isolated_sqlite_input(source, expected_sha256=expected_sha256, directory=target.parent) as staged:
+        with closing(sqlite3.connect(staged.as_uri() + "?mode=ro", uri=True)) as src:
+            if src.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
+                raise LedgerError("G4_BACKUP_INTEGRITY_FAILED")
+            with target.open("xb"):
+                pass
+            with closing(sqlite3.connect(target)) as dst:
+                src.backup(dst)
+                if dst.execute("PRAGMA integrity_check").fetchall() != [("ok",)]:
+                    raise LedgerError("G4_RESTORE_INTEGRITY_FAILED")
     return dict(action="restore", result="restored_to_new_path", backup_sha256=expected_sha256,
                 database_sha256=sha(target), restored_at=utcnow(), database_state="committed",
-                continuity="explicit_restore_epoch_required_before_future_runtime_history")
+                continuity="explicit_restore_epoch_required_before_future_runtime_history",
+                source_opened_by_sqlite=False, input_policy="verified_offline_copy_v1")
 
 
 def main():

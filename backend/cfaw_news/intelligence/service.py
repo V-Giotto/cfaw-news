@@ -19,11 +19,12 @@ from .contracts import LedgerError, canonical, digest, instant
 from .history_store import HistoryStore, installed, now
 from .persistence_contracts import (
     TERMINAL,
-    BriefingView,
     EventDetailView,
     InteractionView,
     PersonaView,
+    SnapshotPage,
     StatusView,
+    VisitView,
 )
 from .persistence_migrate import paths_for
 from .persistence_models import (
@@ -31,21 +32,26 @@ from .persistence_models import (
     BriefingRun,
     BriefingSnapshot,
     DeliveryItem,
+    IdempotentRequest,
     InteractionRow,
+    JournalEntry,
     PersonaVersionRow,
 )
 from .publication import (
     corpus_basis,
     head_view,
+    latest_assessments,
     mutation_view,
     parse,
     qualification,
+    read_snapshot,
     run_view,
     snapshot_view,
 )
 from .runtime import from_ledger
 from .runtime import run as calculate
-from .runtime_contracts import FACT_PIN, RANK_PIN, ExplicitBudget, RuntimeConfig, RuntimeResult
+from .runtime_contracts import FACT_PIN, ExplicitBudget, RuntimeConfig, RuntimeResult
+from .runtime_contracts import HISTORY_RANK_PIN as RANK_PIN
 from .runtime_control import Control
 
 
@@ -114,7 +120,8 @@ class IntelligenceService:
             raise PersistenceError("G4_WORKER_UNAVAILABLE", status=503)
 
     def profiles(self):
-        return [dict(profile=p, config_sha256=digest(RuntimeConfig(budget=ExplicitBudget(profile=p)).model_dump(mode="json")))
+        return [dict(profile=p, config_sha256=digest(RuntimeConfig(schema_revision="g4-h09-config-v2",
+            ranking_policy_sha256=RANK_PIN, budget=ExplicitBudget(profile=p)).model_dump(mode="json")))
                 for p in ("focus60-radar40-v1", "focus70-radar30-v1", "focus80-radar20-v1")]
 
     def status(self):
@@ -202,14 +209,23 @@ class IntelligenceService:
                 raise PersistenceError("G4_RUN_STORAGE_CAPACITY_EXCEEDED", status=429)
             timestamp = self.clock()
             as_of = datetime.fromisoformat(timestamp)
-            start = datetime.fromisoformat(body.time_window_start) if body.time_window_start else as_of - timedelta(days=1)
+            from .runtime_history import load_prefix, visit_window
+            prefix = load_prefix(session, head, session.info["checkpoint_epoch"])
+            window = visit_window(prefix, as_of,
+                datetime.fromisoformat(body.time_window_start) if body.time_window_start else None,
+                body.visit_before_sequence)
+            start = window.start_at
             if not as_of - timedelta(days=30) <= start <= as_of:
                 raise PersistenceError("G4_RUNTIME_INTERVAL_INVALID", status=422)
             profile = PersonaSnapshot.model_validate_json(canonical(persona.data["native"]))
-            config = RuntimeConfig(algorithm=body.algorithm, experiment=body.experiment,
+            config = RuntimeConfig(schema_revision="g4-h09-config-v2", ranking_policy_sha256=RANK_PIN,
+                algorithm=body.algorithm, experiment=body.experiment,
                 budget=ExplicitBudget(profile=body.profile), attention_budget_seconds=profile.persona.attention_budget_seconds)
             value = from_ledger(session, stream_id=self.stream, as_of=as_of, time_window_start=start,
                 persona=profile, config=config, record_origin=self.origin,
+                persona_history=tuple(PersonaSnapshot.model_validate_json(canonical(p["data"]["native"]))
+                    for p in sorted(prefix.rows("intelligence_persona_versions"), key=lambda p: p["version"])),
+                history_prefix=prefix, visit_window=window,
                 synthetic_provenance_uri=self.settings.intelligence_synthetic_provenance if self.origin == "synthetic" else None)
             raw = json_bytes(value)
             if len(raw) > 4_000_000:
@@ -452,10 +468,28 @@ class IntelligenceService:
             row.data = {**row.data, "snapshot_id": view.id, "finished_at": generated_at, "reason_codes": list(result.reason_codes)}
             records.append(row)
             return dict(resource_id=view.id), records, dict(latest_snapshot_id=view.id, publication_version=view.version)
-        return self.store.mutate(self.stream, key="run:" + identifier + ":publish", operation="publication",
-            payload=dict(run_id=identifier, runtime_sha256=sha256_bytes(json_bytes(result))),
-            expected_head=expected["sha256"], expected_epoch=expected["epoch"], apply=apply,
-            before_commit=lambda: control.check("publication_commit"), namespace="system")
+        expected_head = expected["sha256"]
+        for attempt in range(8):
+            try:
+                return self.store.mutate(self.stream, key="run:" + identifier + ":publish", operation="publication",
+                    payload=dict(run_id=identifier, runtime_sha256=sha256_bytes(json_bytes(result))),
+                    expected_head=expected_head, expected_epoch=expected["epoch"], apply=apply,
+                    before_commit=lambda: control.check("publication_commit"), namespace="system")
+            except PersistenceError as error:
+                prefix = result.input.history_prefix
+                if error.code != "G4_EXPECTED_HEAD_CONFLICT" or prefix is None or attempt == 7:
+                    raise
+                # Later confirmations do not belong to this immutable as-of prefix.
+                # Keep CAS and all persona/corpus/latest/cancel guards in apply().
+                control.check("publication_head_retry")
+                with self.store.read() as (session, heads):
+                    if session.info["checkpoint_epoch"] != expected["epoch"]:
+                        raise PersistenceError("G4_RECOVERY_EPOCH_CONFLICT") from None
+                    old = session.scalar(select(JournalEntry.id).where(JournalEntry.stream_id == self.stream,
+                        JournalEntry.sequence == prefix.sequence))
+                    if old != prefix.sha256:
+                        raise PersistenceError("G4_RUNTIME_HISTORY_PREFIX_INVALID") from None
+                    expected_head = heads[self.stream].sha256
 
     def briefing(self, identifier=None):
         self.require_ready()
@@ -463,7 +497,52 @@ class IntelligenceService:
             key = identifier or heads[self.stream].latest_snapshot_id
             if not key:
                 raise PersistenceError("G4_BRIEFING_NOT_FOUND", status=404)
-            return parse(BriefingView, self.row(session, BriefingSnapshot, key).data)
+            return read_snapshot(self.row(session, BriefingSnapshot, key))
+
+    def briefings(self, *, limit=20, before_version=None, through_version=None):
+        """Publication directory, independent of exposure or interaction history."""
+        self.require_ready()
+        with self.store.read() as (session, heads):
+            upper = heads[self.stream].publication_version if through_version is None else through_version
+            if not 0 <= upper <= heads[self.stream].publication_version:
+                raise PersistenceError("G4_SNAPSHOT_DIRECTORY_VERSION_CONFLICT")
+            query = select(BriefingSnapshot.id, BriefingSnapshot.version, BriefingSnapshot.as_of,
+                BriefingSnapshot.generated_at, BriefingSnapshot.data["evidence_status"].as_string()).where(
+                BriefingSnapshot.stream_id == self.stream, BriefingSnapshot.version <= upper)
+            if before_version is not None:
+                query = query.where(BriefingSnapshot.version < before_version)
+            rows = list(session.execute(query.order_by(BriefingSnapshot.version.desc()).limit(limit + 1)))
+            items = [dict(id=r[0], version=r[1], as_of=r[2], generated_at=r[3], evidence_status=r[4]) for r in rows[:limit]]
+            return parse(SnapshotPage, dict(stream_id=self.stream, through_version=upper, items=items,
+                next_before_version=items[-1]["version"] if len(rows) > limit else None))
+
+    def visit(self, body):
+        def apply(session, head):
+            if body.briefing_id is not None:
+                self.row(session, BriefingSnapshot, body.briefing_id)
+            prior = session.scalar(select(IdempotentRequest).where(IdempotentRequest.stream_id == self.stream,
+                IdempotentRequest.operation == "visit",
+                IdempotentRequest.data["visit"]["session_key"].as_string() == body.session_key))
+            if prior:
+                return dict(resource_id=prior.data["resource_id"], deduplicated=True), [], {}
+            return dict(resource_id=uuid4().hex, visit=dict(confirmation=body.confirmation,
+                session_key=body.session_key, briefing_id=body.briefing_id)), [], {}
+        return self._write(body, "visit", apply)
+
+    def last_visit(self, *, through_sequence=None):
+        from .history_store import wire
+        from .runtime_history import confirmed_visits
+        self.require_ready()
+        with self.store.read() as (session, heads):
+            upper = heads[self.stream].sequence if through_sequence is None else through_sequence
+            if not 0 <= upper <= heads[self.stream].sequence:
+                raise PersistenceError("G4_RUNTIME_VISIT_SEQUENCE_INVALID", status=422)
+            entries = tuple(wire(e) for e in session.scalars(select(JournalEntry).where(
+                JournalEntry.stream_id == self.stream, JournalEntry.sequence <= upper, JournalEntry.kind == "visit").order_by(JournalEntry.sequence)))
+            requests = tuple(wire(r) for r in session.scalars(select(IdempotentRequest).where(
+                IdempotentRequest.stream_id == self.stream, IdempotentRequest.operation == "visit")))
+            visits = confirmed_visits(entries, requests)
+            return parse(VisitView, visits[-1]) if visits else None
 
     def detail(self, briefing_id, event_snapshot_id):
         self.require_ready()
@@ -481,7 +560,8 @@ class IntelligenceService:
             claims = [c for c in evidence["claims"] if c["claim_key"] in keys]
             refs = {ref for c in claims for ref in c["evidence_ref_ids"]}
             citations = [c for c in evidence["citations"] if c["ref_id"] in refs]
-            assessments = [a for a in evidence["assessments"] if a["claim_key"] in keys]
+            assessments = latest_assessments(
+                [a for a in evidence["assessments"] if a["claim_key"] in keys], snapshot.as_of)
             members = set(candidate["event"]["member_doc_version_ids"]) | {c["doc_version_id"] for c in claims}
             document_ids = {d["document_id"] for d in snapshot.runtime["input"]["versions"] if d["doc_version_id"] in members}
             documents = [d for d in snapshot.runtime["input"]["versions"] if d["document_id"] in document_ids]

@@ -11,7 +11,8 @@ from evals.intelligence_v1.contracts import Instant, StrictModel
 
 from .boundary import BoundaryError as ErrorView
 from .contracts import G4DocumentVersion, Hash, LedgerError, instant
-from .runtime_contracts import RANK_PIN
+from .runtime_contracts import HISTORY_RANK_PIN as RANK_PIN
+from .runtime_history import VisitWindow
 
 Name = Annotated[str, Field(min_length=1, max_length=512)]
 Text = Annotated[str, Field(min_length=1, max_length=512)]
@@ -49,6 +50,7 @@ class BriefingWrite(WriteRequest):
     algorithm: Literal["b4", "p1"] = "b4"
     experiment: Literal["p1-explicit-development-v1"] | None = None
     time_window_start: RequestTime | None = None
+    visit_before_sequence: Annotated[int, Field(ge=0)] | None = None
 
     @model_validator(mode="after")
     def registered(self):
@@ -61,6 +63,19 @@ class BriefingWrite(WriteRequest):
 
 class CancelWrite(WriteRequest):
     expected_run_version: Annotated[int, Field(gt=0)]
+
+
+class VisitWrite(WriteRequest):
+    confirmation: Literal["home_visible"]
+    session_key: Key
+    briefing_id: Name | None = None
+
+
+class VisitView(StrictModel):
+    id: Name
+    available_at: Instant
+    sequence: Annotated[int, Field(gt=0)]
+    briefing_id: Name | None
 
 
 class InteractionWrite(WriteRequest):
@@ -143,6 +158,10 @@ class DeliveryView(StrictModel):
     status: Literal["focus", "radar", "truncated"]
     reason_codes: tuple[Name, ...]
     estimated_reading_seconds: Annotated[int, Field(ge=0)]
+    # Optional only for historical persisted v1 views. Reads hydrate from their own runtime.
+    projection: Literal["focus", "radar", "minimum"] | None = None
+    content_refs: tuple[Name, ...] = ()
+    omitted_refs: tuple[Name, ...] = ()
     reading_time_status: Literal["uncalibrated_estimate_not_behavior"] = "uncalibrated_estimate_not_behavior"
 
 
@@ -168,8 +187,26 @@ class BriefingView(StrictModel):
     deliveries: tuple[DeliveryView, ...]
     archive: tuple[ArchiveView, ...]
     budget_diagnostics: BudgetDiagnostics | None
-    history_scoring: Literal["not_applied_pr3_v2"] = "not_applied_pr3_v2"
+    history_scoring: Literal["not_applied_pr3_v2", "validated_sqlite_prefix_native_rules_v1"] = "not_applied_pr3_v2"
+    native_basis_sha256: Hash | None = None
+    history_prefix_sha256: Hash | None = None
+    visit_window: VisitWindow | None = None
     semantic_truth: Literal["not_evaluated"] = "not_evaluated"
+
+
+class SnapshotSummary(StrictModel):
+    id: Name
+    version: Annotated[int, Field(gt=0)]
+    as_of: Instant
+    generated_at: Instant
+    evidence_status: Literal["plan_ready", "raw_news_only"]
+
+
+class SnapshotPage(StrictModel):
+    stream_id: Name
+    through_version: Annotated[int, Field(ge=0)]
+    items: tuple[SnapshotSummary, ...]
+    next_before_version: Annotated[int, Field(gt=0)] | None
 
 
 class InteractionView(StrictModel):
@@ -226,8 +263,9 @@ class StatusView(StrictModel):
     runtime_policy_sha256: Hash
     profiles: tuple[ProfileView, ...]
     history_storage: Literal["sqlite_append_only"] = "sqlite_append_only"
-    history_scoring: Literal["not_applied_pr3_v2"] = "not_applied_pr3_v2"
+    history_scoring: Literal["not_applied_pr3_v2", "validated_sqlite_prefix_native_rules_v1"] = "validated_sqlite_prefix_native_rules_v1"
 
 
 MODELS = (PersonaWrite, BriefingWrite, CancelWrite, InteractionWrite, ErrorView, HeadView, PersonaView,
-          RunView, ArchiveView, DeliveryView, BriefingView, InteractionView, EventDetailView, MutationView, StatusView)
+          RunView, ArchiveView, DeliveryView, BriefingView, SnapshotSummary, SnapshotPage,
+          InteractionView, EventDetailView, MutationView, StatusView, VisitWrite, VisitView)

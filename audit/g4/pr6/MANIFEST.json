@@ -1,0 +1,49 @@
+{
+  "children": {
+    "samples": {
+      "bytes": 370,
+      "sha256": "54cf08d349e6729f420ebe2297a50260fe06c3bfe3251fe2bc2ea7f1eb815898"
+    }
+  },
+  "directory": "audit/g4/pr6",
+  "excluded": [
+    "__pycache__",
+    "MANIFEST.json"
+  ],
+  "files": {
+    "ENTRY_FREEZE.json": {
+      "bytes": 173486,
+      "sha256": "564bc2fa056258a7a043f243ec76cbb6fecb6d7aa8173b84febc754c8b7b31b0"
+    },
+    "RESULTS.json": {
+      "bytes": 88972,
+      "sha256": "d029eae30946fd33c18f5103053004340c6f1e6585245d533de6d8413ecfb63b"
+    },
+    "browser.cjs": {
+      "bytes": 14252,
+      "sha256": "786ae3b9983dc0b075f0ae35960a4ec09194be846949d749b1be2d4e578a4204"
+    },
+    "finalize.py": {
+      "bytes": 16472,
+      "sha256": "6d05fe6b27f96561e359c4f3b4b714949a42d08f516d5f4a04f24f148debac5f"
+    },
+    "freeze.py": {
+      "bytes": 4563,
+      "sha256": "d37786f6ade5fc55986567325d936c86ef39e2c4790bbd5ef75bbe2540b8326a"
+    },
+    "long_paragraph_probe.py": {
+      "bytes": 1522,
+      "sha256": "4f3e85cc8b0434fd8adc87de6b39489494f4f3b0ecf29342b6eb39523c391b29"
+    },
+    "pilot.py": {
+      "bytes": 10108,
+      "sha256": "124a364dcb32af92e1935f0b8da4fa140c0bacca4161cd62aa58e095a67359e9"
+    },
+    "restore_probe.py": {
+      "bytes": 3569,
+      "sha256": "a3a6eca7395484e7da6c893502a63b1a82a1d97db0aa9d9ad45a83d2eb4d00ba"
+    }
+  },
+  "revision": "g4-pr6-directory-manifest-v1",
+  "self_hash": "excluded; parent or release pins this file"
+}
